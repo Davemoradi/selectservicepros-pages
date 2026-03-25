@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>SelectServicePros — Join as a Contractor</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0c2340;--navy2:#0f2d50;
+  --blue:#1a6eb5;--blue2:#155fa0;--blue-light:#e8f2fb;--blue-border:#93c4e8;
+  --green:#3a9e3f;--green2:#2d8a32;--green-light:#edf7ee;--green-border:#86d98a;
+  --orange:#f05528;--orange2:#d44420;--orange-light:#fff3ef;--orange-border:#fcc8b8;
+  --bg:#f2f5f9;--white:#fff;
+  --border:#dde3ec;--border2:#b8c4d4;
+  --text:#0f172a;--text2:#475569;--text3:#8a9ab0;
+  --radius:12px;--radius-sm:8px;--radius-xs:6px;
+  --font-head:'Outfit',system-ui,sans-serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
+
+/* NAV */
+nav{display:none;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-icon svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;}
+.logo-text{font-family:var(--font-head);font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.3px;}
+.logo-text span{color:var(--orange);}
+.nav-right{display:flex;align-items:center;gap:16px;}
+.nav-link{font-size:13px;color:rgba(255,255,255,0.5);text-decoration:none;}
+.nav-cta{font-size:13px;font-weight:600;color:#fff;background:var(--orange);padding:7px 18px;border-radius:20px;text-decoration:none;font-family:var(--font-head);}
+
+/* HERO */
+.hero{background:var(--navy);padding:32px 36px 72px;position:relative;}
+.hero-inner{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1.1fr 0.9fr;gap:56px;align-items:center;}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(240,85,40,0.15);border:1px solid rgba(240,85,40,0.3);color:var(--orange);font-size:11px;font-weight:600;padding:5px 13px;border-radius:20px;margin-bottom:14px;font-family:var(--font-head);letter-spacing:0.5px;text-transform:uppercase;}
+.hero h1{font-family:var(--font-head);font-size:40px;font-weight:800;color:#fff;line-height:1.1;letter-spacing:-1px;margin-bottom:14px;}
+.hero h1 em{color:var(--orange);font-style:normal;}
+.hero-sub{font-size:15px;color:rgba(255,255,255,0.55);line-height:1.7;margin-bottom:28px;font-weight:300;}
+.trust-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.trust-card{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius-sm);padding:13px 15px;}
+.trust-num{font-family:var(--font-head);font-size:22px;font-weight:700;color:var(--orange);}
+.trust-lbl{font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;}
+.roi-box{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:var(--radius);padding:22px;}
+.roi-title{font-family:var(--font-head);font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1);}
+.roi-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.07);font-size:13px;}
+.roi-row:last-child{border-bottom:none;padding-bottom:0;}
+.roi-lbl{color:rgba(255,255,255,0.5);}
+.roi-val{font-weight:600;color:#fff;}
+.roi-val.hi{color:var(--orange);font-size:15px;font-family:var(--font-head);}
+.hero-wave{position:absolute;bottom:0;left:0;right:0;height:44px;background:var(--bg);clip-path:ellipse(55% 100% at 50% 100%);}
+
+/* MAIN */
+.main{max-width:1080px;margin:0 auto;padding:44px 36px;}
+.sec-lbl{font-family:var(--font-head);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:14px;}
+
+/* PLANS */
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px;}
+.plan{background:var(--white);border:2px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;}
+.plan:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.07);}
+.plan.sel{border-color:var(--blue);transform:translateY(-2px);box-shadow:0 6px 20px rgba(26,110,181,0.15);}
+.pop-pill{position:absolute;top:14px;right:14px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;font-family:var(--font-head);}
+.plan-head{padding:20px 20px 14px;flex:1;}
+.plan-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.plan-name{font-family:var(--font-head);font-size:18px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.plan.sel .plan-name{color:var(--blue);}
+.plan-tagline{font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.4;}
+.price-row{display:flex;align-items:baseline;gap:3px;margin-bottom:7px;}
+.price-amt{font-family:var(--font-head);font-size:32px;font-weight:800;color:var(--navy);}
+.plan.sel .price-amt{color:var(--blue);}
+.price-mo{font-size:13px;color:var(--text3);}
+.lead-badge{font-size:12px;font-weight:600;color:var(--green);background:var(--green-light);border:1px solid var(--green-border);padding:3px 10px;border-radius:10px;display:inline-block;margin-bottom:12px;}
+.plan-div{height:1px;background:var(--border);margin:0 20px;}
+.feats{padding:14px 20px 18px;}
+.fg-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text3);font-weight:700;margin:8px 0 5px;font-family:var(--font-head);}
+.fg-lbl:first-child{margin-top:0;}
+.fi{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--text2);padding:2px 0;line-height:1.45;}
+.fi.no{opacity:0.38;}
+.fi-dot{width:15px;height:15px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.fi.yes .fi-dot{background:var(--green-light);border:1px solid var(--green-border);}
+.fi.no .fi-dot{background:#f5f5f5;border:1px solid var(--border);}
+.fi-check{width:7px;height:7px;}
+.fi strong{color:var(--text);font-weight:500;}
+.plan-sel-bar{display:none;background:var(--blue);color:#fff;font-size:12px;font-weight:700;text-align:center;padding:9px;font-family:var(--font-head);}
+.plan.sel .plan-sel-bar{display:block;}
+
+/* FORM */
+.fc{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:26px;margin-bottom:14px;}
+.fc-title{font-family:var(--font-head);font-size:16px;font-weight:700;color:var(--navy);margin-bottom:3px;}
+.fc-sub{font-size:13px;color:var(--text3);margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;margin-bottom:13px;}
+.g1{margin-bottom:13px;}
+.g2:last-child,.g3:last-child,.g1:last-child{margin-bottom:0;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.lbl{font-size:12px;font-weight:600;color:var(--text2);}
+.req{color:var(--orange);}
+input[type=text],input[type=tel],input[type=email],input[type=url],input[type=date],select,textarea{
+  width:100%;padding:10px 12px;background:var(--bg);border:1.5px solid var(--border);
+  border-radius:var(--radius-xs);color:var(--text);font-family:var(--font-body);
+  font-size:16px;outline:none;transition:all 0.15s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);background:var(--white);box-shadow:0 0 0 3px var(--blue-light);}
+input::placeholder,textarea::placeholder{color:var(--text3);}
+select{cursor:pointer;}
+textarea{resize:vertical;min-height:78px;}
+
+/* CHECKBOXES */
+.chk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:13px;}
+.chk{display:flex;align-items:center;gap:8px;padding:9px 11px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-xs);cursor:pointer;font-size:13px;color:var(--text2);user-select:none;transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
+.chk:hover{border-color:var(--border2);background:var(--white);}
+.chk.on{background:var(--blue-light);border-color:var(--blue-border);color:var(--blue2);font-weight:500;}
+.chk-box{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--white);transition:all 0.15s;}
+.chk.on .chk-box{background:var(--blue);border-color:var(--blue);}
+.chk-tick{display:none;width:9px;height:9px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;}
+.chk.on .chk-tick{display:block;}
+
+/* UPLOAD */
+.upload{border:2px dashed var(--border2);border-radius:var(--radius-xs);padding:18px;text-align:center;cursor:pointer;transition:all 0.15s;background:var(--bg);}
+.upload:hover{border-color:var(--blue);background:var(--blue-light);}
+.upload.done{border-color:var(--green);background:var(--green-light);border-style:solid;}
+.upload-ico{width:34px;height:34px;border-radius:50%;background:var(--white);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 7px;}
+.upload-txt{font-size:13px;color:var(--text2);font-weight:500;}
+.upload-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.upload-ok{font-size:12px;color:var(--green);margin-top:5px;font-weight:600;display:none;}
+.upload.done .upload-ok{display:block;}
+.upload.done .upload-txt{color:var(--green);}
+
+/* TERMS */
+.terms-scroll{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-xs);padding:13px 15px;font-size:12px;color:var(--text2);line-height:1.7;max-height:90px;overflow-y:auto;margin-bottom:13px;}
+.agree{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text2);margin-bottom:11px;cursor:pointer;line-height:1.5;}
+.agree:last-child{margin-bottom:0;}
+.agree input{width:16px;height:16px;flex-shrink:0;margin-top:2px;accent-color:var(--blue);cursor:pointer;}
+
+/* SUBMIT */
+.submit-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:28px;text-align:center;}
+.submit-title{font-family:var(--font-head);font-size:18px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.submit-sub{font-size:13px;color:var(--text3);margin-bottom:20px;}
+.btn-submit{display:block;width:100%;max-width:380px;margin:0 auto;padding:15px;background:var(--orange);border:none;border-radius:var(--radius-xs);color:#fff;font-family:var(--font-head);font-size:15px;font-weight:700;cursor:pointer;transition:all 0.15s;}
+.btn-submit:hover{background:var(--orange2);}
+.btn-submit:active{transform:scale(0.99);}
+.badges{display:flex;justify-content:center;gap:18px;margin-top:14px;flex-wrap:wrap;}
+.badge{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text3);}
+.bdot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+
+/* SUCCESS */
+.success{max-width:500px;margin:56px auto;text-align:center;padding:0 20px;}
+.s-ico{width:68px;height:68px;border-radius:50%;background:var(--green-light);border:2px solid var(--green-border);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;}
+.s-ico svg{width:30px;height:30px;stroke:var(--green);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+.s-title{font-family:var(--font-head);font-size:28px;font-weight:800;color:var(--navy);margin-bottom:10px;}
+.s-sub{font-size:14px;color:var(--text2);line-height:1.65;margin-bottom:26px;}
+.s-plan{background:var(--orange-light);border:1.5px solid var(--orange-border);border-radius:var(--radius);padding:14px 18px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;}
+.s-plan-lbl{font-size:12px;color:var(--text3);}
+.s-plan-val{font-family:var(--font-head);font-size:16px;font-weight:700;color:var(--orange2);}
+.next-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;text-align:left;}
+.next-hd{background:var(--navy);padding:13px 18px;}
+.next-hd-txt{font-family:var(--font-head);font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:1px;text-transform:uppercase;}
+.ns{display:flex;gap:13px;padding:13px 18px;border-bottom:1px solid var(--border);align-items:flex-start;}
+.ns:last-child{border-bottom:none;}
+.ns-num{width:24px;height:24px;border-radius:50%;background:var(--orange);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--font-head);}
+.ns-txt{font-size:13px;color:var(--text2);line-height:1.55;padding-top:2px;}
+.ns-txt strong{color:var(--text);font-weight:500;}
+
+/* FOOTER */
+.footer{background:var(--navy);padding:16px 36px;text-align:center;font-size:12px;color:rgba(255,255,255,0.35);margin-top:48px;}
+.footer a{color:rgba(255,255,255,0.5);text-decoration:none;}
+
+.fade{animation:fi 0.35s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:900px){
+  .hero-inner{grid-template-columns:1fr;}
+  .roi-box{display:none;}
+}
+@media(max-width:680px){
+  nav{padding:0 16px;height:56px;}
+  .logo-text{font-size:16px;}
+  .logo-icon{width:30px;height:30px;}
+  .nav-link{display:none;}
+  .nav-cta{font-size:12px;padding:6px 12px;}
+  .hero{padding:28px 16px 56px;}
+  .hero h1{font-size:26px;}
+  .hero-sub{font-size:13px;}
+  .main{padding:24px 16px;}
+  .plans{grid-template-columns:1fr;gap:10px;}
+  .g2,.g3{grid-template-columns:1fr;gap:10px;}
+  .chk-grid{grid-template-columns:1fr 1fr;gap:6px;}
+  .fc{padding:18px 14px;}
+  .trust-grid{grid-template-columns:1fr 1fr;}
+  .footer{padding:14px 20px;}
+}
+@media(max-width:380px){
+  .hero h1{font-size:22px;}
+  .chk-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 2L4 6v6c0 5 3.5 9.3 8 10.5C16.5 21.3 20 17 20 12V6L12 2z" fill="rgba(255,255,255,0.15)" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M9 12l2 2 4-4" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M14.5 8.5c.3-.3.3-.8 0-1.1l-.9-.9c-.3-.3-.8-.3-1.1 0l-.8.8.9.9-2.6 2.6-.9-.9-.8.8c-.3.3-.3.8 0 1.1l.9.9c.3.3.8.3 1.1 0L14.5 8.5z" fill="#3a9e3f"/>
+      </svg>
+    </div>
+    <div class="logo-text">SelectService<span>Pros</span></div>
+  </div>
+  <div class="nav-right">
+    <a href="index.html" class="nav-link">Get a free quote</a>
+    <a href="index.html" class="nav-cta">Get Free Quotes →</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-tag">Contractor Partner Program</div>
+      <h1>Win more jobs with <em>qualified leads</em> delivered to you</h1>
+      <p class="hero-sub">Real homeowners. Real jobs. You only pay when you accept a lead. No long-term contracts — just a steady stream of customers who need work done now.</p>
+      <div class="trust-grid">
+        <div class="trust-card"><div class="trust-num">2,400+</div><div class="trust-lbl">Homeowners served</div></div>
+        <div class="trust-card"><div class="trust-num">47 min</div><div class="trust-lbl">Avg. response time</div></div>
+        <div class="trust-card"><div class="trust-num">8–12×</div><div class="trust-lbl">Avg. contractor ROI</div></div>
+        <div class="trust-card"><div class="trust-num">98%</div><div class="trust-lbl">Lead quality score</div></div>
+      </div>
+    </div>
+    <div class="roi-box">
+      <div class="roi-title" id="roi-title">Pro plan — estimated monthly earnings</div>
+      <div class="roi-row"><span class="roi-lbl">Membership fee</span><span class="roi-val" id="roi-fee">$249/mo</span></div>
+      <div class="roi-row"><span class="roi-lbl">Leads accepted (avg.)</span><span class="roi-val" id="roi-leads">20/mo</span></div>
+      <div class="roi-row"><span class="roi-lbl" id="roi-fee-lbl">Lead fees (20 × $25)</span><span class="roi-val" id="roi-total-fee">$500</span></div>
+      <div class="roi-row"><span class="roi-lbl">Total platform cost</span><span class="roi-val" id="roi-cost">$749/mo</span></div>
+      <div class="roi-row"><span class="roi-lbl">Avg. job value</span><span class="roi-val">$850</span></div>
+      <div class="roi-row"><span class="roi-lbl" id="roi-rev-lbl">Revenue (20 × $850)</span><span class="roi-val" id="roi-revenue">$17,000</span></div>
+      <div class="roi-row"><span class="roi-lbl">Your net profit</span><span class="roi-val hi" id="roi-profit">$16,251/mo</span></div>
+    </div>
+  </div>
+  <div class="hero-wave"></div>
+</div>
+
+<div class="main">
+  <div id="form-wrap">
+
+    <div class="sec-lbl">Step 1 — Choose your membership plan</div>
+    <div class="plans">
+
+      <div class="plan" id="pl-basic" onclick="selPlan('basic')">
+        <div class="plan-head">
+          <div class="plan-icon" style="background:var(--blue-light);">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--blue)" stroke-width="1.8"><rect x="3" y="3" width="16" height="16" rx="3"/><path d="M8 11h6M11 8v6"/></svg>
+          </div>
+          <div class="plan-name">Basic</div>
+          <div class="plan-tagline">For contractors testing the platform</div>
+          <div class="price-row"><div class="price-amt">$99</div><div class="price-mo">/month</div></div>
+          <div class="lead-badge">+ $35 per accepted lead</div>
+        </div>
+        <div class="plan-div"></div>
+        <div class="feats">
+          <div class="fg-lbl">Leads</div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div><strong>Up to 10 leads/month</strong></div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Standard ZIP matching</div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>30-min acceptance window</div></div>
+          <div class="fi no"><div class="fi-dot"></div><div>No priority routing</div></div>
+          <div class="fg-lbl">Notifications</div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Email lead alerts</div></div>
+          <div class="fi no"><div class="fi-dot"></div><div>No SMS alerts</div></div>
+          <div class="fg-lbl">Profile</div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Standard listing placement</div></div>
+          <div class="fi no"><div class="fi-dot"></div><div>No verified badge</div></div>
+          <div class="fg-lbl">Support</div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Self-serve dashboard</div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Email support</div></div>
+        </div>
+        <div class="plan-sel-bar">✓ Selected — Basic Plan</div>
+      </div>
+
+      <div class="plan sel" id="pl-pro" onclick="selPlan('pro')">
+        <div class="pop-pill">Most Popular</div>
+        <div class="plan-head">
+          <div class="plan-icon" style="background:var(--orange-light);">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--orange)" stroke-width="1.8"><path d="M11 2l2.5 5 5.5.8-4 3.9.9 5.5-4.9-2.5-4.9 2.5.9-5.5-4-3.9 5.5-.8z"/></svg>
+          </div>
+          <div class="plan-name">Pro</div>
+          <div class="plan-tagline">For contractors who want consistent leads</div>
+          <div class="price-row"><div class="price-amt">$249</div><div class="price-mo">/month</div></div>
+          <div class="lead-badge">+ $25 per accepted lead</div>
+        </div>
+        <div class="plan-div"></div>
+        <div class="feats">
+          <div class="fg-lbl">Leads</div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div><strong>Up to 30 leads/month</strong></div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div><strong>Priority ZIP matching</strong></div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>45-min acceptance window</div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Seen before Basic members</div></div>
+          <div class="fg-lbl">Notifications</div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Email lead alerts</div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div><strong>SMS lead alerts</strong></div></div>
+          <div class="fg-lbl">Profile</div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Priority listing placement</div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div><strong>Verified badge</strong></div></div>
+          <div class="fg-lbl">Support</div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Full analytics dashboard</div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Priority chat + email support</div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Monthly performance report</div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Review request automation</div></div>
+        </div>
+        <div class="plan-sel-bar">✓ Selected — Pro Plan</div>
+      </div>
+
+      <div class="plan" id="pl-elite" onclick="selPlan('elite')">
+        <div class="plan-head">
+          <div class="plan-icon" style="background:#fffbeb;">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#d97706" stroke-width="1.8"><path d="M3 18l2.5-7L2 7h6L11 2l3 5h6l-3.5 4 2.5 7-8-4.5z"/></svg>
+          </div>
+          <div class="plan-name">Elite</div>
+          <div class="plan-tagline">For contractors who want to dominate their market</div>
+          <div class="price-row"><div class="price-amt">$499</div><div class="price-mo">/month</div></div>
+          <div class="lead-badge">+ $15 per accepted lead</div>
+        </div>
+        <div class="plan-div"></div>
+        <div class="feats">
+          <div class="fg-lbl">Leads</div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div><strong>Unlimited leads/month</strong></div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div><strong>First pick on every lead</strong></div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>60-min acceptance window</div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Exclusive leads in select ZIPs</div></div>
+          <div class="fg-lbl">Notifications</div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Email + SMS lead alerts</div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div><strong>Phone call on new lead</strong></div></div>
+          <div class="fg-lbl">Profile</div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div><strong>Featured — top of all results</strong></div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Verified + Elite badge</div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Homepage spotlight rotation</div></div>
+          <div class="fg-lbl">Support</div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div><strong>Dedicated account manager</strong></div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Full review management suite</div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div>Weekly performance reports</div></div>
+          <div class="fi yes"><div class="fi-dot"><svg class="fi-check" viewBox="0 0 7 7" fill="none" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round"><path d="M1 3.5l2 2 3-3"/></svg></div><div><strong>First 30 days free</strong></div></div>
+        </div>
+        <div class="plan-sel-bar">✓ Selected — Elite Plan</div>
+      </div>
+
+    </div>
+
+    <!-- BUSINESS INFO -->
+    <div class="fc">
+      <div class="fc-title">Business information</div>
+      <div class="fc-sub">Tell us about your company so we can set up your profile</div>
+      <div class="g2">
+        <div class="field"><label class="lbl">Business name <span class="req">*</span></label><input type="text" id="biz-name" placeholder="Houston HVAC Pros LLC"/></div>
+        <div class="field"><label class="lbl">Owner / contact name <span class="req">*</span></label><input type="text" id="owner-name" placeholder="John Smith"/></div>
+      </div>
+      <div class="g2">
+        <div class="field"><label class="lbl">Phone number <span class="req">*</span></label><input type="tel" id="biz-phone" placeholder="(713) 555-0100"/></div>
+        <div class="field"><label class="lbl">Email address <span class="req">*</span></label><input type="email" id="biz-email" placeholder="john@yourcompany.com"/></div>
+      </div>
+      <div class="g2">
+        <div class="field"><label class="lbl">Street address <span class="req">*</span></label><input type="text" id="biz-addr" placeholder="1234 Main St"/></div>
+        <div class="field"><label class="lbl">City</label><input type="text" id="biz-city" value="Houston"/></div>
+      </div>
+      <div class="g3">
+        <div class="field"><label class="lbl">State</label><input type="text" id="biz-state" value="TX" maxlength="2"/></div>
+        <div class="field"><label class="lbl">ZIP code <span class="req">*</span></label><input type="text" id="biz-zip" placeholder="77002" maxlength="5"/></div>
+        <div class="field"><label class="lbl">Years in business</label>
+          <select id="biz-years"><option value="">Select</option><option>Less than 1 year</option><option>1–3 years</option><option>3–5 years</option><option>5–10 years</option><option>10+ years</option></select>
+        </div>
+      </div>
+      <div class="g1"><div class="field"><label class="lbl">Website (optional)</label><input type="url" id="biz-web" placeholder="https://yourwebsite.com"/></div></div>
+    </div>
+
+    <!-- SERVICES -->
+    <div class="fc">
+      <div class="fc-title">Services &amp; coverage area</div>
+      <div class="fc-sub">Select the services you offer and areas you cover</div>
+      <label class="lbl" style="display:block;margin-bottom:9px;">Services offered <span class="req">*</span></label>
+      <div class="chk-grid" id="svc-grid">
+        <div class="chk" onclick="togChk(this)" data-v="AC Repair"><div class="chk-box"><svg class="chk-tick" viewBox="0 0 9 9"><path d="M1.5 4.5l2 2 4-4"/></svg></div>AC repair</div>
+        <div class="chk" onclick="togChk(this)" data-v="AC Installation"><div class="chk-box"><svg class="chk-tick" viewBox="0 0 9 9"><path d="M1.5 4.5l2 2 4-4"/></svg></div>AC installation</div>
+        <div class="chk" onclick="togChk(this)" data-v="Heating Repair"><div class="chk-box"><svg class="chk-tick" viewBox="0 0 9 9"><path d="M1.5 4.5l2 2 4-4"/></svg></div>Heating repair</div>
+        <div class="chk" onclick="togChk(this)" data-v="Heating Installation"><div class="chk-box"><svg class="chk-tick" viewBox="0 0 9 9"><path d="M1.5 4.5l2 2 4-4"/></svg></div>Heating install</div>
+        <div class="chk" onclick="togChk(this)" data-v="Maintenance"><div class="chk-box"><svg class="chk-tick" viewBox="0 0 9 9"><path d="M1.5 4.5l2 2 4-4"/></svg></div>Maintenance / tune-up</div>
+        <div class="chk" onclick="togChk(this)" data-v="Ductwork"><div class="chk-box"><svg class="chk-tick" viewBox="0 0 9 9"><path d="M1.5 4.5l2 2 4-4"/></svg></div>Ductwork</div>
+        <div class="chk" onclick="togChk(this)" data-v="Mini-Split"><div class="chk-box"><svg class="chk-tick" viewBox="0 0 9 9"><path d="M1.5 4.5l2 2 4-4"/></svg></div>Mini-split systems</div>
+        <div class="chk" onclick="togChk(this)" data-v="Commercial"><div class="chk-box"><svg class="chk-tick" viewBox="0 0 9 9"><path d="M1.5 4.5l2 2 4-4"/></svg></div>Commercial HVAC</div>
+        <div class="chk" onclick="togChk(this)" data-v="Emergency"><div class="chk-box"><svg class="chk-tick" viewBox="0 0 9 9"><path d="M1.5 4.5l2 2 4-4"/></svg></div>Emergency / 24hr</div>
+      </div>
+      <div class="g2">
+        <div class="field">
+          <label class="lbl">Service ZIP codes <span class="req">*</span></label>
+          <input type="text" id="svc-zips" placeholder="77002, 77004, 77006, 77019"/>
+          <span style="font-size:11px;color:var(--text3);margin-top:3px;">Separate with commas</span>
+        </div>
+        <div class="field"><label class="lbl">Max travel distance</label>
+          <select id="travel"><option>Within 10 miles</option><option selected>Within 25 miles</option><option>Within 50 miles</option><option>Anywhere in Houston metro</option></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- CREDENTIALS -->
+    <div class="fc">
+      <div class="fc-title">License &amp; insurance</div>
+      <div class="fc-sub">All contractors must be licensed and insured to join the SelectServicePros network</div>
+      <div class="g2">
+        <div class="field"><label class="lbl">Texas HVAC license # <span class="req">*</span></label><input type="text" id="lic-num" placeholder="TACLB12345E"/></div>
+        <div class="field"><label class="lbl">License expiration <span class="req">*</span></label><input type="date" id="lic-exp"/></div>
+      </div>
+      <div class="g2">
+        <div class="field"><label class="lbl">Insurance provider</label><input type="text" id="ins-prov" placeholder="State Farm, Nationwide…"/></div>
+        <div class="field"><label class="lbl">Policy number</label><input type="text" id="ins-pol" placeholder="Policy #"/></div>
+      </div>
+      <div class="g2" style="margin-bottom:13px;">
+        <div class="field">
+          <label class="lbl">Upload license</label>
+          <div class="upload" id="ua-lic" onclick="document.getElementById('f-lic').click()">
+            <div class="upload-ico"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round"><path d="M8 11V3M5 6l3-3 3 3M2 14h12"/></svg></div>
+            <div class="upload-txt">Click to upload license</div>
+            <div class="upload-sub">PDF, JPG or PNG · max 5MB</div>
+            <div class="upload-ok" id="f-lic-ok"></div>
+          </div>
+          <input type="file" id="f-lic" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="showFile('f-lic','f-lic-ok','ua-lic')"/>
+        </div>
+        <div class="field">
+          <label class="lbl">Upload insurance certificate</label>
+          <div class="upload" id="ua-ins" onclick="document.getElementById('f-ins').click()">
+            <div class="upload-ico"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--text3)" stroke-width="1.5" stroke-linecap="round"><path d="M8 11V3M5 6l3-3 3 3M2 14h12"/></svg></div>
+            <div class="upload-txt">Click to upload certificate</div>
+            <div class="upload-sub">PDF, JPG or PNG · max 5MB</div>
+            <div class="upload-ok" id="f-ins-ok"></div>
+          </div>
+          <input type="file" id="f-ins" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="showFile('f-ins','f-ins-ok','ua-ins')"/>
+        </div>
+      </div>
+      <div class="g1"><div class="field"><label class="lbl">Brief business description</label><textarea id="biz-desc" placeholder="Tell homeowners about your experience, specialties, and what makes you stand out…"></textarea></div></div>
+    </div>
+
+    <!-- AGREEMENT -->
+    <div class="fc">
+      <div class="fc-title">Partner agreement</div>
+      <div class="fc-sub">Please read and agree to the terms below</div>
+      <div class="terms-scroll">By joining SelectServicePros as a contractor partner you agree to: (1) Maintain valid Texas HVAC licensing and liability insurance throughout your membership. (2) Lead fees are non-refundable once a lead is accepted. (3) You will contact accepted leads within 2 hours of acceptance. (4) SelectServicePros reserves the right to suspend accounts with sustained ratings below 3.5 stars. (5) Monthly membership fees are billed automatically via Stripe and may be cancelled with 30 days written notice. (6) You will not solicit customers to circumvent the SelectServicePros platform within 12 months. (7) All information provided must be accurate, current, and verifiable. (8) SelectServicePros is a lead generation service and does not guarantee job completion or dispute resolution between contractors and homeowners.</div>
+      <label class="agree"><input type="checkbox" id="chk-terms"/> I have read and agree to the SelectServicePros Contractor Partner Agreement</label>
+      <label class="agree"><input type="checkbox" id="chk-bg"/> I consent to verification of my license, insurance, and background information</label>
+    </div>
+
+    <!-- SUBMIT -->
+    <div class="submit-card">
+      <div class="submit-title">Ready to start getting leads?</div>
+      <div class="submit-sub">Submit your application — we'll have you reviewed within 1 business day</div>
+      <button class="btn-submit" onclick="doSubmit()">Submit My Application →</button>
+      <div class="badges">
+        <div class="badge"><div class="bdot"></div>No charge until approved</div>
+        <div class="badge"><div class="bdot"></div>Cancel anytime</div>
+        <div class="badge"><div class="bdot"></div>Verified by our team</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SUCCESS -->
+  <div id="success-wrap" style="display:none">
+    <div class="success fade">
+      <div class="s-ico"><svg viewBox="0 0 32 32"><path d="M6 16l7 7L26 9"/></svg></div>
+      <div class="s-title">Application received!</div>
+      <p class="s-sub">Welcome to SelectServicePros. Our team will review your credentials and follow up within 1 business day. Once approved you'll receive a secure link to activate your membership.</p>
+      <div class="s-plan">
+        <div><div class="s-plan-lbl">Selected plan</div><div class="s-plan-val" id="s-plan-display">Pro — $249/mo</div></div>
+        <div style="font-size:12px;color:var(--text3)">Billed after approval</div>
+      </div>
+      <div class="next-card">
+        <div class="next-hd"><div class="next-hd-txt">What happens next</div></div>
+        <div class="ns"><div class="ns-num">1</div><div class="ns-txt">We verify your <strong>license and insurance</strong> — usually within a few hours</div></div>
+        <div class="ns"><div class="ns-num">2</div><div class="ns-txt">You receive a <strong>secure Stripe payment link</strong> to activate your membership</div></div>
+        <div class="ns"><div class="ns-num">3</div><div class="ns-txt">Your <strong>profile goes live</strong> on SelectServicePros and leads start flowing</div></div>
+        <div class="ns"><div class="ns-num">4</div><div class="ns-txt">First lead arrives — <strong>reply YES to accept</strong>, NO to pass. Fee is auto-charged.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  &copy; 2025 SelectServicePros.com · <a href="#">Terms</a> · <a href="#">Privacy</a> · <a href="index.html">Looking for a contractor? Get free quotes →</a>
+</div>
+
+<script>
+const GHL="https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c";
+let plan="pro";
+const planLabels={basic:"Basic — $99/mo",pro:"Pro — $249/mo",elite:"Elite — $499/mo"};
+const roiData={
+  basic:{name:"Basic",fee:99,leadFee:35,avgLeads:8,jobValue:850},
+  pro:{name:"Pro",fee:249,leadFee:25,avgLeads:20,jobValue:850},
+  elite:{name:"Elite",fee:499,leadFee:15,avgLeads:35,jobValue:850}
+};
+
+function updateROI(p){
+  const d=roiData[p];
+  const tlf=d.leadFee*d.avgLeads;
+  const tc=d.fee+tlf;
+  const rev=d.avgLeads*d.jobValue;
+  const profit=rev-tc;
+  document.getElementById("roi-title").textContent=d.name+" plan — estimated monthly earnings";
+  document.getElementById("roi-fee").textContent="$"+d.fee+"/mo";
+  document.getElementById("roi-leads").textContent=d.avgLeads+"/mo";
+  document.getElementById("roi-fee-lbl").textContent="Lead fees ("+d.avgLeads+" × $"+d.leadFee+")";
+  document.getElementById("roi-total-fee").textContent="$"+tlf.toLocaleString();
+  document.getElementById("roi-cost").textContent="$"+tc.toLocaleString()+"/mo";
+  document.getElementById("roi-rev-lbl").textContent="Revenue ("+d.avgLeads+" × $"+d.jobValue+")";
+  document.getElementById("roi-revenue").textContent="$"+rev.toLocaleString();
+  document.getElementById("roi-profit").textContent="$"+profit.toLocaleString()+"/mo";
+}
+
+function selPlan(p){
+  plan=p;
+  document.querySelectorAll(".plan").forEach(el=>el.classList.remove("sel"));
+  document.getElementById("pl-"+p).classList.add("sel");
+  updateROI(p);
+}
+function togChk(el){el.classList.toggle("on");}
+function showFile(inp,ok,wrap){
+  const f=document.getElementById(inp).files[0];
+  if(f){document.getElementById(ok).textContent="✓ "+f.name;document.getElementById(wrap).classList.add("done");}
+}
+function getServices(){
+  return Array.from(document.querySelectorAll("#svc-grid .chk.on")).map(e=>e.dataset.v).join(", ");
+}
+function doSubmit(){
+  const bizName=document.getElementById("biz-name").value.trim();
+  const ownerName=document.getElementById("owner-name").value.trim();
+  const phone=document.getElementById("biz-phone").value.trim();
+  const email=document.getElementById("biz-email").value.trim();
+  const zip=document.getElementById("biz-zip").value.trim();
+  const lic=document.getElementById("lic-num").value.trim();
+  const terms=document.getElementById("chk-terms").checked;
+  const bg=document.getElementById("chk-bg").checked;
+  if(!bizName||!ownerName||!phone||!email||!zip){alert("Please fill in all required fields marked with *");return;}
+  if(!lic){alert("Please enter your Texas HVAC license number.");return;}
+  if(!terms||!bg){alert("Please agree to both checkboxes in the agreement section.");return;}
+  const fmt=phone.replace(/\D/g,"");
+  const fmtPhone=fmt.length===10?"+1"+fmt:"+"+fmt;
+  const payload={
+    name:ownerName,phone:fmtPhone,email:email,zip:zip,
+    business_name:bizName,membership_plan:plan,
+    services:getServices(),
+    service_zips:document.getElementById("svc-zips").value.trim(),
+    travel_distance:document.getElementById("travel").value,
+    license_number:lic,
+    license_expiry:document.getElementById("lic-exp").value,
+    insurance_provider:document.getElementById("ins-prov").value.trim(),
+    years_in_business:document.getElementById("biz-years").value,
+    address:document.getElementById("biz-addr").value.trim(),
+    city:document.getElementById("biz-city").value.trim(),
+    state:document.getElementById("biz-state").value.trim(),
+    website:document.getElementById("biz-web").value.trim(),
+    description:document.getElementById("biz-desc").value.trim(),
+    source:"SelectServicePros.com — Contractor Signup",
+    type:"contractor_application",
+    timestamp:new Date().toISOString()
+  };
+  fetch(GHL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})
+    .then(()=>console.log("GHL fired")).catch(e=>console.error(e));
+  document.getElementById("s-plan-display").textContent=planLabels[plan];
+  document.getElementById("form-wrap").style.display="none";
+  document.getElementById("success-wrap").style.display="block";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+</script>
+</body>
+</html>
