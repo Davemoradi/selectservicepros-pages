@@ -8,7 +8,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --navy:#0c2340;--navy2:#0f2d50;
+  --navy:#0c2340;--navy2:#0f2d50;--navy3:#1a3d66;
   --blue:#1a6eb5;--blue-light:#e8f2fb;--blue-border:#93c4e8;
   --green:#3a9e3f;--green-light:#edf7ee;--green-border:#86d98a;
   --orange:#f05528;--orange2:#d44420;--orange-light:#fff3ef;--orange-border:#fcc8b8;
@@ -42,10 +42,12 @@ h1 em{color:var(--orange);font-style:normal;}
 .stat-lbl{font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;}
 .form-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:28px;box-shadow:0 4px 24px rgba(0,0,0,0.12);}
 .form-card-title{font-family:var(--font-head);font-size:17px;font-weight:700;color:var(--navy);margin-bottom:4px;}
-.form-card-sub{font-size:12px;color:var(--text3);margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.form-card-sub{font-size:12px;color:var(--text3);margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+
+/* AI badge */
 .ai-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;color:var(--blue);background:var(--blue-light);border:1px solid var(--blue-border);padding:3px 9px;border-radius:20px;margin-bottom:14px;font-family:var(--font-head);}
-.ai-pulse{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:blink 1.5s infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:pulse 1.5s infinite;}
+
 .prog-wrap{margin-bottom:18px;}
 .prog-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px;font-family:var(--font-head);}
 .prog-bar{height:4px;background:var(--bg);border-radius:2px;overflow:hidden;}
@@ -91,18 +93,31 @@ h1 em{color:var(--orange);font-style:normal;}
 @keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .bottom-bar{background:var(--navy);padding:16px 36px;text-align:center;font-size:12px;color:rgba(255,255,255,0.35);margin-top:auto;}
 .bottom-bar a{color:rgba(255,255,255,0.5);text-decoration:none;}
-@media(max-width:820px){.hero-inner{grid-template-columns:1fr;}.hero{padding:32px 20px 56px;}h1{font-size:28px;}nav{padding:0 20px;}.nav-badge{display:none;}}
-@media(max-width:480px){h1{font-size:24px;}.form-card{padding:20px 16px;}.opts-grid{grid-template-columns:1fr;}}
+@media(max-width:820px){
+  .hero-inner{grid-template-columns:1fr;}
+  .hero{padding:32px 20px 56px;}
+  h1{font-size:28px;}
+  nav{padding:0 20px;}
+  .nav-badge{display:none;}
+}
+@media(max-width:480px){
+  h1{font-size:24px;}
+  .form-card{padding:20px 16px;}
+  .opts-grid{grid-template-columns:1fr;}
+}
 </style>
 </head>
 <body>
 <nav>
   <div class="logo">
-    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5 3.5 9.3 8 10.5C16.5 21.3 20 17 20 12V6L12 2z" fill="rgba(255,255,255,0.15)" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5 3.5 9.3 8 10.5C16.5 21.3 20 17 20 12V6L12 2z" fill="rgba(255,255,255,0.15)" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
     <div class="logo-text">SelectService<span>Pros</span></div>
   </div>
   <div class="nav-badge">Houston, TX</div>
 </nav>
+
 <div class="hero">
   <div class="hero-inner">
     <div>
@@ -124,7 +139,7 @@ h1 em{color:var(--orange);font-style:normal;}
     <div class="form-card">
       <div class="form-card-title">Get Free Quotes</div>
       <div class="form-card-sub">Takes about 90 seconds · No spam, ever</div>
-      <div class="ai-badge"><div class="ai-pulse"></div>AI-Powered Intake</div>
+      <div class="ai-badge"><div class="ai-dot"></div>AI-Powered Intake</div>
       <div class="prog-wrap">
         <div class="prog-meta"><span id="step-lbl">Starting…</span><span id="step-pct">0%</span></div>
         <div class="prog-bar"><div class="prog-fill" id="prog" style="width:0%"></div></div>
@@ -135,112 +150,271 @@ h1 em{color:var(--orange);font-style:normal;}
   </div>
   <div class="hero-wave"></div>
 </div>
+
 <div class="bottom-bar">
   &copy; 2025 SelectServicePros.com · <a href="#">Terms</a> · <a href="#">Privacy</a> · <a href="contractor-signup.html">Are you a contractor? Join our network →</a>
 </div>
-<script>
-const GHL="https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c";
-const MAX_QUESTIONS=5;
-let answers=[];
-let questionCount=0;
 
-function setProg(pct,lbl){
-  document.getElementById("prog").style.width=pct+"%";
-  document.getElementById("step-pct").textContent=pct+"%";
-  document.getElementById("step-lbl").textContent=lbl;
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────
+const GHL = "https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c";
+const MAX_QUESTIONS = 5;
+
+// ── STATE ───────────────────────────────────────────────────────────
+let answers = [];       // [{question, answer}, ...]
+let questionCount = 0;
+let isComplete = false;
+
+// ── PROGRESS ────────────────────────────────────────────────────────
+function setProg(pct, lbl) {
+  document.getElementById("prog").style.width = pct + "%";
+  document.getElementById("step-pct").textContent = pct + "%";
+  document.getElementById("step-lbl").textContent = lbl;
 }
-function addHist(q,a){
-  const w=document.getElementById("hist");
-  const d=document.createElement("div");
-  d.className="h-item fade";
-  d.innerHTML='<span class="h-q">Q</span><span class="h-a">'+a+'</span>';
+
+// ── HISTORY ─────────────────────────────────────────────────────────
+function addHist(q, a) {
+  const w = document.getElementById("hist");
+  const d = document.createElement("div");
+  d.className = "h-item fade";
+  d.innerHTML = `<span class="h-q">Q</span><span class="h-a">${a}</span>`;
   w.appendChild(d);
 }
-function showThinking(msg){
-  document.getElementById("qa").innerHTML='<div class="thinking fade"><div class="dots"><span></span><span></span><span></span></div><span>'+(msg||"AI is thinking…")+'</span></div>';
+
+// ── THINKING INDICATOR ──────────────────────────────────────────────
+function showThinking(msg = "AI is analyzing your response…") {
+  document.getElementById("qa").innerHTML = `
+    <div class="thinking fade">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <span>${msg}</span>
+    </div>`;
 }
-function renderQuestion(data){
+
+// ── RENDER A QUESTION FROM AI RESPONSE ──────────────────────────────
+function renderQuestion(data) {
+  // data = { question, type: "options"|"text", options?: [], complete?: bool }
   questionCount++;
-  const pct=Math.round((questionCount/(MAX_QUESTIONS+1))*100);
-  setProg(pct,"Question "+questionCount+" of "+MAX_QUESTIONS);
-  let sel=null;
-  const qa=document.getElementById("qa");
-  const colClass=(data.options&&data.options.length<=3)?"opts-grid col1":"opts-grid";
-  let html='<div class="fade"><span class="q-label">Question '+questionCount+'</span><div class="q-text">'+data.question+'</div>';
-  if(data.type==="options"&&data.options&&data.options.length>0){
-    html+='<div class="'+colClass+'" id="og">';
-    data.options.forEach(o=>{html+='<button class="opt" data-v="'+o+'">'+o+'</button>';});
-    html+='</div><button class="btn" id="bn" disabled>Continue →</button>';
+  const pct = Math.round((questionCount / (MAX_QUESTIONS + 1)) * 100);
+  setProg(pct, `Question ${questionCount} of ${MAX_QUESTIONS}`);
+
+  let sel = null;
+  const qa = document.getElementById("qa");
+  const colClass = (data.options && data.options.length <= 3) ? "opts-grid col1" : "opts-grid";
+
+  let html = `<div class="fade"><span class="q-label">Question ${questionCount}</span><div class="q-text">${data.question}</div>`;
+
+  if (data.type === "options" && data.options && data.options.length > 0) {
+    html += `<div class="${colClass}" id="og">`;
+    data.options.forEach(o => { html += `<button class="opt" data-v="${o}">${o}</button>`; });
+    html += `</div><button class="btn" id="bn" disabled>Continue →</button>`;
   } else {
-    html+='<input class="q-input" id="ti" type="text" placeholder="Type your answer…"/><button class="btn" id="bn">Continue →</button>';
+    html += `<input class="q-input" id="ti" type="text" placeholder="Type your answer…"/>
+             <button class="btn" id="bn">Continue →</button>`;
   }
-  html+='</div>';
-  qa.innerHTML=html;
-  if(data.type==="options"){
-    document.querySelectorAll(".opt").forEach(b=>{
-      b.addEventListener("click",()=>{
-        document.querySelectorAll(".opt").forEach(x=>x.classList.remove("sel"));
-        b.classList.add("sel");sel=b.dataset.v;
-        document.getElementById("bn").disabled=false;
+  html += `</div>`;
+  qa.innerHTML = html;
+
+  if (data.type === "options") {
+    document.querySelectorAll(".opt").forEach(b => {
+      b.addEventListener("click", () => {
+        document.querySelectorAll(".opt").forEach(x => x.classList.remove("sel"));
+        b.classList.add("sel");
+        sel = b.dataset.v;
+        document.getElementById("bn").disabled = false;
       });
     });
-    document.getElementById("bn").addEventListener("click",()=>{if(sel)submitAnswer(data.question,sel);});
+    document.getElementById("bn").addEventListener("click", () => { if (sel) submitAnswer(data.question, sel); });
   } else {
-    const ti=document.getElementById("ti");
+    const ti = document.getElementById("ti");
     ti.focus();
-    ti.addEventListener("keydown",e=>{if(e.key==="Enter"){const v=ti.value.trim();if(v)submitAnswer(data.question,v);}});
-    document.getElementById("bn").addEventListener("click",()=>{const v=document.getElementById("ti").value.trim();if(v)submitAnswer(data.question,v);});
+    ti.addEventListener("keydown", e => {
+      if (e.key === "Enter") { const v = ti.value.trim(); if (v) submitAnswer(data.question, v); }
+    });
+    document.getElementById("bn").addEventListener("click", () => {
+      const v = document.getElementById("ti").value.trim();
+      if (v) submitAnswer(data.question, v);
+    });
   }
 }
-async function submitAnswer(question,answer){
-  answers.push({question,answer});
-  addHist(question,answer);
-  if(questionCount>=MAX_QUESTIONS){showThinking("Finding your best matches…");setTimeout(renderContact,900);return;}
-  showThinking("AI is generating the next question…");
-  try{
-    const resp=await fetch("/api/next-question",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({answers,questionCount,maxQuestions:MAX_QUESTIONS})});
-    const next=await resp.json();
-    setTimeout(()=>renderQuestion(next),300);
-  } catch(err){
-    console.error(err);
-    setTimeout(renderContact,400);
+
+// ── SUBMIT AN ANSWER → GET NEXT QUESTION FROM AI ────────────────────
+async function submitAnswer(question, answer) {
+  answers.push({ question, answer });
+  addHist(question, answer);
+
+  // If we've hit max questions, go to contact capture
+  if (questionCount >= MAX_QUESTIONS) {
+    showThinking("Finding your best matches…");
+    setTimeout(renderContact, 900);
+    return;
+  }
+
+  showThinking("AI is thinking of the next question…");
+
+  try {
+    const nextQ = await getNextQuestion();
+    if (!nextQ || nextQ.complete) {
+      setTimeout(renderContact, 400);
+    } else {
+      setTimeout(() => renderQuestion(nextQ), 300);
+    }
+  } catch (err) {
+    console.error("AI error:", err);
+    // Fallback to contact step
+    setTimeout(renderContact, 400);
   }
 }
-function startIntake(){
-  setProg(5,"Starting…");
-  renderQuestion({question:"What type of HVAC service do you need?",type:"options",options:["AC not cooling","No heat / heating issue","Strange noise or smell","Full system replacement","New installation","Maintenance / tune-up"]});
-}
-function renderContact(){
-  setProg(90,"Last step");
-  document.getElementById("step-lbl").textContent="Almost done";
-  document.getElementById("qa").innerHTML='<div class="fade"><div class="q-text">Where should we send your quotes?</div><input class="q-input" id="n" type="text" placeholder="Your full name"/><input class="q-input" id="p" type="tel" placeholder="Phone number"/><input class="q-input" id="e" type="email" placeholder="Email address"/><input class="q-input" id="z" type="text" placeholder="ZIP code" maxlength="5"/><button class="btn" onclick="submitLead()">Get My Free Quotes →</button></div>';
-  setTimeout(()=>{const x=document.getElementById("n");if(x)x.focus();},50);
-}
-function submitLead(){
-  const name=document.getElementById("n").value.trim();
-  const phone=document.getElementById("p").value.trim();
-  const email=document.getElementById("e").value.trim();
-  const zip=document.getElementById("z").value.trim();
-  if(!name||!phone||!email){alert("Please fill in your name, phone, and email.");return;}
-  setProg(100,"Complete ✓");
-  let score=50;
-  answers.forEach(a=>{
-    const v=(a.answer||"").toLowerCase();
-    if(v.includes("emergency")||v.includes("now"))score+=20;
-    else if(v.includes("24")||v.includes("today"))score+=12;
-    if(v.includes("5,000")||v.includes("replace"))score+=15;
-    else if(v.includes("2,000"))score+=8;
+
+// ── CALL CLAUDE API FOR NEXT QUESTION ───────────────────────────────
+async function getNextQuestion() {
+  const conversationSoFar = answers.map(a =>
+    `Q: ${a.question}\nA: ${a.answer}`
+  ).join("\n\n");
+
+  const remaining = MAX_QUESTIONS - questionCount;
+
+  const prompt = `You are an AI intake agent for SelectServicePros, a Houston-based HVAC lead generation platform.
+
+Your job is to ask smart, adaptive follow-up questions to qualify a homeowner's HVAC service need.
+
+Conversation so far:
+${conversationSoFar}
+
+Questions remaining: ${remaining}
+
+Based on their answers so far, generate the SINGLE most useful next question to better qualify this lead.
+
+Rules:
+- Ask only ONE question
+- Make it relevant to what they said — adapt to their specific situation
+- Keep it short and conversational
+- Provide 2-5 multiple choice options when possible (better UX)
+- If this is the last question (remaining=1), make it about budget or timeline
+- Never ask for contact info — that comes after
+
+Respond with ONLY valid JSON in this exact format (no markdown, no explanation):
+{"question":"...", "type":"options", "options":["...","...","...","..."]}
+
+OR for open-ended:
+{"question":"...", "type":"text"}`;
+
+  const response = await fetch("/api/next-question", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      answers,
+      questionCount,
+      maxQuestions: MAX_QUESTIONS
+    })
   });
-  score=Math.min(score,100);
-  const answersObj={};
-  answers.forEach((a,i)=>{answersObj["q"+(i+1)]=a.answer;});
-  const service=answers[0]?.answer||"HVAC";
-  const urgency=answers.find(a=>a.answer.toLowerCase().match(/emergency|urgent|now|24|today/))?.answer||answers[1]?.answer||"";
-  fetch(GHL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,phone,email,zip,service,urgency,score,source:"SelectServicePros.com",category:"HVAC",lead_id:"SSP-"+Date.now(),answers:JSON.stringify(answersObj),full_conversation:answers.map(a=>"Q: "+a.question+" | A: "+a.answer).join(" || ")})}).catch(e=>console.error(e));
-  const pros=[{i:"AC",n:"AirCo Houston",m:"Licensed · 12 yrs · 4.9★",r:"4.9"},{i:"TC",n:"TempCo Services",m:"Licensed · 8 yrs · 4.8★",r:"4.8"},{i:"HX",n:"Houston HVAC Xperts",m:"Licensed · 15 yrs · 4.7★",r:"4.7"}];
-  document.getElementById("hist").innerHTML="";
-  document.getElementById("qa").innerHTML='<div class="success-wrap fade"><div class="s-icon">✓</div><div class="s-title">You're all set, '+name.split(" ")[0]+'!</div><p class="s-msg">Matched with <strong style="color:var(--navy)">3 top-rated Houston HVAC pros</strong> based on your answers.</p><div class="summary-box"><div class="s-row"><span>Service</span><span>'+service+'</span></div><div class="s-row"><span>Urgency</span><span>'+(urgency||"—")+'</span></div><div class="s-row"><span>Lead score</span><span style="color:var(--orange);font-weight:600">'+score+'/100</span></div></div><div class="pros-list">'+pros.map(c=>'<div class="pro-card"><div class="p-av">'+c.i+'</div><div><div class="p-name">'+c.n+'</div><div class="p-meta">'+c.m+'</div></div><div class="p-star">'+c.r+' ★</div></div>').join("")+'</div><p style="font-size:11px;color:var(--text3);line-height:1.6">Quotes sent to <strong style="color:var(--text2)">'+email+'</strong> and via text to '+phone+'. Average first response: <strong style="color:var(--text2)">47 minutes</strong>.</p></div>';
+
+  return await response.json();
 }
+
+// ── FIRST QUESTION (hardcoded for speed/reliability) ─────────────────
+function startIntake() {
+  setProg(5, "Starting…");
+  renderQuestion({
+    question: "What type of HVAC service do you need?",
+    type: "options",
+    options: ["AC not cooling", "No heat / heating issue", "Strange noise or smell", "Full system replacement", "New installation", "Maintenance / tune-up"]
+  });
+}
+
+// ── CONTACT CAPTURE ──────────────────────────────────────────────────
+function renderContact() {
+  setProg(90, "Last step");
+  document.getElementById("step-lbl").textContent = "Almost done";
+  document.getElementById("qa").innerHTML = `
+    <div class="fade">
+      <div class="q-text">Where should we send your quotes?</div>
+      <input class="q-input" id="n" type="text" placeholder="Your full name"/>
+      <input class="q-input" id="p" type="tel" placeholder="Phone number"/>
+      <input class="q-input" id="e" type="email" placeholder="Email address"/>
+      <input class="q-input" id="z" type="text" placeholder="ZIP code" maxlength="5"/>
+      <button class="btn" onclick="submitLead()">Get My Free Quotes →</button>
+    </div>`;
+  setTimeout(() => { const x = document.getElementById("n"); if (x) x.focus(); }, 50);
+}
+
+// ── SUBMIT LEAD TO GHL ───────────────────────────────────────────────
+function submitLead() {
+  const name = document.getElementById("n").value.trim();
+  const phone = document.getElementById("p").value.trim();
+  const email = document.getElementById("e").value.trim();
+  const zip = document.getElementById("z").value.trim();
+  if (!name || !phone || !email) { alert("Please fill in your name, phone, and email."); return; }
+
+  setProg(100, "Complete ✓");
+
+  // Score the lead
+  let score = 50;
+  answers.forEach(a => {
+    const v = (a.answer || "").toLowerCase();
+    if (v.includes("emergency") || v.includes("now") || v.includes("immediately")) score += 20;
+    else if (v.includes("24") || v.includes("today") || v.includes("urgent")) score += 12;
+    if (v.includes("5,000") || v.includes("replace") || v.includes("new install")) score += 15;
+    else if (v.includes("2,000") || v.includes("repair")) score += 8;
+  });
+  score = Math.min(score, 100);
+
+  // Build structured answers object for GHL
+  const answersObj = {};
+  answers.forEach((a, i) => { answersObj[`q${i+1}`] = a.answer; });
+  const firstAnswer = answers[0];
+  const service = firstAnswer?.answer || "HVAC";
+  const urgency = answers.find(a => a.answer.toLowerCase().match(/emergency|urgent|now|24|today/))?.answer || answers[1]?.answer || "";
+
+  const payload = {
+    name, phone, email, zip,
+    service,
+    urgency,
+    score,
+    source: "SelectServicePros.com",
+    category: "HVAC",
+    lead_id: "SSP-" + Date.now(),
+    answers: JSON.stringify(answersObj),
+    full_conversation: answers.map(a => `Q: ${a.question} | A: ${a.answer}`).join(" || ")
+  };
+
+  fetch(GHL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  }).catch(e => console.error(e));
+
+  // Show success
+  const pros = [
+    {i:"AC", n:"AirCo Houston", m:"Licensed · 12 yrs · 4.9★", r:"4.9"},
+    {i:"TC", n:"TempCo Services", m:"Licensed · 8 yrs · 4.8★", r:"4.8"},
+    {i:"HX", n:"Houston HVAC Xperts", m:"Licensed · 15 yrs · 4.7★", r:"4.7"}
+  ];
+
+  document.getElementById("hist").innerHTML = "";
+  document.getElementById("qa").innerHTML = `
+    <div class="success-wrap fade">
+      <div class="s-icon">✓</div>
+      <div class="s-title">You're all set, ${name.split(" ")[0]}!</div>
+      <p class="s-msg">Matched with <strong style="color:var(--navy)">3 top-rated Houston HVAC pros</strong> based on your answers.</p>
+      <div class="summary-box">
+        <div class="s-row"><span>Service</span><span>${service}</span></div>
+        <div class="s-row"><span>Urgency</span><span>${urgency || "—"}</span></div>
+        <div class="s-row"><span>Lead score</span><span style="color:var(--orange);font-weight:600">${score}/100</span></div>
+      </div>
+      <div class="pros-list">
+        ${pros.map(c => `
+          <div class="pro-card">
+            <div class="p-av">${c.i}</div>
+            <div><div class="p-name">${c.n}</div><div class="p-meta">${c.m}</div></div>
+            <div class="p-star">${c.r} ★</div>
+          </div>`).join("")}
+      </div>
+      <p style="font-size:11px;color:var(--text3);line-height:1.6">Quotes sent to <strong style="color:var(--text2)">${email}</strong> and via text to ${phone}. Average first response: <strong style="color:var(--text2)">47 minutes</strong>.</p>
+    </div>`;
+}
+
+// ── KICK OFF ─────────────────────────────────────────────────────────
 startIntake();
 </script>
 </body>
