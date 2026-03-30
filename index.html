@@ -221,8 +221,9 @@ a{text-decoration:none;color:inherit;}
 
 /* === RESPONSIVE === */
 @media(max-width:900px){
-  .intake-grid{grid-template-columns:1fr;gap:32px;}
-  .form-card{position:static;}
+  .intake-grid{grid-template-columns:1fr;gap:24px;}
+  .intake-left{order:2;}
+  .form-card{position:static;order:1;}
   .services-grid{grid-template-columns:repeat(2,1fr);}
   .how-grid{grid-template-columns:1fr;gap:24px;}
   .cta-box{flex-direction:column;text-align:center;padding:36px 24px;}
@@ -721,8 +722,15 @@ function selectCategory(cat){
   // Start intake with category-specific first question
   const q=firstQuestions[cat]||firstQuestions["HVAC"];
   startIntakeWithQuestion(q);
-  // Scroll to intake
-  setTimeout(()=>section.scrollIntoView({behavior:'smooth',block:'start'}),100);
+  // Scroll to form — on mobile scroll to the form card directly, on desktop scroll to the section
+  setTimeout(()=>{
+    if(window.innerWidth<=600){
+      const formCard=document.querySelector('.form-card');
+      if(formCard)formCard.scrollIntoView({behavior:'smooth',block:'start'});
+    }else{
+      section.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+  },100);
 }
 
 function handleSearch(){
