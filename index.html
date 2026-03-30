@@ -67,11 +67,20 @@ a{text-decoration:none;color:inherit;}
 .cat-item{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 20px;border-radius:var(--radius);cursor:pointer;transition:all .2s;min-width:100px;border:1px solid transparent;}
 .cat-item:hover{background:var(--orange-light);border-color:rgba(240,85,40,.15);}
 .cat-item.active{background:var(--orange-light);border-color:var(--orange);}
-.cat-icon{width:48px;height:48px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;}
-.cat-item:hover .cat-icon,.cat-item.active .cat-icon{background:rgba(240,85,40,.12);}
-.cat-icon svg{width:24px;height:24px;color:var(--text2);}
-.cat-item:hover .cat-icon svg,.cat-item.active .cat-icon svg{color:var(--orange);}
+.cat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;}
+.cat-icon svg{width:24px;height:24px;}
 .cat-label{font-size:13px;font-weight:600;color:var(--text2);text-align:center;line-height:1.3;}
+.cat-item[data-cat="HVAC"] .cat-icon{background:#e8f4fd;}.cat-item[data-cat="HVAC"] .cat-icon svg{color:#1a7fd4;}
+.cat-item[data-cat="Plumbing"] .cat-icon{background:#e6f9ed;}.cat-item[data-cat="Plumbing"] .cat-icon svg{color:#1a8a4a;}
+.cat-item[data-cat="Electrical"] .cat-icon{background:#fef6e0;}.cat-item[data-cat="Electrical"] .cat-icon svg{color:#c88a0a;}
+.cat-item[data-cat="Roofing"] .cat-icon{background:#fce8e8;}.cat-item[data-cat="Roofing"] .cat-icon svg{color:#c0392b;}
+.cat-item[data-cat="Handyman"] .cat-icon{background:#fff0e6;}.cat-item[data-cat="Handyman"] .cat-icon svg{color:#d4651a;}
+.cat-item[data-cat="Appliance Repair"] .cat-icon{background:#ece6fb;}.cat-item[data-cat="Appliance Repair"] .cat-icon svg{color:#6c3bbf;}
+.cat-item[data-cat="Construction"] .cat-icon{background:#e6f0f0;}.cat-item[data-cat="Construction"] .cat-icon svg{color:#1a7a7a;}
+.cat-item[data-cat="Painting"] .cat-icon{background:#fce8f1;}.cat-item[data-cat="Painting"] .cat-icon svg{color:#c0396b;}
+.cat-item[data-cat="Pool & Spa"] .cat-icon{background:#e6eefb;}.cat-item[data-cat="Pool & Spa"] .cat-icon svg{color:#2856a3;}
+.cat-item[data-cat="Windows & Doors"] .cat-icon{background:#eae8e4;}.cat-item[data-cat="Windows & Doors"] .cat-icon svg{color:#5a5550;}
+.cat-item:hover .cat-icon,.cat-item.active .cat-icon{filter:brightness(.95);}
 
 /* === INTAKE SECTION === */
 .intake-section{padding:56px 24px;max-width:var(--max-w);margin:0 auto;display:none;}
@@ -270,44 +279,44 @@ a{text-decoration:none;color:inherit;}
 <section class="categories">
   <div class="categories-inner">
     <div class="cat-grid" id="cat-grid">
-      <div class="cat-item" onclick="selectCategory('HVAC')">
-        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M9 15a3 3 0 1 0 6 0"/></svg></div>
+      <div class="cat-item" data-cat="HVAC" onclick="selectCategory('HVAC')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg></div>
         <span class="cat-label">HVAC</span>
       </div>
-      <div class="cat-item" onclick="selectCategory('Plumbing')">
-        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 4h12v6a6 6 0 0 1-12 0V4z"/><path d="M12 16v4"/><path d="M8 20h8"/></svg></div>
+      <div class="cat-item" data-cat="Plumbing" onclick="selectCategory('Plumbing')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v4"/><path d="M14 2v4"/><path d="M8 6h8a1 1 0 0 1 1 1v3a5 5 0 0 1-10 0V7a1 1 0 0 1 1-1z"/><path d="M12 15v3"/><path d="M8 18h8"/><path d="M8 18v3"/><path d="M16 18v3"/></svg></div>
         <span class="cat-label">Plumbing</span>
       </div>
-      <div class="cat-item" onclick="selectCategory('Electrical')">
+      <div class="cat-item" data-cat="Electrical" onclick="selectCategory('Electrical')">
         <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
         <span class="cat-label">Electrical</span>
       </div>
-      <div class="cat-item" onclick="selectCategory('Roofing')">
-        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+      <div class="cat-item" data-cat="Roofing" onclick="selectCategory('Roofing')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12L12 3l10 9"/><path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/><path d="M2 12h20"/><path d="M9 21v-6h6v6"/></svg></div>
         <span class="cat-label">Roofing</span>
       </div>
-      <div class="cat-item" onclick="selectCategory('Handyman')">
-        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+      <div class="cat-item" data-cat="Handyman" onclick="selectCategory('Handyman')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
         <span class="cat-label">Handyman</span>
       </div>
-      <div class="cat-item" onclick="selectCategory('Appliance Repair')">
-        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0"/></svg></div>
+      <div class="cat-item" data-cat="Appliance Repair" onclick="selectCategory('Appliance Repair')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="14" r="4"/><path d="M12 10v1"/><path d="M8 6h8"/><line x1="12" y1="14" x2="14" y2="12"/></svg></div>
         <span class="cat-label">Appliance Repair</span>
       </div>
-      <div class="cat-item" onclick="selectCategory('Construction')">
-        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></div>
+      <div class="cat-item" data-cat="Construction" onclick="selectCategory('Construction')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20"/><path d="M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/><path d="M9 11h1"/><path d="M14 11h1"/><path d="M3 20h1"/><path d="M20 20h1"/></svg></div>
         <span class="cat-label">Remodeling</span>
       </div>
-      <div class="cat-item" onclick="selectCategory('Painting')">
-        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 3H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/><path d="M10 13v6a2 2 0 0 0 4 0v-6"/></svg></div>
+      <div class="cat-item" data-cat="Painting" onclick="selectCategory('Painting')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/><path d="M12 11v4"/><path d="M10 15h4v5a2 2 0 0 1-4 0v-5z"/><circle cx="8" cy="6" r="1" fill="currentColor"/><circle cx="12" cy="6" r="1" fill="currentColor"/><circle cx="16" cy="6" r="1" fill="currentColor"/></svg></div>
         <span class="cat-label">Painting</span>
       </div>
-      <div class="cat-item" onclick="selectCategory('Pool & Spa')">
-        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 20c2-1 4-1 6 0s4 1 6 0 4-1 6 0"/><path d="M2 16c2-1 4-1 6 0s4 1 6 0 4-1 6 0"/><path d="M8 4v8"/><path d="M16 4v8"/></svg></div>
+      <div class="cat-item" data-cat="Pool & Spa" onclick="selectCategory('Pool & Spa')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="M2 16c1.5-1 3-1.5 5 0s3.5 1 5 0 3.5-1 5 0 3.5 1 5 0"/><path d="M2 20c1.5-1 3-1.5 5 0s3.5 1 5 0 3.5-1 5 0 3.5 1 5 0"/><path d="M6 4v8"/><path d="M18 4v8"/><path d="M6 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2"/></svg></div>
         <span class="cat-label">Pool & Spa</span>
       </div>
-      <div class="cat-item" onclick="selectCategory('Windows & Doors')">
-        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18"/><path d="M3 12h18"/></svg></div>
+      <div class="cat-item" data-cat="Windows & Doors" onclick="selectCategory('Windows & Doors')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 12h18"/><path d="M12 3v9"/><circle cx="15" cy="16" r="0.5" fill="currentColor"/><path d="M3 21h18"/></svg></div>
         <span class="cat-label">Windows & Doors</span>
       </div>
     </div>
