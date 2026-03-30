@@ -54,6 +54,18 @@ a{text-decoration:none;color:inherit;}
 .search-field{flex:1;display:flex;align-items:center;gap:10px;padding:0 16px;}
 .search-field svg{flex-shrink:0;color:var(--text4);}
 .search-field select,.search-field input{border:none;outline:none;font-family:var(--font-body);font-size:15px;color:var(--text1);background:transparent;width:100%;padding:14px 0;-webkit-appearance:none;appearance:none;}
+.suggestions-dropdown{display:none;position:absolute;top:100%;left:-16px;right:-16px;background:var(--white);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);box-shadow:var(--shadow-md);z-index:50;max-height:320px;overflow-y:auto;}
+.suggestions-dropdown.visible{display:block;}
+.sug-group{padding:8px 0;}
+.sug-group-label{font-size:11px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;padding:4px 16px 6px;}
+.sug-item{padding:10px 16px;font-size:14px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .1s;}
+.sug-item:hover{background:var(--orange-light);}
+.sug-item .sug-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;}
+.sug-item .sug-text{flex:1;}
+.sug-item .sug-text strong{font-weight:600;color:var(--text1);}
+.sug-item .sug-text span{display:block;font-size:12px;color:var(--text4);margin-top:2px;}
+.sug-item-freeform{border-top:1px solid var(--border);background:var(--bg);}
+.sug-item-freeform:hover{background:var(--orange-light);}
 .search-field select{cursor:pointer;color:var(--text3);}
 .search-field select:valid{color:var(--text1);}
 .search-divider{width:1px;background:var(--border);margin:10px 0;}
@@ -237,7 +249,6 @@ a{text-decoration:none;color:inherit;}
       </span>
       <a href="#how-it-works" class="nav-link">How It Works</a>
       <a href="#categories" class="nav-link">Find Pros</a>
-      <a href="contractor-signup.html" class="nav-link">Log In</a>
       <a href="contractor-signup.html" class="nav-cta">Join as a Pro</a>
     </div>
   </div>
@@ -249,26 +260,18 @@ a{text-decoration:none;color:inherit;}
     <h1>Connecting you with the <em>people you can trust.</em></h1>
     <p class="hero-sub">Get free quotes from licensed, background-checked home service pros in Houston — fast, easy, and zero obligation.</p>
     <div class="search-bar">
-      <div class="search-field">
+      <div class="search-field" style="position:relative;flex:2;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <select id="hero-service" onchange="selectCategory(this.value)">
-          <option value="" disabled selected>What do you need help with?</option>
-          <option value="HVAC">HVAC / Air Conditioning</option>
-          <option value="Plumbing">Plumbing</option>
-          <option value="Electrical">Electrical</option>
-          <option value="Roofing">Roofing</option>
-          <option value="Handyman">Handyman</option>
-          <option value="Appliance Repair">Appliance Repair</option>
-          <option value="Construction">Construction & Remodeling</option>
-          <option value="Pool & Spa">Pool & Spa</option>
-          <option value="Windows & Doors">Windows & Doors</option>
-          <option value="Painting">Painting</option>
-        </select>
+        <input type="text" id="hero-service" placeholder="Describe your project or problem..." autocomplete="off" oninput="showSuggestions(this.value)" onfocus="showSuggestions(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();handleSearch();}"/>
+        <div id="suggestions" class="suggestions-dropdown"></div>
       </div>
       <div class="search-divider"></div>
       <div class="search-field">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         <input type="text" id="hero-zip" placeholder="ZIP code" maxlength="5"/>
+        <button type="button" id="geo-btn" onclick="detectLocation()" title="Use my location" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
+        </button>
       </div>
       <button class="search-btn" onclick="handleSearch()">Get Quotes</button>
     </div>
@@ -451,7 +454,6 @@ a{text-decoration:none;color:inherit;}
       <div class="footer-col">
         <h4>For Pros</h4>
         <a href="contractor-signup.html">Join the network</a>
-        <a href="contractor-signup.html">Pro login</a>
       </div>
       <div class="footer-col">
         <h4>Company</h4>
@@ -471,7 +473,140 @@ a{text-decoration:none;color:inherit;}
 // === CONFIG ===
 const GHL="https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c";
 const MAX_QUESTIONS=4;
-let answers=[],questionCount=0,questionHistory=[],selectedCategory="";
+let answers=[],questionCount=0,questionHistory=[],selectedCategory="",freeFormInput="";
+
+// === SEARCH INTELLIGENCE ===
+const serviceKeywords={
+  "HVAC":["hvac","ac","air conditioning","air conditioner","heating","furnace","heat pump","thermostat","duct","ductwork","ventilation","cooling","refrigerant","compressor","blower","central air","mini split","condenser","evaporator","freon","a/c","warm air","cold air","not cooling","not heating","temperature","humidity"],
+  "Plumbing":["plumbing","plumber","pipe","pipes","leak","leaking","leaky","drain","clogged","toilet","faucet","water heater","sewer","septic","garbage disposal","water pressure","running toilet","dripping","flooding","burst pipe","water line","sump pump","backflow","shower","bathtub","sink"],
+  "Electrical":["electrical","electrician","outlet","switch","wiring","wire","breaker","panel","circuit","lighting","light","ceiling fan","generator","surge protector","dimmer","gfci","rewire","power outage","short circuit","spark","buzzing","flickering","voltage"],
+  "Roofing":["roof","roofing","roofer","shingle","shingles","gutter","gutters","leak roof","storm damage","hail damage","flat roof","metal roof","tile roof","flashing","soffit","fascia","skylight","chimney","downspout"],
+  "Handyman":["handyman","handy man","small repair","fix","broken","shelf","shelves","mount","mounting","tv mount","drywall","patch","caulk","weatherstrip","door","squeaky","stuck","loose","assemble","assembly","furniture","odd jobs","honey do"],
+  "Appliance Repair":["appliance","refrigerator","fridge","washer","dryer","dishwasher","oven","stove","range","microwave","ice maker","freezer","washing machine","clothes dryer","garbage disposal","trash compactor"],
+  "Construction":["remodel","remodeling","renovation","renovate","kitchen remodel","bathroom remodel","addition","room addition","flooring","tile","hardwood","basement","deck","patio","build","construction","contractor","demolition","framing","drywall install"],
+  "Pool & Spa":["pool","swimming pool","spa","hot tub","jacuzzi","pool pump","pool filter","pool heater","pool cleaning","green pool","pool leak","pool light","pool tile","resurfacing","gunite","vinyl pool","above ground pool"],
+  "Windows & Doors":["window","windows","door","doors","glass","screen","screen door","storm door","patio door","sliding door","french door","window replacement","broken window","foggy window","draft","window seal","weatherization"],
+  "Painting":["paint","painting","painter","interior paint","exterior paint","cabinet paint","stain","staining","deck stain","fence stain","wallpaper","primer","touch up","repaint","color change","accent wall","trim paint"]
+};
+
+const popularSearches=[
+  {text:"AC not cooling",category:"HVAC",icon:"❄"},
+  {text:"Leaky faucet",category:"Plumbing",icon:"🔧"},
+  {text:"Outlet not working",category:"Electrical",icon:"⚡"},
+  {text:"Roof leak",category:"Roofing",icon:"🏠"},
+  {text:"Furniture assembly",category:"Handyman",icon:"🔨"},
+  {text:"Refrigerator not cooling",category:"Appliance Repair",icon:"🔌"},
+  {text:"Kitchen remodel",category:"Construction",icon:"🏗"},
+  {text:"Interior painting",category:"Painting",icon:"🎨"},
+  {text:"Pool cleaning",category:"Pool & Spa",icon:"🏊"},
+  {text:"Window replacement",category:"Windows & Doors",icon:"🪟"}
+];
+
+function matchCategory(input){
+  const lower=input.toLowerCase();
+  let bestMatch=null,bestScore=0;
+  for(const[cat,keywords]of Object.entries(serviceKeywords)){
+    let score=0;
+    keywords.forEach(kw=>{if(lower.includes(kw))score+=kw.length;});
+    if(score>bestScore){bestScore=score;bestMatch=cat;}
+  }
+  return bestMatch;
+}
+
+function showSuggestions(val){
+  const dd=document.getElementById("suggestions");
+  if(!val||val.length<1){
+    // Show popular searches when empty or just 1 char
+    let html='<div class="sug-group"><div class="sug-group-label">Popular searches</div>';
+    popularSearches.forEach(s=>{
+      html+='<div class="sug-item" onclick="pickSuggestion(\''+s.text+'\',\''+s.category+'\')"><div class="sug-icon" style="background:var(--bg);">'+s.icon+'</div><div class="sug-text"><strong>'+s.text+'</strong><span>'+s.category+'</span></div></div>';
+    });
+    html+='</div>';
+    dd.innerHTML=html;
+    dd.classList.add("visible");
+    return;
+  }
+  const lower=val.toLowerCase();
+  // Filter matching popular searches
+  const matches=popularSearches.filter(s=>s.text.toLowerCase().includes(lower)||s.category.toLowerCase().includes(lower));
+  // Also find all matching categories
+  const catMatch=matchCategory(val);
+  let html='';
+  if(matches.length>0){
+    html+='<div class="sug-group"><div class="sug-group-label">Suggested services</div>';
+    matches.slice(0,5).forEach(s=>{
+      html+='<div class="sug-item" onclick="pickSuggestion(\''+s.text+'\',\''+s.category+'\')"><div class="sug-icon" style="background:var(--bg);">'+s.icon+'</div><div class="sug-text"><strong>'+s.text+'</strong><span>'+s.category+'</span></div></div>';
+    });
+    html+='</div>';
+  }
+  // Always show free-form option
+  html+='<div class="sug-item sug-item-freeform" onclick="handleFreeFormSearch()"><div class="sug-icon" style="background:var(--orange-light);color:var(--orange);">→</div><div class="sug-text"><strong>Search for "'+val.replace(/"/g,'&quot;')+'"</strong><span>'+(catMatch?'Looks like '+catMatch+' — we\'ll match you with the right pro':'Tell us more and we\'ll find the right pro')+'</span></div></div>';
+  dd.innerHTML=html;
+  dd.classList.add("visible");
+}
+
+function pickSuggestion(text,cat){
+  document.getElementById("hero-service").value=text;
+  document.getElementById("suggestions").classList.remove("visible");
+  freeFormInput=text;
+  selectCategory(cat);
+}
+
+function handleFreeFormSearch(){
+  const val=document.getElementById("hero-service").value.trim();
+  if(!val)return;
+  document.getElementById("suggestions").classList.remove("visible");
+  freeFormInput=val;
+  const cat=matchCategory(val);
+  if(cat){
+    selectCategory(cat);
+    // Pre-fill the first answer with their free-form description
+    answers=[{question:"What do you need help with?",answer:val}];
+    questionCount=1;
+    questionHistory=[{questionData:{question:"What do you need help with?",type:"text"},selectedAnswer:val}];
+    rebuildHist();
+    // Skip first question, go straight to AI follow-up
+    showThinking("Understanding your request...");
+    getNextQuestion().then(nextQ=>{
+      if(nextQ&&!nextQ.complete)setTimeout(()=>renderQuestion(nextQ),300);
+      else setTimeout(renderContact,400);
+    }).catch(()=>setTimeout(renderContact,400));
+  }else{
+    // Can't determine category — default to asking
+    selectCategory("Handyman");
+  }
+}
+
+// Close suggestions when clicking outside
+document.addEventListener("click",e=>{
+  const dd=document.getElementById("suggestions");
+  const input=document.getElementById("hero-service");
+  if(dd&&!dd.contains(e.target)&&e.target!==input)dd.classList.remove("visible");
+});
+
+// === GEOLOCATION ===
+function detectLocation(){
+  const btn=document.getElementById("geo-btn");
+  const zipInput=document.getElementById("hero-zip");
+  btn.style.opacity="0.5";
+  if(!navigator.geolocation){zipInput.placeholder="Not supported";btn.style.opacity="1";return;}
+  navigator.geolocation.getCurrentPosition(
+    async pos=>{
+      try{
+        const r=await fetch("https://api.bigdatacloud.net/data/reverse-geocode-client?latitude="+pos.coords.latitude+"&longitude="+pos.coords.longitude+"&localityLanguage=en");
+        const d=await r.json();
+        if(d.postcode){zipInput.value=d.postcode;zipInput.style.fontWeight="600";}
+        else{zipInput.placeholder="Could not detect";}
+      }catch(e){zipInput.placeholder="Could not detect";}
+      btn.style.opacity="1";
+    },
+    err=>{zipInput.placeholder="Location denied";btn.style.opacity="1";},
+    {timeout:5000}
+  );
+}
+
+// Auto-detect location on page load
+window.addEventListener("load",()=>setTimeout(detectLocation,1000));
 
 // === FIRST QUESTIONS PER CATEGORY ===
 const firstQuestions={
@@ -512,10 +647,30 @@ function selectCategory(cat){
 }
 
 function handleSearch(){
-  const svc=document.getElementById('hero-service').value;
+  const val=document.getElementById('hero-service').value.trim();
   const zip=document.getElementById('hero-zip').value;
-  if(!svc){document.getElementById('hero-service').focus();return;}
-  selectCategory(svc);
+  if(!val){document.getElementById('hero-service').focus();return;}
+  document.getElementById("suggestions").classList.remove("visible");
+  freeFormInput=val;
+  const cat=matchCategory(val);
+  if(cat){
+    selectCategory(cat);
+    // If they typed a specific problem, pre-fill it as first answer
+    if(val.length>3 && !Object.keys(firstQuestions).includes(val)){
+      answers=[{question:"What do you need help with?",answer:val}];
+      questionCount=1;
+      questionHistory=[{questionData:{question:"What do you need help with?",type:"text"},selectedAnswer:val}];
+      rebuildHist();
+      showThinking("Understanding your request...");
+      getNextQuestion().then(nextQ=>{
+        if(nextQ&&!nextQ.complete)setTimeout(()=>renderQuestion(nextQ),300);
+        else setTimeout(renderContact,400);
+      }).catch(()=>setTimeout(renderContact,400));
+    }
+  }else{
+    // No category match — still start intake with general question
+    selectCategory("Handyman");
+  }
 }
 
 // === INTAKE LOGIC (preserved from original) ===
