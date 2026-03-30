@@ -39,6 +39,15 @@ a{text-decoration:none;color:inherit;}
 .nav-link:hover{background:var(--orange-light);}
 .nav-cta{font-size:14px;font-weight:700;color:var(--white);background:var(--orange);padding:8px 18px;border-radius:var(--radius-sm);transition:all .2s;}
 .nav-cta:hover{background:var(--orange2);}
+.mobile-menu-btn{display:none;background:none;border:none;cursor:pointer;padding:8px;color:var(--text2);}
+.mobile-menu{display:none;background:var(--white);border-bottom:1px solid var(--border);padding:0 16px;}
+.mobile-menu a{display:block;padding:14px 0;font-size:15px;font-weight:500;color:var(--text2);border-bottom:1px solid var(--border);}
+.mobile-menu a:last-child{border:none;}
+.mobile-menu-cta{color:var(--orange) !important;font-weight:700 !important;}
+@media(max-width:600px){
+  .mobile-menu-btn{display:flex;align-items:center;}
+  .mobile-menu.open{display:block;}
+}
 .nav-loc{font-size:13px;color:var(--text3);border:1px solid var(--border);padding:5px 12px;border-radius:100px;display:flex;align-items:center;gap:5px;}
 
 /* === HERO === */
@@ -218,18 +227,78 @@ a{text-decoration:none;color:inherit;}
   .how-grid{grid-template-columns:1fr;gap:24px;}
   .cta-box{flex-direction:column;text-align:center;padding:36px 24px;}
   .footer-grid{grid-template-columns:1fr 1fr;gap:24px;}
+  .nav-inner{padding:0 16px;}
+  .nav-loc{display:none;}
 }
 @media(max-width:600px){
-  .hero h1{font-size:30px;}
-  .search-bar{flex-direction:column;border-radius:var(--radius);}
-  .search-divider{width:100%;height:1px;margin:0;}
-  .search-btn{padding:14px;border-radius:0 0 10px 10px;}
-  .cat-grid{gap:6px;}
-  .cat-item{min-width:80px;padding:12px;}
-  .services-grid{grid-template-columns:1fr;}
-  .intake-stats{grid-template-columns:1fr;}
-  .footer-grid{grid-template-columns:1fr;}
+  /* Nav */
+  .nav-inner{height:56px;}
+  .logo{font-size:17px;}
+  .logo svg{width:24px;height:24px;}
   .nav-links .nav-link{display:none;}
+  .nav-cta{font-size:13px;padding:7px 14px;}
+  /* Hero */
+  .hero{padding:36px 16px 32px;}
+  .hero h1{font-size:28px;letter-spacing:-.3px;}
+  .hero-sub{font-size:15px;margin-bottom:24px;}
+  .search-bar{flex-direction:column;border-radius:var(--radius);max-width:100%;}
+  .search-field{padding:0 14px;}
+  .search-field input,.search-field select{font-size:14px;padding:12px 0;}
+  .search-divider{width:100%;height:1px;margin:0;}
+  .search-btn{padding:14px;border-radius:0 0 10px 10px !important;font-size:14px;}
+  .suggestions-dropdown{border-radius:0 0 var(--radius) var(--radius);}
+  /* Categories */
+  .categories{padding:20px 12px 24px;}
+  .cat-grid{gap:4px;justify-content:center;}
+  .cat-item{min-width:70px;padding:10px 6px;}
+  .cat-icon{width:40px;height:40px;border-radius:10px;}
+  .cat-icon svg{width:20px;height:20px;}
+  .cat-label{font-size:11px;}
+  /* Intake */
+  .intake-section{padding:32px 16px;}
+  .intake-left h2{font-size:26px;}
+  .intake-desc{font-size:14px;}
+  .intake-stats{grid-template-columns:repeat(3,1fr);gap:8px;}
+  .stat-card{padding:12px 8px;}
+  .stat-num{font-size:18px;}
+  .stat-label{font-size:10px;}
+  .form-card{padding:20px 16px;border-radius:var(--radius);}
+  .form-title{font-size:18px;}
+  .q-text{font-size:15px;}
+  .opt{padding:10px 14px;font-size:13px;}
+  .btn{font-size:14px;padding:12px 20px;}
+  .btn-back{padding:10px 14px;font-size:13px;}
+  .q-input{padding:10px 12px;font-size:14px;}
+  /* Services */
+  .services-section{padding:32px 16px;}
+  .section-title{font-size:22px;}
+  .services-grid{grid-template-columns:1fr;gap:8px;}
+  .service-card{padding:14px;}
+  /* How it works */
+  .how-section{padding:36px 16px;}
+  .how-grid{grid-template-columns:1fr;gap:20px;}
+  /* CTA */
+  .cta-banner{padding:24px 16px;}
+  .cta-box{padding:28px 20px;border-radius:var(--radius);}
+  .cta-box h2{font-size:22px;}
+  .cta-box p{font-size:14px;}
+  .cta-btn{width:100%;text-align:center;padding:14px 24px;}
+  /* Footer */
+  .footer{padding:28px 16px 16px;}
+  .footer-grid{grid-template-columns:1fr;gap:20px;}
+  .footer-brand p{font-size:12px;}
+  .footer-bottom{flex-direction:column;gap:8px;text-align:center;}
+  /* Schedule section */
+  .schedule-row{flex-direction:column;gap:6px;}
+  .schedule-input{font-size:14px;}
+}
+@media(max-width:380px){
+  .hero h1{font-size:24px;}
+  .cat-item{min-width:60px;padding:8px 4px;}
+  .cat-label{font-size:10px;}
+  .intake-stats{grid-template-columns:1fr;}
+  .stat-card{text-align:left;display:flex;align-items:center;gap:12px;}
+  .stat-num{font-size:16px;}
 }
 </style>
 </head>
@@ -251,8 +320,16 @@ a{text-decoration:none;color:inherit;}
       <a href="#categories" class="nav-link">Find Pros</a>
       <a href="contractor-signup.html" class="nav-cta">Join as a Pro</a>
     </div>
+    <button class="mobile-menu-btn" onclick="document.querySelector('.mobile-menu').classList.toggle('open')" aria-label="Menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
   </div>
 </nav>
+<div class="mobile-menu">
+  <a href="#categories" onclick="this.parentElement.classList.remove('open')">Find Pros</a>
+  <a href="#how-it-works" onclick="this.parentElement.classList.remove('open')">How It Works</a>
+  <a href="contractor-signup.html" class="mobile-menu-cta">Join as a Pro</a>
+</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -477,7 +554,7 @@ let answers=[],questionCount=0,questionHistory=[],selectedCategory="",freeFormIn
 
 // === SEARCH INTELLIGENCE ===
 const serviceKeywords={
-  "HVAC":["hvac","ac","air conditioning","air conditioner","heating","furnace","heat pump","thermostat","duct","ductwork","ventilation","cooling","refrigerant","compressor","blower","central air","mini split","condenser","evaporator","freon","a/c","warm air","cold air","not cooling","not heating","temperature","humidity"],
+  "HVAC":["hvac","ac","air conditioning","air conditioner","heating","furnace","heat pump","thermostat","duct","ductwork","ventilation","cooling","refrigerant","compressor","blower","central air","mini split","condenser","evaporator","freon","a/c","warm air","cold air","not cooling","not heating","temperature","humidity","tune up","tune-up","tuneup","maintenance","service","annual service","seasonal","checkup","check up","inspection","filter","air filter","preventive","preventative","clean coils","coil cleaning"],
   "Plumbing":["plumbing","plumber","pipe","pipes","leak","leaking","leaky","drain","clogged","toilet","faucet","water heater","sewer","septic","garbage disposal","water pressure","running toilet","dripping","flooding","burst pipe","water line","sump pump","backflow","shower","bathtub","sink"],
   "Electrical":["electrical","electrician","outlet","switch","wiring","wire","breaker","panel","circuit","lighting","light","ceiling fan","generator","surge protector","dimmer","gfci","rewire","power outage","short circuit","spark","buzzing","flickering","voltage"],
   "Roofing":["roof","roofing","roofer","shingle","shingles","gutter","gutters","leak roof","storm damage","hail damage","flat roof","metal roof","tile roof","flashing","soffit","fascia","skylight","chimney","downspout"],
@@ -491,9 +568,11 @@ const serviceKeywords={
 
 const popularSearches=[
   {text:"AC not cooling",category:"HVAC",icon:"❄"},
-  {text:"Leaky faucet",category:"Plumbing",icon:"🔧"},
+  {text:"HVAC tune-up / maintenance",category:"HVAC",icon:"🔧"},
+  {text:"Leaky faucet or pipe",category:"Plumbing",icon:"🔧"},
+  {text:"Clogged drain",category:"Plumbing",icon:"🔧"},
   {text:"Outlet not working",category:"Electrical",icon:"⚡"},
-  {text:"Roof leak",category:"Roofing",icon:"🏠"},
+  {text:"Roof leak or damage",category:"Roofing",icon:"🏠"},
   {text:"Furniture assembly",category:"Handyman",icon:"🔨"},
   {text:"Refrigerator not cooling",category:"Appliance Repair",icon:"🔌"},
   {text:"Kitchen remodel",category:"Construction",icon:"🏗"},
@@ -742,7 +821,18 @@ async function submitAnswer(question,answer){
   try{const nextQ=await getNextQuestion();if(!nextQ||nextQ.complete){setTimeout(renderContact,400);}else{setTimeout(()=>renderQuestion(nextQ),300);}}
   catch(err){console.error("AI error:",err);setTimeout(renderContact,400);}
 }
-async function getNextQuestion(){const r=await fetch("/api/next-question",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({answers,questionCount,maxQuestions:MAX_QUESTIONS,category:selectedCategory})});return await r.json();}
+async function getNextQuestion(){
+  try{
+    const r=await fetch("/api/next-question",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({answers,questionCount,maxQuestions:MAX_QUESTIONS,category:selectedCategory})});
+    if(!r.ok)throw new Error("API returned "+r.status);
+    const text=await r.text();
+    const clean=text.replace(/```json|```/g,"").trim();
+    return JSON.parse(clean);
+  }catch(err){
+    console.error("AI question error:",err);
+    return {question:"What is your budget range for this project?",type:"options",options:["Under $500","$500-$2,000","$2,000-$5,000","$5,000+","Not sure yet","Other"]};
+  }
+}
 function startIntakeWithQuestion(q){setProg(5,"Starting…");renderQuestion(q);}
 function getTodayStr(){return new Date().toISOString().split('T')[0];}
 function renderContact(){
