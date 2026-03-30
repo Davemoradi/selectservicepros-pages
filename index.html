@@ -2,155 +2,514 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>SelectServicePros — Get Free HVAC Quotes in Houston</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SelectServicePros — Find Trusted Home Service Pros in Houston</title>
+<meta name="description" content="Connect with licensed, background-checked contractors in Houston. Get free quotes for HVAC, plumbing, electrical, roofing and more."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --navy:#0c2340;--navy2:#0f2d50;--navy3:#1a3d66;
-  --blue:#1a6eb5;--blue-light:#e8f2fb;--blue-border:#93c4e8;
-  --green:#3a9e3f;--green-light:#edf7ee;--green-border:#86d98a;
-  --orange:#f05528;--orange2:#d44420;--orange-light:#fff3ef;--orange-border:#fcc8b8;
-  --bg:#f2f5f9;--white:#fff;
-  --border:#dde3ec;--border2:#b8c4d4;
-  --text:#0f172a;--text2:#475569;--text3:#8a9ab0;
-  --radius:12px;--radius-sm:8px;--radius-xs:6px;
-  --font-head:'Outfit',system-ui,sans-serif;
+  --navy:#0a1628;--navy2:#122240;--navy3:#1a3158;
+  --orange:#f05528;--orange2:#d94a20;--orange-light:rgba(240,85,40,.08);
+  --green:#1a8a4a;--green-light:#e6f9ed;
+  --bg:#f8f7f4;--white:#ffffff;
+  --text1:#111318;--text2:#3d3f44;--text3:#6b6e76;--text4:#9ca0a8;
+  --border:#e5e4e0;--border2:#d4d3cf;
+  --radius:12px;--radius-sm:8px;--radius-lg:16px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.1);
+  --font-display:'Fraunces',serif;
   --font-body:'DM Sans',system-ui,sans-serif;
+  --max-w:1140px;
 }
-body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;}
-nav{background:var(--navy);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 36px;border-bottom:1px solid rgba(255,255,255,0.06);}
-.logo{display:flex;align-items:center;gap:10px;}
-.logo-icon{width:38px;height:38px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.logo-icon svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;}
-.logo-text{font-family:var(--font-head);font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.3px;}
-.logo-text span{color:var(--orange);}
-.nav-badge{font-size:12px;padding:4px 12px;border-radius:20px;background:rgba(240,85,40,0.15);border:1px solid rgba(240,85,40,0.3);color:var(--orange);font-weight:600;font-family:var(--font-head);}
-.hero{background:var(--navy);padding:52px 36px 64px;position:relative;}
-.hero-inner{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1fr 420px;gap:56px;align-items:start;}
-.hero-wave{position:absolute;bottom:0;left:0;right:0;height:40px;background:var(--bg);clip-path:ellipse(55% 100% at 50% 100%);}
-.eyebrow{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--orange);margin-bottom:14px;font-family:var(--font-head);}
-h1{font-family:var(--font-head);font-size:42px;font-weight:800;color:#fff;line-height:1.08;letter-spacing:-1.5px;margin-bottom:16px;}
-h1 em{color:var(--orange);font-style:normal;}
-.sub{font-size:15px;color:rgba(255,255,255,0.55);line-height:1.7;margin-bottom:32px;font-weight:300;}
-.trust-list{display:flex;flex-direction:column;gap:10px;margin-bottom:36px;}
-.trust-item{display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,0.65);}
-.trust-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;}
-.stats-row{display:flex;gap:32px;padding-top:28px;border-top:1px solid rgba(255,255,255,0.08);}
-.stat-num{font-family:var(--font-head);font-size:26px;font-weight:700;color:#fff;}
-.stat-lbl{font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;}
-.form-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:28px;box-shadow:0 4px 24px rgba(0,0,0,0.12);}
-.form-card-title{font-family:var(--font-head);font-size:17px;font-weight:700;color:var(--navy);margin-bottom:4px;}
-.form-card-sub{font-size:12px;color:var(--text3);margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--border);}
-.ai-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;color:var(--blue);background:var(--blue-light);border:1px solid var(--blue-border);padding:3px 9px;border-radius:20px;margin-bottom:14px;font-family:var(--font-head);}
-.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:pulse 1.5s infinite;}
-.prog-wrap{margin-bottom:18px;}
-.prog-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:7px;text-transform:uppercase;letter-spacing:0.8px;font-family:var(--font-head);}
-.prog-bar{height:4px;background:var(--bg);border-radius:2px;overflow:hidden;}
-.prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--green));border-radius:2px;transition:width 0.5s cubic-bezier(0.4,0,0.2,1);}
-#qa{min-height:260px;}
-.q-label{font-size:10px;font-weight:600;color:var(--text3);margin-bottom:5px;display:block;letter-spacing:0.8px;text-transform:uppercase;font-family:var(--font-head);}
-.q-text{font-family:var(--font-head);font-size:16px;font-weight:700;color:var(--navy);line-height:1.35;margin-bottom:18px;}
-.opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:16px;}
-.opts-grid.col1{grid-template-columns:1fr;}
-.opt{padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--radius-xs);font-size:13px;color:var(--text2);background:var(--bg);cursor:pointer;text-align:left;transition:all 0.15s;line-height:1.3;font-family:var(--font-body);-webkit-tap-highlight-color:transparent;}
-.opt:hover{border-color:var(--blue-border);color:var(--text);}
-.opt.sel{border-color:var(--blue);background:var(--blue-light);color:var(--blue);}
-.q-input{width:100%;padding:11px 13px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-xs);color:var(--text);font-family:var(--font-body);font-size:16px;outline:none;transition:all 0.15s;margin-bottom:8px;}
-.q-input:focus{border-color:var(--blue);background:var(--white);}
-.q-input::placeholder{color:var(--text3);}
-.btn-row{display:flex;gap:8px;margin-top:4px;}
-.btn-back{flex:0 0 auto;padding:13px 16px;background:transparent;border:1.5px solid var(--border);border-radius:var(--radius-xs);color:var(--text3);font-family:var(--font-head);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;}
-.btn-back:hover{border-color:var(--border2);color:var(--text2);}
-.btn{flex:1;padding:13px;background:var(--orange);border:none;border-radius:var(--radius-xs);color:#fff;font-family:var(--font-head);font-size:14px;font-weight:700;cursor:pointer;transition:all 0.15s;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text1);-webkit-font-smoothing:antialiased;}
+a{text-decoration:none;color:inherit;}
+
+/* === NAV === */
+.nav{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.nav-inner{max-width:var(--max-w);margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:var(--font-body);font-size:20px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:8px;}
+.logo svg{flex-shrink:0;}
+.logo-select,.logo-pros{color:var(--navy);}
+.logo-service{color:var(--orange);}
+.nav-links{display:flex;align-items:center;gap:8px;}
+.nav-link{font-size:14px;font-weight:500;color:var(--text2);padding:8px 14px;border-radius:var(--radius-sm);transition:background .15s;}
+.nav-link:hover{background:var(--orange-light);}
+.nav-cta{font-size:14px;font-weight:700;color:var(--white);background:var(--orange);padding:8px 18px;border-radius:var(--radius-sm);transition:all .2s;}
+.nav-cta:hover{background:var(--orange2);}
+.nav-loc{font-size:13px;color:var(--text3);border:1px solid var(--border);padding:5px 12px;border-radius:100px;display:flex;align-items:center;gap:5px;}
+
+/* === HERO === */
+.hero{background:var(--white);padding:56px 24px 48px;text-align:center;border-bottom:1px solid var(--border);}
+.hero-inner{max-width:680px;margin:0 auto;}
+.hero h1{font-family:var(--font-display);font-size:42px;font-weight:800;line-height:1.15;color:var(--text1);margin-bottom:14px;letter-spacing:-.5px;}
+.hero h1 em{font-style:normal;color:var(--orange);}
+.hero-sub{font-size:17px;color:var(--text3);line-height:1.6;margin-bottom:32px;}
+
+/* Search bar */
+.search-bar{display:flex;gap:0;background:var(--white);border:2px solid var(--border2);border-radius:var(--radius);overflow:hidden;max-width:580px;margin:0 auto;transition:border-color .2s;}
+.search-bar:focus-within{border-color:var(--orange);}
+.search-field{flex:1;display:flex;align-items:center;gap:10px;padding:0 16px;}
+.search-field svg{flex-shrink:0;color:var(--text4);}
+.search-field select,.search-field input{border:none;outline:none;font-family:var(--font-body);font-size:15px;color:var(--text1);background:transparent;width:100%;padding:14px 0;-webkit-appearance:none;appearance:none;}
+.search-field select{cursor:pointer;color:var(--text3);}
+.search-field select:valid{color:var(--text1);}
+.search-divider{width:1px;background:var(--border);margin:10px 0;}
+.search-btn{background:var(--orange);color:var(--white);border:none;font-family:var(--font-body);font-size:15px;font-weight:700;padding:0 28px;cursor:pointer;transition:background .2s;white-space:nowrap;}
+.search-btn:hover{background:var(--orange2);}
+
+/* === CATEGORIES === */
+.categories{background:var(--white);padding:32px 24px 40px;border-bottom:1px solid var(--border);}
+.categories-inner{max-width:var(--max-w);margin:0 auto;}
+.cat-grid{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;}
+.cat-item{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 20px;border-radius:var(--radius);cursor:pointer;transition:all .2s;min-width:100px;border:1px solid transparent;}
+.cat-item:hover{background:var(--orange-light);border-color:rgba(240,85,40,.15);}
+.cat-item.active{background:var(--orange-light);border-color:var(--orange);}
+.cat-icon{width:48px;height:48px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;}
+.cat-item:hover .cat-icon,.cat-item.active .cat-icon{background:rgba(240,85,40,.12);}
+.cat-icon svg{width:24px;height:24px;color:var(--text2);}
+.cat-item:hover .cat-icon svg,.cat-item.active .cat-icon svg{color:var(--orange);}
+.cat-label{font-size:13px;font-weight:600;color:var(--text2);text-align:center;line-height:1.3;}
+
+/* === INTAKE SECTION === */
+.intake-section{padding:56px 24px;max-width:var(--max-w);margin:0 auto;display:none;}
+.intake-section.visible{display:block;}
+.intake-grid{display:grid;grid-template-columns:1fr 400px;gap:48px;align-items:start;}
+.intake-left{}
+.intake-tag{font-size:13px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;}
+.intake-left h2{font-family:var(--font-display);font-size:34px;font-weight:800;line-height:1.2;color:var(--text1);margin-bottom:16px;}
+.intake-left h2 em{font-style:normal;color:var(--orange);}
+.intake-desc{font-size:15px;color:var(--text3);line-height:1.7;margin-bottom:24px;}
+.intake-bullets{display:flex;flex-direction:column;gap:12px;margin-bottom:32px;}
+.intake-bullet{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text2);}
+.intake-bullet .dot{width:8px;height:8px;border-radius:50%;background:var(--orange);flex-shrink:0;}
+.intake-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center;}
+.stat-num{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--text1);}
+.stat-label{font-size:12px;color:var(--text3);margin-top:4px;}
+
+/* === FORM CARD === */
+.form-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-lg);position:sticky;top:80px;}
+.form-title{font-size:20px;font-weight:700;color:var(--text1);margin-bottom:4px;}
+.form-sub{font-size:13px;color:var(--text3);margin-bottom:16px;}
+.smart-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-light);padding:4px 10px;border-radius:100px;font-size:11px;color:var(--green);font-weight:600;margin-bottom:14px;}
+.smart-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);}
+.prog-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text4);margin-bottom:6px;}
+.prog-bar{height:3px;background:var(--border);border-radius:2px;margin-bottom:20px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--orange);border-radius:2px;transition:width .4s ease;}
+
+/* Q&A area */
+.q-label{font-size:11px;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;}
+.q-text{font-size:17px;font-weight:600;color:var(--text1);line-height:1.4;margin-bottom:16px;}
+.opts-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.opt{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-family:var(--font-body);font-size:14px;color:var(--text2);cursor:pointer;text-align:left;transition:all .15s;}
+.opt:hover{border-color:var(--orange);background:var(--orange-light);}
+.opt.sel{border-color:var(--orange);background:var(--orange-light);color:var(--orange);font-weight:600;}
+.btn{background:var(--orange);color:var(--white);border:none;font-family:var(--font-body);font-size:15px;font-weight:700;padding:13px 28px;border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;width:100%;}
 .btn:hover{background:var(--orange2);}
-.btn:disabled{opacity:0.35;cursor:not-allowed;}
-.btn-full{width:100%;padding:13px;background:var(--orange);border:none;border-radius:var(--radius-xs);color:#fff;font-family:var(--font-head);font-size:14px;font-weight:700;cursor:pointer;transition:all 0.15s;margin-top:4px;}
+.btn:disabled{opacity:.4;cursor:default;}
+.btn-row{display:flex;gap:8px;align-items:center;}
+.btn-row .btn{flex:1;}
+.btn-back{background:transparent;border:1px solid var(--border);font-family:var(--font-body);font-size:14px;color:var(--text3);padding:12px 16px;border-radius:var(--radius-sm);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn-back:hover{border-color:var(--text3);}
+.btn-full{width:100%;background:var(--orange);color:var(--white);border:none;font-family:var(--font-body);font-size:15px;font-weight:700;padding:14px;border-radius:var(--radius-sm);cursor:pointer;transition:background .2s;}
 .btn-full:hover{background:var(--orange2);}
-.history{margin-bottom:14px;}
-.h-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;}
-.h-q{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;flex-shrink:0;}
-.h-a{color:var(--text2);font-weight:500;}
-.thinking{display:flex;align-items:center;gap:10px;padding:22px 0;color:var(--text3);font-size:13px;}
-.dots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--blue);animation:pulse 1.2s infinite ease-in-out;}
-.dots span:nth-child(2){animation-delay:0.2s;}
-.dots span:nth-child(3){animation-delay:0.4s;}
-@keyframes pulse{0%,80%,100%{opacity:0.2;transform:scale(0.8)}40%{opacity:1;transform:scale(1)}}
-.schedule-section{margin:14px 0 10px;}
-.schedule-label{font-family:var(--font-head);font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
-.schedule-label svg{width:14px;height:14px;stroke:var(--orange);fill:none;stroke-width:2;}
-.schedule-slot{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-xs);padding:12px;margin-bottom:8px;}
-.schedule-slot-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;font-family:var(--font-head);}
-.schedule-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.schedule-input{width:100%;padding:9px 11px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius-xs);color:var(--text);font-family:var(--font-body);font-size:14px;outline:none;transition:all 0.15s;}
-.schedule-input:focus{border-color:var(--blue);}
-.schedule-divider{text-align:center;font-size:11px;color:var(--text3);padding:4px 0;font-style:italic;}
-.success-wrap{text-align:center;padding:8px 0;}
-.s-icon{width:54px;height:54px;border-radius:50%;background:var(--green-light);border:2px solid var(--green-border);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:22px;}
-.s-title{font-family:var(--font-head);font-size:19px;font-weight:700;color:var(--navy);margin-bottom:8px;}
-.s-msg{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px;}
-.summary-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-xs);padding:12px 14px;margin-bottom:16px;text-align:left;}
-.s-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;}
+.q-input{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;font-family:var(--font-body);font-size:14px;color:var(--text1);outline:none;transition:border-color .2s;margin-bottom:10px;}
+.q-input:focus{border-color:var(--orange);}
+.h-item{display:flex;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.h-q{color:var(--text4);font-weight:600;font-size:11px;text-transform:uppercase;}
+.h-a{color:var(--text2);}
+.thinking{display:flex;align-items:center;gap:10px;padding:20px 0;font-size:14px;color:var(--text3);}
+.dots{display:flex;gap:4px;}
+.dots span{width:6px;height:6px;border-radius:50%;background:var(--orange);animation:bounce .6s infinite alternate;}
+.dots span:nth-child(2){animation-delay:.15s;}
+.dots span:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{to{opacity:.3;transform:translateY(-4px);}}
+.fade{animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+.success-wrap{text-align:center;padding:16px 0;}
+.s-icon{width:48px;height:48px;border-radius:50%;background:var(--green-light);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;margin:0 auto 14px;}
+.s-title{font-size:20px;font-weight:700;margin-bottom:8px;}
+.s-msg{font-size:14px;color:var(--text3);line-height:1.6;margin-bottom:20px;}
+.summary-box{background:var(--bg);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px;}
+.s-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);}
+.s-row:last-child{border:none;}
 .s-row span:first-child{color:var(--text3);}
-.s-row span:last-child{color:var(--text2);font-weight:500;}
-.fade{animation:fi 0.3s ease;}
-@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-.bottom-bar{background:var(--navy);padding:16px 36px;text-align:center;font-size:12px;color:rgba(255,255,255,0.35);margin-top:auto;}
-.bottom-bar a{color:rgba(255,255,255,0.5);text-decoration:none;}
-@media(max-width:820px){.hero-inner{grid-template-columns:1fr;}.hero{padding:32px 20px 56px;}h1{font-size:28px;}nav{padding:0 20px;}.nav-badge{display:none;}.schedule-row{grid-template-columns:1fr;}}
-@media(max-width:480px){h1{font-size:24px;}.form-card{padding:20px 16px;}.opts-grid{grid-template-columns:1fr;}}
+.s-row span:last-child{font-weight:600;color:var(--text1);}
+.schedule-section{background:var(--bg);border-radius:var(--radius-sm);padding:16px;margin-bottom:14px;}
+.schedule-label{font-size:13px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:6px;margin-bottom:12px;}
+.schedule-label svg{width:16px;height:16px;fill:none;stroke:var(--text3);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.schedule-slot-title{font-size:12px;color:var(--text3);font-weight:600;margin-bottom:6px;}
+.schedule-row{display:flex;gap:8px;margin-bottom:8px;}
+.schedule-input{flex:1;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font-body);font-size:13px;color:var(--text1);outline:none;}
+.schedule-input:focus{border-color:var(--orange);}
+.schedule-divider{text-align:center;font-size:12px;color:var(--text4);padding:4px 0;}
+
+/* === POPULAR SERVICES === */
+.services-section{padding:56px 24px;max-width:var(--max-w);margin:0 auto;}
+.section-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:24px;}
+.section-title{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text1);}
+.section-link{font-size:14px;font-weight:600;color:var(--orange);border:1px solid var(--border);padding:6px 16px;border-radius:100px;transition:all .15s;}
+.section-link:hover{border-color:var(--orange);background:var(--orange-light);}
+.services-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.service-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;cursor:pointer;transition:all .2s;}
+.service-card:hover{border-color:var(--orange);box-shadow:var(--shadow-md);}
+.service-card h3{font-size:15px;font-weight:700;color:var(--text1);margin-bottom:6px;}
+.service-meta{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:8px;}
+.service-meta .star{color:var(--orange);}
+
+/* === HOW IT WORKS === */
+.how-section{padding:56px 24px;background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.how-inner{max-width:var(--max-w);margin:0 auto;text-align:center;}
+.how-inner .section-title{margin-bottom:40px;}
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;}
+.how-step{text-align:center;}
+.how-num{width:44px;height:44px;border-radius:50%;background:var(--orange-light);color:var(--orange);font-family:var(--font-display);font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;}
+.how-step h3{font-size:16px;font-weight:700;margin-bottom:8px;}
+.how-step p{font-size:14px;color:var(--text3);line-height:1.6;}
+
+/* === CTA BANNER === */
+.cta-banner{padding:56px 24px;max-width:var(--max-w);margin:0 auto;}
+.cta-box{background:var(--navy);border-radius:var(--radius-lg);padding:48px;display:flex;justify-content:space-between;align-items:center;gap:32px;}
+.cta-box h2{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--white);margin-bottom:10px;}
+.cta-box p{font-size:15px;color:rgba(255,255,255,.65);line-height:1.6;}
+.cta-btn{background:var(--orange);color:var(--white);font-family:var(--font-body);font-size:15px;font-weight:700;padding:14px 32px;border-radius:var(--radius-sm);border:none;cursor:pointer;white-space:nowrap;transition:background .2s;}
+.cta-btn:hover{background:var(--orange2);}
+
+/* === FOOTER === */
+.footer{background:var(--white);border-top:1px solid var(--border);padding:40px 24px 24px;}
+.footer-inner{max-width:var(--max-w);margin:0 auto;}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px;margin-bottom:32px;}
+.footer-brand .logo{margin-bottom:12px;}
+.footer-brand p{font-size:13px;color:var(--text3);line-height:1.6;}
+.footer-col h4{font-size:13px;font-weight:700;color:var(--text1);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;}
+.footer-col a{display:block;font-size:14px;color:var(--text3);padding:4px 0;transition:color .15s;}
+.footer-col a:hover{color:var(--orange);}
+.footer-bottom{border-top:1px solid var(--border);padding-top:20px;display:flex;justify-content:space-between;font-size:12px;color:var(--text4);}
+
+/* === RESPONSIVE === */
+@media(max-width:900px){
+  .intake-grid{grid-template-columns:1fr;gap:32px;}
+  .form-card{position:static;}
+  .services-grid{grid-template-columns:repeat(2,1fr);}
+  .how-grid{grid-template-columns:1fr;gap:24px;}
+  .cta-box{flex-direction:column;text-align:center;padding:36px 24px;}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:24px;}
+}
+@media(max-width:600px){
+  .hero h1{font-size:30px;}
+  .search-bar{flex-direction:column;border-radius:var(--radius);}
+  .search-divider{width:100%;height:1px;margin:0;}
+  .search-btn{padding:14px;border-radius:0 0 10px 10px;}
+  .cat-grid{gap:6px;}
+  .cat-item{min-width:80px;padding:12px;}
+  .services-grid{grid-template-columns:1fr;}
+  .intake-stats{grid-template-columns:1fr;}
+  .footer-grid{grid-template-columns:1fr;}
+  .nav-links .nav-link{display:none;}
+}
 </style>
 </head>
 <body>
-<nav>
-  <div class="logo">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24"><path d="M12 2L4 6v6c0 5 3.5 9.3 8 10.5C16.5 21.3 20 17 20 12V6L12 2z" fill="rgba(255,255,255,0.15)" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="#3a9e3f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="logo">
+      <svg width="28" height="28" viewBox="0 0 40 40" fill="none"><path d="M20 2L6 12v16c0 6 6 10 14 10s14-4 14-10V12L20 2z" stroke="#3b82f6" stroke-width="2.5"/><path d="M14 20l4 4 8-8" stroke="#1a8a4a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span><span class="logo-select">Select</span><span class="logo-service">Service</span><span class="logo-pros">Pros</span></span>
+    </a>
+    <div class="nav-links">
+      <span class="nav-loc">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Houston, TX
+      </span>
+      <a href="/about" class="nav-link">How It Works</a>
+      <a href="/search_results" class="nav-link">Find Pros</a>
+      <a href="/login" class="nav-link">Log In</a>
+      <a href="contractor-signup.html" class="nav-cta">Join as a Pro</a>
     </div>
-    <div class="logo-text">SelectService<span>Pros</span></div>
   </div>
-  <div class="nav-badge">Houston, TX</div>
 </nav>
-<div class="hero">
+
+<!-- HERO -->
+<section class="hero">
   <div class="hero-inner">
-    <div>
-      <div class="eyebrow">HVAC Services — Houston</div>
-      <h1>Get <em>matched</em> with top Houston HVAC pros</h1>
-      <p class="sub">Tell us about your issue and we'll connect you with licensed, background-checked HVAC contractors in your area — fast, free, and no obligation.</p>
-      <div class="trust-list">
-        <div class="trust-item"><div class="trust-dot"></div>Licensed &amp; insured contractors only</div>
-        <div class="trust-item"><div class="trust-dot"></div>Get up to 3 quotes within 2 hours</div>
-        <div class="trust-item"><div class="trust-dot"></div>100% free — no hidden fees ever</div>
-        <div class="trust-item"><div class="trust-dot"></div>Background-checked professionals</div>
+    <h1>The one you trust to find the <em>ones you trust.</em></h1>
+    <p class="hero-sub">Get free quotes from licensed, background-checked home service pros in Houston — fast, easy, and zero obligation.</p>
+    <div class="search-bar">
+      <div class="search-field">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <select id="hero-service" onchange="selectCategory(this.value)">
+          <option value="" disabled selected>What do you need help with?</option>
+          <option value="HVAC">HVAC / Air Conditioning</option>
+          <option value="Plumbing">Plumbing</option>
+          <option value="Electrical">Electrical</option>
+          <option value="Roofing">Roofing</option>
+          <option value="Handyman">Handyman</option>
+          <option value="Appliance Repair">Appliance Repair</option>
+          <option value="Construction">Construction & Remodeling</option>
+          <option value="Pool & Spa">Pool & Spa</option>
+          <option value="Windows & Doors">Windows & Doors</option>
+          <option value="Painting">Painting</option>
+        </select>
       </div>
-      <div class="stats-row">
-        <div><div class="stat-num">2,400+</div><div class="stat-lbl">Houston homeowners served</div></div>
-        <div><div class="stat-num">98%</div><div class="stat-lbl">Match satisfaction rate</div></div>
-        <div><div class="stat-num">47 min</div><div class="stat-lbl">Average first response</div></div>
+      <div class="search-divider"></div>
+      <div class="search-field">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <input type="text" id="hero-zip" placeholder="ZIP code" maxlength="5"/>
+      </div>
+      <button class="search-btn" onclick="handleSearch()">Get Quotes</button>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="categories">
+  <div class="categories-inner">
+    <div class="cat-grid" id="cat-grid">
+      <div class="cat-item" onclick="selectCategory('HVAC')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M9 15a3 3 0 1 0 6 0"/></svg></div>
+        <span class="cat-label">HVAC</span>
+      </div>
+      <div class="cat-item" onclick="selectCategory('Plumbing')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 4h12v6a6 6 0 0 1-12 0V4z"/><path d="M12 16v4"/><path d="M8 20h8"/></svg></div>
+        <span class="cat-label">Plumbing</span>
+      </div>
+      <div class="cat-item" onclick="selectCategory('Electrical')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <span class="cat-label">Electrical</span>
+      </div>
+      <div class="cat-item" onclick="selectCategory('Roofing')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></div>
+        <span class="cat-label">Roofing</span>
+      </div>
+      <div class="cat-item" onclick="selectCategory('Handyman')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+        <span class="cat-label">Handyman</span>
+      </div>
+      <div class="cat-item" onclick="selectCategory('Appliance Repair')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0"/></svg></div>
+        <span class="cat-label">Appliance Repair</span>
+      </div>
+      <div class="cat-item" onclick="selectCategory('Construction')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></div>
+        <span class="cat-label">Remodeling</span>
+      </div>
+      <div class="cat-item" onclick="selectCategory('Painting')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 3H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/><path d="M10 13v6a2 2 0 0 0 4 0v-6"/></svg></div>
+        <span class="cat-label">Painting</span>
+      </div>
+      <div class="cat-item" onclick="selectCategory('Pool & Spa')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 20c2-1 4-1 6 0s4 1 6 0 4-1 6 0"/><path d="M2 16c2-1 4-1 6 0s4 1 6 0 4-1 6 0"/><path d="M8 4v8"/><path d="M16 4v8"/></svg></div>
+        <span class="cat-label">Pool & Spa</span>
+      </div>
+      <div class="cat-item" onclick="selectCategory('Windows & Doors')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18"/><path d="M3 12h18"/></svg></div>
+        <span class="cat-label">Windows & Doors</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTAKE SECTION (hidden until category selected) -->
+<section class="intake-section" id="intake-section">
+  <div class="intake-grid">
+    <div class="intake-left">
+      <div class="intake-tag" id="intake-tag">HVAC Services — Houston</div>
+      <h2>Get <em>matched</em> with top Houston <span id="intake-service-name">HVAC</span> pros</h2>
+      <p class="intake-desc">Tell us about your issue and we'll connect you with licensed, background-checked contractors in your area — fast, free, and no obligation.</p>
+      <div class="intake-bullets">
+        <div class="intake-bullet"><span class="dot"></span>Licensed & insured contractors only</div>
+        <div class="intake-bullet"><span class="dot"></span>Get up to 3 quotes within 2 hours</div>
+        <div class="intake-bullet"><span class="dot"></span>100% free — no hidden fees ever</div>
+        <div class="intake-bullet"><span class="dot"></span>Background-checked professionals</div>
+      </div>
+      <div class="intake-stats">
+        <div class="stat-card"><div class="stat-num">2,400+</div><div class="stat-label">Houston homeowners served</div></div>
+        <div class="stat-card"><div class="stat-num">98%</div><div class="stat-label">Match satisfaction rate</div></div>
+        <div class="stat-card"><div class="stat-num">47 min</div><div class="stat-label">Average first response</div></div>
       </div>
     </div>
     <div class="form-card">
-      <div class="form-card-title">Get Free Quotes</div>
-      <div class="form-card-sub">Takes about 90 seconds · No spam, ever</div>
-      <div class="ai-badge"><div class="ai-dot"></div>Smart Intake</div>
-      <div class="prog-wrap">
-        <div class="prog-meta"><span id="step-lbl">Starting…</span><span id="step-pct">0%</span></div>
-        <div class="prog-bar"><div class="prog-fill" id="prog" style="width:0%"></div></div>
-      </div>
-      <div id="hist" class="history"></div>
+      <div class="form-title">Get Free Quotes</div>
+      <div class="form-sub">Takes about 90 seconds · No spam, ever</div>
+      <div class="smart-badge">Smart Intake</div>
+      <div class="prog-row"><span id="step-lbl">Question 1 of 4</span><span id="step-pct">20%</span></div>
+      <div class="prog-bar"><div class="prog-fill" id="prog" style="width:20%"></div></div>
+      <div id="hist"></div>
       <div id="qa"></div>
     </div>
   </div>
-  <div class="hero-wave"></div>
-</div>
-<div class="bottom-bar">
-  &copy; 2025 SelectServicePros.com · <a href="#">Terms</a> · <a href="#">Privacy</a> · <a href="contractor-signup.html">Are you a contractor? Join our network →</a>
-</div>
+</section>
+
+<!-- POPULAR SERVICES -->
+<section class="services-section">
+  <div class="section-header">
+    <h2 class="section-title">Most in-demand home services</h2>
+    <a href="/search_results" class="section-link">View all</a>
+  </div>
+  <div class="services-grid">
+    <div class="service-card" onclick="selectCategory('HVAC')">
+      <h3>AC Repair & Installation</h3>
+      <div class="service-meta"><span class="star">★ 4.8</span> · 1,240 homeowners interested</div>
+    </div>
+    <div class="service-card" onclick="selectCategory('Plumbing')">
+      <h3>Plumbing Repair</h3>
+      <div class="service-meta"><span class="star">★ 4.7</span> · 980 homeowners interested</div>
+    </div>
+    <div class="service-card" onclick="selectCategory('Electrical')">
+      <h3>Electrical Services</h3>
+      <div class="service-meta"><span class="star">★ 4.9</span> · 870 homeowners interested</div>
+    </div>
+    <div class="service-card" onclick="selectCategory('Handyman')">
+      <h3>Handyman Service</h3>
+      <div class="service-meta"><span class="star">★ 4.6</span> · 1,170 homeowners interested</div>
+    </div>
+    <div class="service-card" onclick="selectCategory('Roofing')">
+      <h3>Roofing</h3>
+      <div class="service-meta"><span class="star">★ 4.7</span> · 720 homeowners interested</div>
+    </div>
+    <div class="service-card" onclick="selectCategory('Construction')">
+      <h3>Remodeling</h3>
+      <div class="service-meta"><span class="star">★ 4.8</span> · 650 homeowners interested</div>
+    </div>
+    <div class="service-card" onclick="selectCategory('Appliance Repair')">
+      <h3>Appliance Repair</h3>
+      <div class="service-meta"><span class="star">★ 4.5</span> · 540 homeowners interested</div>
+    </div>
+    <div class="service-card" onclick="selectCategory('Painting')">
+      <h3>Interior & Exterior Painting</h3>
+      <div class="service-meta"><span class="star">★ 4.8</span> · 490 homeowners interested</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div class="how-inner">
+    <h2 class="section-title">How it works</h2>
+    <div class="how-grid">
+      <div class="how-step">
+        <div class="how-num">1</div>
+        <h3>Tell us what you need</h3>
+        <p>Answer a few quick questions about your project. Our smart intake learns exactly what kind of pro you need.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-num">2</div>
+        <h3>Get matched instantly</h3>
+        <p>We'll connect you with up to 3 licensed, background-checked professionals in your area within minutes.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-num">3</div>
+        <h3>Compare and hire</h3>
+        <p>Review quotes, check reviews, and pick the pro that fits your budget and timeline. It's 100% free.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="cta-banner">
+  <div class="cta-box">
+    <div>
+      <h2>Are you a service professional?</h2>
+      <p>Join our network and receive qualified leads from homeowners in your area. Three membership tiers to fit your business.</p>
+    </div>
+    <a href="contractor-signup.html" class="cta-btn">Join The Network →</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">
+          <svg width="24" height="24" viewBox="0 0 40 40" fill="none"><path d="M20 2L6 12v16c0 6 6 10 14 10s14-4 14-10V12L20 2z" stroke="#3b82f6" stroke-width="2.5"/><path d="M14 20l4 4 8-8" stroke="#1a8a4a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span><span class="logo-select">Select</span><span class="logo-service">Service</span><span class="logo-pros">Pros</span></span>
+        </div>
+        <p>Connecting Houston homeowners with licensed, background-checked service professionals since 2025.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Homeowners</h4>
+        <a href="/search_results">Find pros</a>
+        <a href="/about">How it works</a>
+        <a href="/categories">Browse categories</a>
+      </div>
+      <div class="footer-col">
+        <h4>For Pros</h4>
+        <a href="contractor-signup.html">Join the network</a>
+        <a href="/login">Pro login</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="/about/contact">Contact us</a>
+        <a href="#">Terms of use</a>
+        <a href="#">Privacy policy</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 SelectServicePros.com. All rights reserved.</span>
+      <span>Houston, TX</span>
+    </div>
+  </div>
+</footer>
+
 <script>
+// === CONFIG ===
 const GHL="https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c";
 const MAX_QUESTIONS=4;
-let answers=[],questionCount=0,questionHistory=[];
+let answers=[],questionCount=0,questionHistory=[],selectedCategory="";
+
+// === FIRST QUESTIONS PER CATEGORY ===
+const firstQuestions={
+  "HVAC":{question:"What type of HVAC service do you need?",type:"options",options:["AC not cooling","No heat / heating issue","Strange noise or smell","Full system replacement","New installation","Maintenance / tune-up"]},
+  "Plumbing":{question:"What plumbing issue are you experiencing?",type:"options",options:["Leaky faucet or pipe","Clogged drain","Water heater issue","Toilet repair/replacement","Sewer line problem","New installation"]},
+  "Electrical":{question:"What electrical work do you need?",type:"options",options:["Outlet or switch repair","Panel upgrade","Lighting installation","Wiring issue","Ceiling fan install","Whole-home rewire"]},
+  "Roofing":{question:"What roofing service do you need?",type:"options",options:["Roof leak repair","Full roof replacement","Storm damage repair","Gutter work","Inspection","New construction"]},
+  "Handyman":{question:"What do you need help with?",type:"options",options:["Minor repairs","Furniture assembly","Drywall repair","Door/window fix","Deck/fence repair","General maintenance"]},
+  "Appliance Repair":{question:"Which appliance needs repair?",type:"options",options:["Refrigerator","Washer/Dryer","Dishwasher","Oven/Range","Microwave","Other appliance"]},
+  "Construction":{question:"What type of remodeling project?",type:"options",options:["Kitchen remodel","Bathroom remodel","Room addition","Flooring","Basement finishing","Full renovation"]},
+  "Pool & Spa":{question:"What pool/spa service do you need?",type:"options",options:["Regular maintenance","Equipment repair","Leak detection","Resurfacing","New pool build","Spa/hot tub service"]},
+  "Windows & Doors":{question:"What do you need?",type:"options",options:["Window replacement","Door installation","Window repair","Storm windows","Sliding door repair","Screen repair"]},
+  "Painting":{question:"What painting work do you need?",type:"options",options:["Interior painting","Exterior painting","Cabinet painting","Deck/fence staining","Touch-ups","Full repaint"]}
+};
+
+// === CATEGORY SELECTION ===
+function selectCategory(cat){
+  selectedCategory=cat;
+  // Update UI
+  document.querySelectorAll('.cat-item').forEach((el,i)=>{
+    const cats=["HVAC","Plumbing","Electrical","Roofing","Handyman","Appliance Repair","Construction","Painting","Pool & Spa","Windows & Doors"];
+    el.classList.toggle('active',cats[i]===cat);
+  });
+  document.getElementById('hero-service').value=cat;
+  document.getElementById('intake-tag').textContent=cat+" Services — Houston";
+  document.getElementById('intake-service-name').textContent=cat;
+  // Show intake section
+  const section=document.getElementById('intake-section');
+  section.classList.add('visible');
+  // Reset form
+  answers=[];questionCount=0;questionHistory=[];
+  document.getElementById('hist').innerHTML='';
+  // Start intake with category-specific first question
+  const q=firstQuestions[cat]||firstQuestions["HVAC"];
+  startIntakeWithQuestion(q);
+  // Scroll to intake
+  setTimeout(()=>section.scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
+function handleSearch(){
+  const svc=document.getElementById('hero-service').value;
+  const zip=document.getElementById('hero-zip').value;
+  if(!svc){document.getElementById('hero-service').focus();return;}
+  selectCategory(svc);
+}
+
+// === INTAKE LOGIC (preserved from original) ===
 function setProg(pct,lbl){document.getElementById("prog").style.width=pct+"%";document.getElementById("step-pct").textContent=pct+"%";document.getElementById("step-lbl").textContent=lbl;}
 function rebuildHist(){const w=document.getElementById("hist");w.innerHTML="";answers.forEach(a=>{const d=document.createElement("div");d.className="h-item fade";d.innerHTML='<span class="h-q">Q</span><span class="h-a">'+a.answer+'</span>';w.appendChild(d);});}
 function showThinking(msg){document.getElementById("qa").innerHTML='<div class="thinking fade"><div class="dots"><span></span><span></span><span></span></div><span>'+(msg||"Analyzing…")+'</span></div>';}
@@ -159,8 +518,7 @@ function renderQuestion(data,skipStack){
   const pct=Math.round((questionCount/(MAX_QUESTIONS+1))*100);
   setProg(pct,"Question "+questionCount+" of "+MAX_QUESTIONS);
   if(!skipStack)questionHistory.push({questionData:data,selectedAnswer:null});
-  let sel=null;
-  const qa=document.getElementById("qa");
+  let sel=null;const qa=document.getElementById("qa");
   const colClass=(data.options&&data.options.length<=3)?"opts-grid col1":"opts-grid";
   const showBack=questionCount>1;
   let html='<div class="fade"><span class="q-label">Question '+questionCount+'</span><div class="q-text">'+data.question+'</div>';
@@ -175,8 +533,7 @@ function renderQuestion(data,skipStack){
     if(showBack)html+='<button class="btn-back" id="bk">← Back</button>';
     html+='<button class="btn" id="bn">Continue →</button></div>';
   }
-  html+='</div>';
-  qa.innerHTML=html;
+  html+='</div>';qa.innerHTML=html;
   if(showBack)document.getElementById("bk").addEventListener("click",goBack);
   if(data.type==="options"){
     document.querySelectorAll(".opt").forEach(b=>{b.addEventListener("click",()=>{document.querySelectorAll(".opt").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");sel=b.dataset.v;document.getElementById("bn").disabled=false;});});
@@ -195,13 +552,13 @@ async function submitAnswer(question,answer){
   try{const nextQ=await getNextQuestion();if(!nextQ||nextQ.complete){setTimeout(renderContact,400);}else{setTimeout(()=>renderQuestion(nextQ),300);}}
   catch(err){console.error("AI error:",err);setTimeout(renderContact,400);}
 }
-async function getNextQuestion(){const r=await fetch("/api/next-question",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({answers,questionCount,maxQuestions:MAX_QUESTIONS})});return await r.json();}
-function startIntake(){setProg(5,"Starting…");renderQuestion({question:"What type of HVAC service do you need?",type:"options",options:["AC not cooling","No heat / heating issue","Strange noise or smell","Full system replacement","New installation","Maintenance / tune-up"]});}
+async function getNextQuestion(){const r=await fetch("/api/next-question",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({answers,questionCount,maxQuestions:MAX_QUESTIONS,category:selectedCategory})});return await r.json();}
+function startIntakeWithQuestion(q){setProg(5,"Starting…");renderQuestion(q);}
 function getTodayStr(){return new Date().toISOString().split('T')[0];}
 function renderContact(){
   setProg(90,"Last step");document.getElementById("step-lbl").textContent="Almost done";
   const today=getTodayStr();const showBack=answers.length>0;
-  document.getElementById("qa").innerHTML='<div class="fade"><div class="q-text">Where should we send your quotes?</div><input class="q-input" id="n" type="text" placeholder="Your full name"/><input class="q-input" id="p" type="tel" placeholder="Phone number"/><input class="q-input" id="e" type="email" placeholder="Email address"/><input class="q-input" id="z" type="text" placeholder="ZIP code" maxlength="5"/><div class="schedule-section"><div class="schedule-label"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>When works for you? (pick 2 options)</div><div class="schedule-slot"><div class="schedule-slot-title">1st Preference</div><div class="schedule-row"><input class="schedule-input" id="d1" type="date" min="'+today+'"/><select class="schedule-input" id="t1"><option value="">Select time</option><option>8:00 AM – 10:00 AM</option><option>10:00 AM – 12:00 PM</option><option>12:00 PM – 2:00 PM</option><option>2:00 PM – 4:00 PM</option><option>4:00 PM – 6:00 PM</option><option>Evening (after 6 PM)</option></select></div></div><div class="schedule-divider">or</div><div class="schedule-slot"><div class="schedule-slot-title">2nd Preference</div><div class="schedule-row"><input class="schedule-input" id="d2" type="date" min="'+today+'"/><select class="schedule-input" id="t2"><option value="">Select time</option><option>8:00 AM – 10:00 AM</option><option>10:00 AM – 12:00 PM</option><option>12:00 PM – 2:00 PM</option><option>2:00 PM – 4:00 PM</option><option>4:00 PM – 6:00 PM</option><option>Evening (after 6 PM)</option></select></div></div></div>'+(showBack?'<div class="btn-row"><button class="btn-back" onclick="goBackFromContact()">← Back</button><button class="btn" onclick="submitLead()">Get My Free Quotes →</button></div>':'<button class="btn-full" onclick="submitLead()">Get My Free Quotes →</button>')+'</div>';
+  document.getElementById("qa").innerHTML='<div class="fade"><div class="q-text">Where should we send your quotes?</div><input class="q-input" id="n" type="text" placeholder="Your full name"/><input class="q-input" id="p" type="tel" placeholder="Phone number"/><input class="q-input" id="e" type="email" placeholder="Email address"/><input class="q-input" id="z" type="text" placeholder="ZIP code" maxlength="5" value="'+(document.getElementById('hero-zip').value||'')+'"/><div class="schedule-section"><div class="schedule-label"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>When works for you? (pick 2 options)</div><div class="schedule-slot"><div class="schedule-slot-title">1st Preference</div><div class="schedule-row"><input class="schedule-input" id="d1" type="date" min="'+today+'"/><select class="schedule-input" id="t1"><option value="">Select time</option><option>8:00 AM – 10:00 AM</option><option>10:00 AM – 12:00 PM</option><option>12:00 PM – 2:00 PM</option><option>2:00 PM – 4:00 PM</option><option>4:00 PM – 6:00 PM</option><option>Evening (after 6 PM)</option></select></div></div><div class="schedule-divider">or</div><div class="schedule-slot"><div class="schedule-slot-title">2nd Preference</div><div class="schedule-row"><input class="schedule-input" id="d2" type="date" min="'+today+'"/><select class="schedule-input" id="t2"><option value="">Select time</option><option>8:00 AM – 10:00 AM</option><option>10:00 AM – 12:00 PM</option><option>12:00 PM – 2:00 PM</option><option>2:00 PM – 4:00 PM</option><option>4:00 PM – 6:00 PM</option><option>Evening (after 6 PM)</option></select></div></div></div>'+(showBack?'<div class="btn-row"><button class="btn-back" onclick="goBackFromContact()">← Back</button><button class="btn" onclick="submitLead()">Get My Free Quotes →</button></div>':'<button class="btn-full" onclick="submitLead()">Get My Free Quotes →</button>')+'</div>';
   setTimeout(()=>{const x=document.getElementById("n");if(x)x.focus();},50);
 }
 function goBackFromContact(){if(questionHistory.length===0)return;answers.pop();questionCount-=2;const prev=questionHistory.pop();rebuildHist();renderQuestion(prev.questionData);}
@@ -220,15 +577,14 @@ function submitLead(){
   answers.forEach(a=>{const v=(a.answer||"").toLowerCase();if(v.includes("emergency")||v.includes("now")||v.includes("immediately"))score+=20;else if(v.includes("24")||v.includes("today")||v.includes("urgent"))score+=12;if(v.includes("replace")||v.includes("new install"))score+=15;else if(v.includes("repair"))score+=8;});
   score=Math.min(score,100);
   const answersObj={};answers.forEach((a,i)=>{answersObj["q"+(i+1)]=a.answer;});
-  const service=answers[0]?.answer||"HVAC";
+  const service=selectedCategory||answers[0]?.answer||"General";
   const urgency=answers.find(a=>a.answer.toLowerCase().match(/emergency|urgent|now|24|today/))?.answer||answers[1]?.answer||"";
   const preferred_date_1=date1?(date1+" "+time1).trim():"";
   const preferred_date_2=date2?(date2+" "+time2).trim():"";
-  fetch(GHL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,phone,email,zip,service,urgency,score,preferred_date_1,preferred_date_2,source:"SelectServicePros.com",category:"HVAC",lead_id:"SSP-"+Date.now(),answers:JSON.stringify(answersObj),full_conversation:answers.map(a=>"Q: "+a.question+" | A: "+a.answer).join(" || ")})}).catch(e=>console.error(e));
+  fetch(GHL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,phone,email,zip,service,urgency,score,preferred_date_1,preferred_date_2,source:"SelectServicePros.com",category:selectedCategory,lead_id:"SSP-"+Date.now(),answers:JSON.stringify(answersObj),full_conversation:answers.map(a=>"Q: "+a.question+" | A: "+a.answer).join(" || ")})}).catch(e=>console.error(e));
   document.getElementById("hist").innerHTML="";
-  document.getElementById("qa").innerHTML='<div class="success-wrap fade"><div class="s-icon">✓</div><div class="s-title">You are all set, '+name.split(" ")[0]+'!</div><p class="s-msg">Your request has been received. Licensed Houston HVAC contractors in your area will be in touch shortly with free quotes.</p><div class="summary-box"><div class="s-row"><span>Service</span><span>'+service+'</span></div><div class="s-row"><span>1st Availability</span><span>'+(preferred_date_1||"—")+'</span></div><div class="s-row"><span>2nd Availability</span><span>'+(preferred_date_2||"—")+'</span></div><div class="s-row"><span>Contact</span><span>'+phone+'</span></div><div class="s-row"><span>ZIP</span><span>'+(zip||"—")+'</span></div></div><p style="font-size:12px;color:var(--text3);line-height:1.7;">A confirmation has been sent to <strong style="color:var(--text2)">'+email+'</strong>. Expect your first response within <strong style="color:var(--text2)">47 minutes</strong> on average.</p></div>';
+  document.getElementById("qa").innerHTML='<div class="success-wrap fade"><div class="s-icon">✓</div><div class="s-title">You are all set, '+name.split(" ")[0]+'!</div><p class="s-msg">Your request has been received. Licensed Houston '+selectedCategory+' contractors in your area will be in touch shortly with free quotes.</p><div class="summary-box"><div class="s-row"><span>Service</span><span>'+service+'</span></div><div class="s-row"><span>1st Availability</span><span>'+(preferred_date_1||"—")+'</span></div><div class="s-row"><span>2nd Availability</span><span>'+(preferred_date_2||"—")+'</span></div><div class="s-row"><span>Contact</span><span>'+phone+'</span></div><div class="s-row"><span>ZIP</span><span>'+(zip||"—")+'</span></div></div><p style="font-size:12px;color:var(--text3);line-height:1.7;">A confirmation has been sent to <strong style="color:var(--text2)">'+email+'</strong>. Expect your first response within <strong style="color:var(--text2)">47 minutes</strong> on average.</p></div>';
 }
-startIntake();
 </script>
 </body>
 </html>
