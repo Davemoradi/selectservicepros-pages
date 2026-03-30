@@ -475,16 +475,16 @@ let answers=[],questionCount=0,questionHistory=[],selectedCategory="";
 
 // === FIRST QUESTIONS PER CATEGORY ===
 const firstQuestions={
-  "HVAC":{question:"What type of HVAC service do you need?",type:"options",options:["AC not cooling","No heat / heating issue","Strange noise or smell","Full system replacement","New installation","Maintenance / tune-up"]},
-  "Plumbing":{question:"What plumbing issue are you experiencing?",type:"options",options:["Leaky faucet or pipe","Clogged drain","Water heater issue","Toilet repair/replacement","Sewer line problem","New installation"]},
-  "Electrical":{question:"What electrical work do you need?",type:"options",options:["Outlet or switch repair","Panel upgrade","Lighting installation","Wiring issue","Ceiling fan install","Whole-home rewire"]},
-  "Roofing":{question:"What roofing service do you need?",type:"options",options:["Roof leak repair","Full roof replacement","Storm damage repair","Gutter work","Inspection","New construction"]},
-  "Handyman":{question:"What do you need help with?",type:"options",options:["Minor repairs","Furniture assembly","Drywall repair","Door/window fix","Deck/fence repair","General maintenance"]},
-  "Appliance Repair":{question:"Which appliance needs repair?",type:"options",options:["Refrigerator","Washer/Dryer","Dishwasher","Oven/Range","Microwave","Other appliance"]},
-  "Construction":{question:"What type of remodeling project?",type:"options",options:["Kitchen remodel","Bathroom remodel","Room addition","Flooring","Basement finishing","Full renovation"]},
-  "Pool & Spa":{question:"What pool/spa service do you need?",type:"options",options:["Regular maintenance","Equipment repair","Leak detection","Resurfacing","New pool build","Spa/hot tub service"]},
-  "Windows & Doors":{question:"What do you need?",type:"options",options:["Window replacement","Door installation","Window repair","Storm windows","Sliding door repair","Screen repair"]},
-  "Painting":{question:"What painting work do you need?",type:"options",options:["Interior painting","Exterior painting","Cabinet painting","Deck/fence staining","Touch-ups","Full repaint"]}
+  "HVAC":{question:"What type of HVAC service do you need?",type:"options",options:["AC not cooling","No heat / heating issue","Strange noise or smell","Full system replacement","New installation","Maintenance / tune-up","Other"]},
+  "Plumbing":{question:"What plumbing issue are you experiencing?",type:"options",options:["Leaky faucet or pipe","Clogged drain","Water heater issue","Toilet repair/replacement","Sewer line problem","New installation","Other"]},
+  "Electrical":{question:"What electrical work do you need?",type:"options",options:["Outlet or switch repair","Panel upgrade","Lighting installation","Wiring issue","Ceiling fan install","Whole-home rewire","Other"]},
+  "Roofing":{question:"What roofing service do you need?",type:"options",options:["Roof leak repair","Full roof replacement","Storm damage repair","Gutter work","Inspection","New construction","Other"]},
+  "Handyman":{question:"What do you need help with?",type:"options",options:["Minor repairs","Furniture assembly","Drywall repair","Door/window fix","Deck/fence repair","General maintenance","Other"]},
+  "Appliance Repair":{question:"Which appliance needs repair?",type:"options",options:["Refrigerator","Washer/Dryer","Dishwasher","Oven/Range","Microwave","Other"]},
+  "Construction":{question:"What type of remodeling project?",type:"options",options:["Kitchen remodel","Bathroom remodel","Room addition","Flooring","Basement finishing","Full renovation","Other"]},
+  "Pool & Spa":{question:"What pool/spa service do you need?",type:"options",options:["Regular maintenance","Equipment repair","Leak detection","Resurfacing","New pool build","Spa/hot tub service","Other"]},
+  "Windows & Doors":{question:"What do you need?",type:"options",options:["Window replacement","Door installation","Window repair","Storm windows","Sliding door repair","Screen repair","Other"]},
+  "Painting":{question:"What painting work do you need?",type:"options",options:["Interior painting","Exterior painting","Cabinet painting","Deck/fence staining","Touch-ups","Full repaint","Other"]}
 };
 
 // === CATEGORY SELECTION ===
@@ -545,8 +545,34 @@ function renderQuestion(data,skipStack){
   html+='</div>';qa.innerHTML=html;
   if(showBack)document.getElementById("bk").addEventListener("click",goBack);
   if(data.type==="options"){
-    document.querySelectorAll(".opt").forEach(b=>{b.addEventListener("click",()=>{document.querySelectorAll(".opt").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");sel=b.dataset.v;document.getElementById("bn").disabled=false;});});
-    document.getElementById("bn").addEventListener("click",()=>{if(sel)submitAnswer(data.question,sel);});
+    document.querySelectorAll(".opt").forEach(b=>{b.addEventListener("click",()=>{
+      document.querySelectorAll(".opt").forEach(x=>x.classList.remove("sel"));
+      b.classList.add("sel");
+      sel=b.dataset.v;
+      // Show text input if "Other" is selected
+      let otherInput=document.getElementById("other-input");
+      if(sel==="Other"){
+        if(!otherInput){
+          otherInput=document.createElement("input");
+          otherInput.className="q-input";otherInput.id="other-input";
+          otherInput.type="text";otherInput.placeholder="Please describe what you need…";
+          otherInput.style.marginTop="8px";
+          document.getElementById("og").after(otherInput);
+          otherInput.focus();
+        }
+        document.getElementById("bn").disabled=false;
+      }else{
+        if(otherInput)otherInput.remove();
+        document.getElementById("bn").disabled=false;
+      }
+    });});
+    document.getElementById("bn").addEventListener("click",()=>{
+      if(sel==="Other"){
+        const otherVal=document.getElementById("other-input")?.value.trim();
+        if(otherVal)submitAnswer(data.question,"Other: "+otherVal);
+        else{document.getElementById("other-input")?.focus();return;}
+      }else if(sel){submitAnswer(data.question,sel);}
+    });
   }else{
     const ti=document.getElementById("ti");ti.focus();
     ti.addEventListener("keydown",e=>{if(e.key==="Enter"){const v=ti.value.trim();if(v)submitAnswer(data.question,v);}});
