@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FAQ for Contractors — SelectServicePros</title>
+<meta name="description" content="Frequently asked questions for contractors about joining the SelectServicePros network, membership tiers, lead pricing, and how our platform works."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --navy:#0a1628;--navy2:#122240;--navy3:#1a3158;
+  --orange:#f05528;--orange2:#d94a20;--orange-light:rgba(240,85,40,.08);
+  --green:#1a8a4a;--green-light:#e6f9ed;
+  --bg:#f8f7f4;--white:#ffffff;
+  --text1:#111318;--text2:#3d3f44;--text3:#6b6e76;--text4:#9ca0a8;
+  --border:#e5e4e0;--border2:#d4d3cf;
+  --radius:12px;--radius-sm:8px;--radius-lg:16px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08);
+  --font-display:'Fraunces',serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --max-w:800px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text1);-webkit-font-smoothing:antialiased;}
+a{text-decoration:none;color:inherit;}
+
+/* NAV */
+.nav{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.nav-inner{max-width:1140px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:var(--font-body);font-size:20px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:8px;}
+.logo svg{flex-shrink:0;}
+.logo-select,.logo-pros{color:var(--navy);}
+.logo-service{color:var(--orange);}
+.nav-links{display:flex;align-items:center;gap:8px;}
+.nav-link{font-size:14px;font-weight:500;color:var(--text2);padding:8px 14px;border-radius:var(--radius-sm);transition:background .15s;}
+.nav-link:hover{background:var(--orange-light);}
+.nav-cta{font-size:14px;font-weight:700;color:var(--white);background:var(--orange);padding:8px 18px;border-radius:var(--radius-sm);transition:all .2s;}
+.nav-cta:hover{background:var(--orange2);}
+.mobile-menu-btn{display:none;background:none;border:none;cursor:pointer;padding:8px;color:var(--text2);}
+@media(max-width:600px){.mobile-menu-btn{display:flex;align-items:center;}.nav-links .nav-link{display:none;}.nav-cta{font-size:13px;padding:7px 14px;}}
+
+/* HERO */
+.faq-hero{background:var(--navy);padding:56px 24px 48px;text-align:center;}
+.faq-hero h1{font-family:var(--font-display);font-size:38px;font-weight:800;color:var(--white);margin-bottom:12px;letter-spacing:-.3px;}
+.faq-hero p{font-size:16px;color:rgba(255,255,255,.6);line-height:1.6;max-width:520px;margin:0 auto;}
+.faq-hero .breadcrumb{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:16px;}
+.faq-hero .breadcrumb a{color:rgba(255,255,255,.5);transition:color .15s;}
+.faq-hero .breadcrumb a:hover{color:var(--orange);}
+
+/* FAQ BODY */
+.faq-body{max-width:var(--max-w);margin:0 auto;padding:40px 24px 80px;}
+.faq-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:40px;justify-content:center;}
+.faq-nav a{font-size:13px;font-weight:600;color:var(--text3);padding:6px 16px;border:1px solid var(--border);border-radius:100px;transition:all .15s;}
+.faq-nav a:hover,.faq-nav a.active{color:var(--orange);border-color:var(--orange);background:var(--orange-light);}
+
+.faq-section{margin-bottom:40px;}
+.faq-section-title{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text1);margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--orange);display:inline-block;}
+
+.faq-item{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;transition:border-color .2s;}
+.faq-item:hover{border-color:var(--orange);}
+.faq-q{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;cursor:pointer;gap:16px;user-select:none;}
+.faq-q h3{font-size:15px;font-weight:600;color:var(--text1);line-height:1.4;}
+.faq-q .arrow{width:20px;height:20px;flex-shrink:0;transition:transform .25s ease;color:var(--text4);}
+.faq-item.open .faq-q .arrow{transform:rotate(180deg);color:var(--orange);}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+.faq-item.open .faq-a{max-height:600px;}
+.faq-a-inner{padding:0 20px 20px;font-size:14px;color:var(--text3);line-height:1.7;}
+.faq-a-inner a{color:var(--orange);font-weight:600;}
+.faq-a-inner a:hover{text-decoration:underline;}
+.faq-a-inner ul{margin:8px 0 0 20px;}
+.faq-a-inner li{margin-bottom:4px;}
+
+/* TIER TABLE */
+.tier-table{width:100%;border-collapse:collapse;margin:12px 0 4px;font-size:13px;}
+.tier-table th{background:var(--navy);color:var(--white);padding:10px 14px;text-align:left;font-weight:600;}
+.tier-table td{padding:10px 14px;border-bottom:1px solid var(--border);}
+.tier-table tr:nth-child(even) td{background:var(--bg);}
+.tier-table .highlight{color:var(--orange);font-weight:700;}
+
+/* CTA */
+.faq-cta{background:var(--navy);border-radius:var(--radius-lg);padding:40px;text-align:center;margin-top:48px;}
+.faq-cta h2{font-family:var(--font-display);font-size:24px;font-weight:700;margin-bottom:10px;color:var(--white);}
+.faq-cta p{font-size:14px;color:rgba(255,255,255,.6);margin-bottom:20px;line-height:1.6;}
+.faq-cta .btn{display:inline-block;background:var(--orange);color:var(--white);font-family:var(--font-body);font-size:15px;font-weight:700;padding:14px 32px;border-radius:var(--radius-sm);transition:background .2s;}
+.faq-cta .btn:hover{background:var(--orange2);}
+
+/* FOOTER */
+.footer{background:var(--white);border-top:1px solid var(--border);padding:24px;text-align:center;}
+.footer-text{font-size:12px;color:var(--text4);}
+
+@media(max-width:600px){
+  .faq-hero{padding:36px 16px 32px;}
+  .faq-hero h1{font-size:28px;}
+  .faq-body{padding:24px 16px 60px;}
+  .faq-q{padding:16px;}
+  .faq-q h3{font-size:14px;}
+  .faq-a-inner{padding:0 16px 16px;font-size:13px;}
+  .faq-cta{padding:28px 20px;}
+  .tier-table{font-size:12px;}
+  .tier-table th,.tier-table td{padding:8px 10px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="logo">
+      <svg width="28" height="28" viewBox="0 0 40 40" fill="none"><path d="M20 2L6 12v16c0 6 6 10 14 10s14-4 14-10V12L20 2z" stroke="#3b82f6" stroke-width="2.5"/><path d="M14 20l4 4 8-8" stroke="#1a8a4a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span><span class="logo-select">Select</span><span class="logo-service">Service</span><span class="logo-pros">Pros</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="/" class="nav-link">Home</a>
+      <a href="faq-homeowners.html" class="nav-link">Homeowner FAQ</a>
+      <a href="contractor-signup.html" class="nav-cta">Join The Network →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="faq-hero">
+  <div class="breadcrumb"><a href="/">Home</a> / FAQ for Contractors</div>
+  <h1>Contractor FAQ</h1>
+  <p>Everything you need to know about joining our network, receiving leads, and growing your business with SelectServicePros.</p>
+</section>
+
+<!-- FAQ BODY -->
+<div class="faq-body">
+
+  <div class="faq-nav">
+    <a href="#joining" class="active">Joining</a>
+    <a href="#leads">Leads & Routing</a>
+    <a href="#tiers">Membership Tiers</a>
+    <a href="#billing">Billing</a>
+    <a href="#support">Support</a>
+  </div>
+
+  <!-- JOINING -->
+  <div class="faq-section" id="joining">
+    <div class="faq-section-title">Joining the Network</div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>What is SelectServicePros?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">SelectServicePros is a Houston-based home services marketplace that connects homeowners with licensed, vetted contractors. We generate qualified leads from homeowners searching for home services and route them to contractors in our network based on service category, ZIP code, and membership tier.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>How do I sign up?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">Visit our <a href="contractor-signup.html">contractor signup page</a>. The process takes about 5 minutes: choose your membership tier, complete payment, fill in your profile and service details, then submit for review. We'll verify your credentials and activate your account within 1–2 business days.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>What are the requirements to join?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">To join SelectServicePros you need:
+        <ul>
+          <li>Active business license or contractor license (TDLR for HVAC, electrical, plumbing in Texas)</li>
+          <li>General liability insurance (minimum $500K coverage)</li>
+          <li>Ability to pass a background check</li>
+          <li>Service area within the Houston metro</li>
+        </ul>
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>What service categories can I sign up for?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">We currently support: HVAC, plumbing, electrical, roofing, handyman, appliance repair, remodeling/construction, painting, pool & spa, and windows & doors. You can sign up for multiple categories if you're licensed for them.</div></div>
+    </div>
+  </div>
+
+  <!-- LEADS & ROUTING -->
+  <div class="faq-section" id="leads">
+    <div class="faq-section-title">Leads & Routing</div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>How do leads work?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">When a homeowner submits a service request matching your category and ZIP code, you'll receive a notification with the lead details. You can accept or pass on each lead. Accepted leads include the homeowner's contact info so you can reach out directly with a quote.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>How is lead routing prioritized?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">Leads are routed based on your membership tier. Elite members get first access with a 60-minute exclusive window. If they pass or don't respond, the lead goes to Pro members (45-minute window), then Basic members (30-minute window). Higher tiers = first pick of the best leads.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>Are leads exclusive?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">Each lead is sent to a maximum of 2–3 contractors. This is far more exclusive than platforms like Angi (which sells leads to 5–8 companies). Fewer contractors per lead means less competition and higher close rates for you.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>What if I get a bad or fake lead?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">We offer lead credits for verified bad leads (wrong number, fake info, duplicate, outside service area). Report the lead within 48 hours and we'll review it. If confirmed, you'll receive a credit toward your next lead. We actively filter for lead quality on the intake side to minimize bad leads.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>Can I choose which ZIP codes I receive leads from?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">Yes. During signup you specify your service ZIP codes. You'll only receive leads from homeowners in those areas. You can update your service area anytime through your contractor dashboard.</div></div>
+    </div>
+  </div>
+
+  <!-- MEMBERSHIP TIERS -->
+  <div class="faq-section" id="tiers">
+    <div class="faq-section-title">Membership Tiers</div>
+
+    <div class="faq-item open">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>What are the membership tiers?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">
+        <table class="tier-table">
+          <tr><th>Feature</th><th>Basic</th><th>Pro</th><th>Elite</th></tr>
+          <tr><td>Monthly Fee</td><td>$49/mo</td><td>$149/mo</td><td class="highlight">$299/mo</td></tr>
+          <tr><td>Lead Priority</td><td>3rd (30 min window)</td><td>2nd (45 min window)</td><td class="highlight">1st (60 min exclusive)</td></tr>
+          <tr><td>Lead Exclusivity</td><td>Shared (up to 3)</td><td>Shared (up to 2)</td><td class="highlight">First pick</td></tr>
+          <tr><td>Profile Badge</td><td>—</td><td>Pro badge</td><td class="highlight">Elite badge</td></tr>
+          <tr><td>Annual Contract</td><td>No</td><td>No</td><td>No</td></tr>
+        </table>
+        All tiers are month-to-month with no annual contracts.
+      </div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>Can I change my tier later?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">Yes. You can upgrade or downgrade your tier at any time. Upgrades take effect immediately, and downgrades take effect at the start of your next billing cycle. No penalties or fees for changing.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>Is there a contract or commitment?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">No. All membership tiers are month-to-month. Cancel anytime with no early termination fees. We believe in earning your business every month.</div></div>
+    </div>
+  </div>
+
+  <!-- BILLING -->
+  <div class="faq-section" id="billing">
+    <div class="faq-section-title">Billing & Payments</div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>How does billing work?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">You pay a monthly membership fee for your tier. On top of that, there's a per-lead fee charged only when you accept a lead. You're never charged for leads you pass on. Payments are processed securely through Stripe.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>What payment methods do you accept?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">We accept all major credit and debit cards (Visa, Mastercard, Amex, Discover) through Stripe. Payments are billed monthly on the anniversary of your signup date.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>How do I cancel my membership?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">Email us at <a href="mailto:info@selectservicepros.com">info@selectservicepros.com</a> or cancel through your contractor dashboard. Cancellation takes effect at the end of your current billing period — no early termination fees, no hassle.</div></div>
+    </div>
+  </div>
+
+  <!-- SUPPORT -->
+  <div class="faq-section" id="support">
+    <div class="faq-section-title">Support</div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>How do I contact support?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">Email us at <a href="mailto:info@selectservicepros.com">info@selectservicepros.com</a>. Contractor support is available Mon–Fri, 8am–6pm CT. We typically respond within a few hours.</div></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <h3>How is SelectServicePros different from Angi or Thumbtack?</h3>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-a"><div class="faq-a-inner">Three key differences:
+        <ul>
+          <li><strong>Exclusive leads:</strong> We send each lead to 2–3 contractors max, vs. 5–8 on other platforms. Less competition = higher close rates.</li>
+          <li><strong>No phone bombing:</strong> Homeowners don't get overwhelmed with calls, which means they're more engaged when you reach out.</li>
+          <li><strong>Full transparency:</strong> You see the complete intake conversation before accepting a lead, so you know exactly what the homeowner needs.</li>
+        </ul>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="faq-cta">
+    <h2>Ready to grow your business?</h2>
+    <p>Join the SelectServicePros network and start receiving qualified leads from Houston homeowners. No contracts, cancel anytime.</p>
+    <a href="contractor-signup.html" class="btn">Join The Network →</a>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-text">© 2025 SelectServicePros.com · Houston, TX · <a href="faq-homeowners.html" style="color:var(--orange);">Homeowner FAQ</a></div>
+</footer>
+
+</body>
+</html>
