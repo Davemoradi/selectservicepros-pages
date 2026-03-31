@@ -38,10 +38,11 @@ export default async function handler(req) {
       });
     }
 
-    // Use zip-codes.com API to get ZIP codes by city/state
-    const apiUrl = `https://api.zip-codes.com/ZipCodesAPI.svc/1.0/FindZipCodesInRadius?zipcode=&city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}&radius=30&minimumradius=0&key=${apiKey}`;
+    // Use zip-codes.com API — first get ZIP info for the city, then do radius search
+    // Step 1: Get a ZIP code for this city using QuickGetZipCodeDetails
+    const infoUrl = `https://api.zip-codes.com/ZipCodesAPI.svc/1.0/FindZipCodesByCityState?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}&key=${apiKey}`;
 
-    const response = await fetch(apiUrl);
+    const response = await fetch(infoUrl);
 
     if (!response.ok) {
       const errText = await response.text();
@@ -55,7 +56,34 @@ export default async function handler(req) {
       });
     }
 
-    const data = await response.json();
+    const rawText = await response.text();
+    // Strip BOM and clean the response
+    const cleanText = rawText.replace(/^\uFEFF/, '').trim();
+    
+    let data;
+    try {
+      data = JSON.parse(cleanText);
+    } catch(e) {
+      return new Response(JSON.stringify({
+        error: 'Failed to parse zip-codes.com response',
+        raw: cleanText.substring(0, 500)
+      }), {
+        status: 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Check for API error response
+    if (data.Error || data.ErrorCode) {
+      return new Response(JSON.stringify({
+        error: 'zip-codes.com returned an error',
+        details: data.Error || data.ErrorMessage || data.ErrorCode,
+        raw: data
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
     // Extract ZIP codes from response
     let zips = [];
