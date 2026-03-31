@@ -167,7 +167,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text1);}
         <div class="add-market-row">
           <div class="add-market-field"><label>City</label><input id="new-city" placeholder="e.g. Miami"/></div>
           <div class="add-market-field"><label>State</label><input id="new-state" placeholder="e.g. FL" maxlength="2"/></div>
-          <div class="add-market-field"><label>ZIP prefixes</label><input id="new-zips" placeholder="e.g. 331,332"/></div>
+          <div class="add-market-field"><label>ZIP prefixes <span id="zip-status" style="color:var(--green);font-weight:400;text-transform:none;"></span></label><input id="new-zips" placeholder="Auto-fills or enter manually"/></div>
+          <button class="add-market-btn" style="background:var(--navy);" onclick="fetchZips()">Fetch ZIPs</button>
           <button class="add-market-btn" onclick="addMarket()">Add</button>
         </div>
       </div>
@@ -364,6 +365,28 @@ function deleteMarket(idx){
   markChanged();
   renderMarkets();
   generateConfig();
+}
+
+async function fetchZips(){
+  const city = document.getElementById('new-city').value.trim();
+  const state = document.getElementById('new-state').value.trim().toUpperCase();
+  if(!city||!state){alert('Enter a city and state first.');return;}
+  const status = document.getElementById('zip-status');
+  status.textContent = '(fetching...)';
+  try{
+    const r = await fetch('/api/zip-lookup?city='+encodeURIComponent(city)+'&state='+encodeURIComponent(state));
+    const data = await r.json();
+    if(data.error){status.textContent = '('+data.error+')';return;}
+    if(data.prefixes && data.prefixes.length > 0){
+      document.getElementById('new-zips').value = data.prefixes.join(',');
+      status.textContent = '(found '+data.total_zips+' ZIPs, '+data.prefixes.length+' prefixes)';
+    } else {
+      status.textContent = '(no results found)';
+    }
+  }catch(e){
+    status.textContent = '(error fetching)';
+    console.error(e);
+  }
 }
 
 function markChanged(){
