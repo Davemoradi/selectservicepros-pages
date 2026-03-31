@@ -273,7 +273,8 @@ function renderCategories(){
           <input type="checkbox" ${cat.enabled?'checked':''} onchange="toggleCat(${i},this.checked)"/>
           <span class="toggle-slider"></span>
         </label>
-        <span style="color:var(--text4);cursor:pointer;font-size:18px;padding:0 4px;margin-left:4px;" onclick="deleteCat(${i})" title="Remove">×</span>
+        <span style="color:var(--orange);cursor:pointer;font-size:12px;font-weight:600;padding:0 4px;margin-left:4px;" onclick="editCat(${i})" title="Edit">✎</span>
+        <span style="color:var(--text4);cursor:pointer;font-size:18px;padding:0 4px;" onclick="deleteCat(${i})" title="Remove">×</span>
       </div>
     </div>
   `).join('');
@@ -298,7 +299,8 @@ function renderMarkets(){
           <input type="checkbox" ${m.enabled?'checked':''} onchange="toggleMarket(${i},this.checked)"/>
           <span class="toggle-slider"></span>
         </label>
-        <span style="color:var(--text4);cursor:pointer;font-size:18px;padding:0 4px;margin-left:4px;" onclick="deleteMarket(${i})" title="Remove">×</span>
+        <span style="color:var(--orange);cursor:pointer;font-size:12px;font-weight:600;padding:0 4px;margin-left:4px;" onclick="editMarket(${i})" title="Edit">✎</span>
+        <span style="color:var(--text4);cursor:pointer;font-size:18px;padding:0 4px;" onclick="deleteMarket(${i})" title="Remove">×</span>
       </div>
     </div>
   `).join('');
@@ -362,6 +364,39 @@ function deleteMarket(idx){
   const m = config.markets[idx];
   if(!confirm('Remove "'+m.city+', '+m.state+'" from markets?'))return;
   config.markets.splice(idx,1);
+  markChanged();
+  renderMarkets();
+  generateConfig();
+}
+
+function editCat(idx){
+  const cat = config.categories[idx];
+  const newLabel = prompt('Category name:', cat.label);
+  if(newLabel===null) return;
+  const newId = prompt('Internal ID:', cat.id);
+  if(newId===null) return;
+  const newIcon = prompt('Emoji icon:', cat.icon||'📋');
+  if(newIcon===null) return;
+  if(newLabel.trim()) cat.label = newLabel.trim();
+  if(newId.trim()) cat.id = newId.trim();
+  if(newIcon.trim()) cat.icon = newIcon.trim();
+  markChanged();
+  renderCategories();
+  generateConfig();
+}
+
+function editMarket(idx){
+  const m = config.markets[idx];
+  const newCity = prompt('City:', m.city);
+  if(newCity===null) return;
+  const newState = prompt('State (2-letter):', m.state);
+  if(newState===null) return;
+  const newZips = prompt('ZIP prefixes (comma-separated):', m.zips.join(','));
+  if(newZips===null) return;
+  if(newCity.trim()) m.city = newCity.trim();
+  if(newState.trim()) m.state = newState.trim().toUpperCase();
+  if(newZips.trim()) m.zips = newZips.split(',').map(z=>z.trim()).filter(z=>z);
+  m.id = m.city.toLowerCase().replace(/\s+/g,'-') + '-' + m.state.toLowerCase();
   markChanged();
   renderMarkets();
   generateConfig();
