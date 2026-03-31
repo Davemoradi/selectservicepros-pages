@@ -144,6 +144,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text1);}
         <span class="count" id="cat-count">0 of 10 active</span>
       </div>
       <div id="cat-list"></div>
+      <div class="show-add-btn" onclick="document.getElementById('add-cat-form').classList.toggle('visible')">+ Add New Category</div>
+      <div class="add-market-form" id="add-cat-form">
+        <div class="add-market-row">
+          <div class="add-market-field"><label>Category Name</label><input id="new-cat-label" placeholder="e.g. Landscaping"/></div>
+          <div class="add-market-field"><label>ID (internal)</label><input id="new-cat-id" placeholder="e.g. Landscaping"/></div>
+          <div class="add-market-field"><label>Emoji Icon</label><input id="new-cat-icon" placeholder="e.g. 🌿" style="width:60px;"/></div>
+          <button class="add-market-btn" onclick="addCategory()">Add</button>
+        </div>
+      </div>
     </div>
 
     <!-- MARKETS -->
@@ -263,6 +272,7 @@ function renderCategories(){
           <input type="checkbox" ${cat.enabled?'checked':''} onchange="toggleCat(${i},this.checked)"/>
           <span class="toggle-slider"></span>
         </label>
+        <span style="color:var(--text4);cursor:pointer;font-size:18px;padding:0 4px;margin-left:4px;" onclick="deleteCat(${i})" title="Remove">×</span>
       </div>
     </div>
   `).join('');
@@ -287,6 +297,7 @@ function renderMarkets(){
           <input type="checkbox" ${m.enabled?'checked':''} onchange="toggleMarket(${i},this.checked)"/>
           <span class="toggle-slider"></span>
         </label>
+        <span style="color:var(--text4);cursor:pointer;font-size:18px;padding:0 4px;margin-left:4px;" onclick="deleteMarket(${i})" title="Remove">×</span>
       </div>
     </div>
   `).join('');
@@ -316,6 +327,40 @@ function addMarket(){
   document.getElementById('new-state').value='';
   document.getElementById('new-zips').value='';
   document.getElementById('add-form').classList.remove('visible');
+  markChanged();
+  renderMarkets();
+  generateConfig();
+}
+
+function addCategory(){
+  const label = document.getElementById('new-cat-label').value.trim();
+  const id = document.getElementById('new-cat-id').value.trim() || label;
+  const icon = document.getElementById('new-cat-icon').value.trim() || '📋';
+  if(!label){alert('Please enter a category name.');return;}
+  if(config.categories.find(c=>c.id===id)){alert('A category with this ID already exists.');return;}
+  config.categories.push({ id, label, enabled:false, icon });
+  document.getElementById('new-cat-label').value='';
+  document.getElementById('new-cat-id').value='';
+  document.getElementById('new-cat-icon').value='';
+  document.getElementById('add-cat-form').classList.remove('visible');
+  markChanged();
+  renderCategories();
+  generateConfig();
+}
+
+function deleteCat(idx){
+  const cat = config.categories[idx];
+  if(!confirm('Remove "'+cat.label+'" from categories?'))return;
+  config.categories.splice(idx,1);
+  markChanged();
+  renderCategories();
+  generateConfig();
+}
+
+function deleteMarket(idx){
+  const m = config.markets[idx];
+  if(!confirm('Remove "'+m.city+', '+m.state+'" from markets?'))return;
+  config.markets.splice(idx,1);
   markChanged();
   renderMarkets();
   generateConfig();
