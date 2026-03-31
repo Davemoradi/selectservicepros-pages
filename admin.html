@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SSP Admin — Platform Configuration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --navy:#0a1628;--navy2:#122240;
+  --orange:#f05528;--orange2:#d94a20;--orange-light:rgba(240,85,40,.08);
+  --green:#1a8a4a;--green-light:#e6f9ed;
+  --red:#dc3545;--red-light:#fce8e8;
+  --bg:#f8f7f4;--white:#ffffff;
+  --text1:#111318;--text2:#3d3f44;--text3:#6b6e76;--text4:#9ca0a8;
+  --border:#e5e4e0;
+  --radius:12px;--radius-sm:8px;
+  --shadow:0 1px 3px rgba(0,0,0,.06);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08);
+  --font:'DM Sans',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--font);background:var(--bg);color:var(--text1);}
+
+/* AUTH SCREEN */
+.auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+.auth-box{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:40px;max-width:380px;width:100%;text-align:center;box-shadow:var(--shadow-md);}
+.auth-box h1{font-size:24px;font-weight:800;margin-bottom:4px;}
+.auth-box .brand{color:var(--orange);}
+.auth-box p{font-size:13px;color:var(--text3);margin-bottom:24px;}
+.auth-input{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;font-family:var(--font);font-size:14px;outline:none;margin-bottom:12px;}
+.auth-input:focus{border-color:var(--orange);}
+.auth-btn{width:100%;background:var(--navy);color:var(--white);border:none;padding:12px;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:background .2s;}
+.auth-btn:hover{background:var(--navy2);}
+.auth-error{color:var(--red);font-size:13px;margin-top:8px;display:none;}
+
+/* ADMIN LAYOUT */
+.admin{display:none;}
+.admin-nav{background:var(--navy);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+.admin-nav .logo{font-size:18px;font-weight:800;color:var(--white);}
+.admin-nav .logo span{color:var(--orange);}
+.admin-nav .logout{font-size:13px;color:rgba(255,255,255,.5);cursor:pointer;transition:color .15s;}
+.admin-nav .logout:hover{color:var(--white);}
+
+.admin-body{max-width:900px;margin:0 auto;padding:32px 24px 80px;}
+.admin-header{margin-bottom:32px;}
+.admin-header h1{font-size:28px;font-weight:800;margin-bottom:6px;}
+.admin-header p{font-size:14px;color:var(--text3);}
+
+/* SECTIONS */
+.config-section{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:24px;overflow:hidden;}
+.config-header{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--border);}
+.config-header h2{font-size:18px;font-weight:700;}
+.config-header .count{font-size:12px;color:var(--text3);background:var(--bg);padding:4px 10px;border-radius:100px;}
+
+/* TOGGLE ROWS */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);transition:background .1s;}
+.toggle-row:last-child{border:none;}
+.toggle-row:hover{background:var(--bg);}
+.toggle-info{display:flex;align-items:center;gap:12px;}
+.toggle-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--bg);}
+.toggle-label{font-size:14px;font-weight:600;}
+.toggle-sub{font-size:12px;color:var(--text4);margin-top:2px;}
+.toggle-right{display:flex;align-items:center;gap:12px;}
+.status-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.3px;}
+.status-badge.active{background:var(--green-light);color:var(--green);}
+.status-badge.inactive{background:var(--red-light);color:var(--red);}
+
+/* TOGGLE SWITCH */
+.toggle-switch{position:relative;width:44px;height:24px;cursor:pointer;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:24px;transition:.2s;}
+.toggle-slider:before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:var(--white);border-radius:50%;transition:.2s;}
+.toggle-switch input:checked+.toggle-slider{background:var(--green);}
+.toggle-switch input:checked+.toggle-slider:before{transform:translateX(20px);}
+
+/* SAVE BAR */
+.save-bar{position:fixed;bottom:0;left:0;right:0;background:var(--navy);padding:16px 24px;display:none;align-items:center;justify-content:center;gap:16px;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,.15);}
+.save-bar.visible{display:flex;}
+.save-bar p{color:rgba(255,255,255,.7);font-size:14px;}
+.save-btn{background:var(--orange);color:var(--white);border:none;padding:10px 28px;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:background .2s;}
+.save-btn:hover{background:var(--orange2);}
+.discard-btn{background:transparent;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.2);padding:10px 20px;border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;cursor:pointer;}
+.discard-btn:hover{color:var(--white);border-color:rgba(255,255,255,.4);}
+
+/* CONFIG OUTPUT */
+.config-output{background:var(--navy);border-radius:var(--radius-sm);padding:20px;margin-top:16px;color:rgba(255,255,255,.8);font-family:monospace;font-size:12px;line-height:1.6;max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;}
+.copy-btn{background:var(--orange);color:var(--white);border:none;padding:8px 20px;border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;margin-top:12px;transition:background .2s;}
+.copy-btn:hover{background:var(--orange2);}
+
+/* MARKET ADD FORM */
+.add-market-form{padding:16px 24px;background:var(--bg);display:none;border-top:1px solid var(--border);}
+.add-market-form.visible{display:block;}
+.add-market-row{display:flex;gap:8px;align-items:end;flex-wrap:wrap;}
+.add-market-field{display:flex;flex-direction:column;gap:4px;}
+.add-market-field label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;}
+.add-market-field input{border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;width:140px;}
+.add-market-field input:focus{outline:none;border-color:var(--orange);}
+.add-market-btn{background:var(--green);color:var(--white);border:none;padding:8px 16px;border-radius:6px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;height:36px;}
+.show-add-btn{font-size:13px;color:var(--orange);font-weight:600;cursor:pointer;padding:12px 24px;display:block;transition:background .1s;}
+.show-add-btn:hover{background:var(--orange-light);}
+
+@media(max-width:600px){
+  .admin-body{padding:20px 16px 100px;}
+  .config-header{padding:16px;}
+  .toggle-row{padding:12px 16px;}
+  .toggle-icon{display:none;}
+  .add-market-row{flex-direction:column;}
+  .add-market-field input{width:100%;}
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div class="auth-screen" id="auth">
+  <div class="auth-box">
+    <h1>Select<span class="brand">Service</span>Pros</h1>
+    <p>Admin Configuration Panel</p>
+    <input class="auth-input" id="auth-pass" type="password" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')login()"/>
+    <button class="auth-btn" onclick="login()">Sign In</button>
+    <div class="auth-error" id="auth-error">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin" id="admin">
+  <nav class="admin-nav">
+    <div class="logo">SSP <span>Admin</span></div>
+    <div class="logout" onclick="logout()">Sign Out</div>
+  </nav>
+
+  <div class="admin-body">
+    <div class="admin-header">
+      <h1>Platform Configuration</h1>
+      <p>Toggle service categories and markets on/off. Changes update the config file you'll push to GitHub.</p>
+    </div>
+
+    <!-- SERVICE CATEGORIES -->
+    <div class="config-section">
+      <div class="config-header">
+        <h2>Service Categories</h2>
+        <span class="count" id="cat-count">0 of 10 active</span>
+      </div>
+      <div id="cat-list"></div>
+    </div>
+
+    <!-- MARKETS -->
+    <div class="config-section">
+      <div class="config-header">
+        <h2>Markets (Cities)</h2>
+        <span class="count" id="market-count">0 of 5 active</span>
+      </div>
+      <div id="market-list"></div>
+      <div class="show-add-btn" onclick="document.getElementById('add-form').classList.toggle('visible')">+ Add New Market</div>
+      <div class="add-market-form" id="add-form">
+        <div class="add-market-row">
+          <div class="add-market-field"><label>City</label><input id="new-city" placeholder="e.g. Miami"/></div>
+          <div class="add-market-field"><label>State</label><input id="new-state" placeholder="e.g. FL" maxlength="2"/></div>
+          <div class="add-market-field"><label>ZIP prefixes</label><input id="new-zips" placeholder="e.g. 331,332"/></div>
+          <button class="add-market-btn" onclick="addMarket()">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GENERATED CONFIG -->
+    <div class="config-section">
+      <div class="config-header">
+        <h2>Generated Config</h2>
+        <span class="count">Copy & paste into ssp-config.js</span>
+      </div>
+      <div style="padding:20px 24px;">
+        <p style="font-size:13px;color:var(--text3);margin-bottom:8px;">After toggling your settings above, copy this config and replace the contents of <strong>ssp-config.js</strong> in your GitHub repo. Vercel will auto-deploy.</p>
+        <div class="config-output" id="config-output"></div>
+        <button class="copy-btn" onclick="copyConfig()">Copy to Clipboard</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SAVE BAR -->
+<div class="save-bar" id="save-bar">
+  <p>You have unsaved changes</p>
+  <button class="discard-btn" onclick="discardChanges()">Discard</button>
+  <button class="save-btn" onclick="generateConfig()">Generate Config</button>
+</div>
+
+<script>
+// === AUTH ===
+const ADMIN_PASS = 'ssp2025';
+function login(){
+  const pass = document.getElementById('auth-pass').value;
+  if(pass === ADMIN_PASS){
+    document.getElementById('auth').style.display='none';
+    document.getElementById('admin').style.display='block';
+    sessionStorage.setItem('ssp-admin','1');
+    renderAll();
+  } else {
+    document.getElementById('auth-error').style.display='block';
+  }
+}
+function logout(){
+  sessionStorage.removeItem('ssp-admin');
+  document.getElementById('admin').style.display='none';
+  document.getElementById('auth').style.display='flex';
+  document.getElementById('auth-pass').value='';
+}
+if(sessionStorage.getItem('ssp-admin')==='1'){
+  document.getElementById('auth').style.display='none';
+  document.getElementById('admin').style.display='block';
+  setTimeout(renderAll,0);
+}
+
+// === CONFIG STATE ===
+let config = {
+  categories: [
+    { id:"HVAC", label:"HVAC", enabled:true, icon:"❄️" },
+    { id:"Plumbing", label:"Plumbing", enabled:false, icon:"🔧" },
+    { id:"Electrical", label:"Electrical", enabled:false, icon:"⚡" },
+    { id:"Roofing", label:"Roofing", enabled:false, icon:"🏠" },
+    { id:"Handyman", label:"Handyman", enabled:false, icon:"🔨" },
+    { id:"Appliance Repair", label:"Appliance Repair", enabled:false, icon:"🔌" },
+    { id:"Construction", label:"Remodeling", enabled:false, icon:"🏗" },
+    { id:"Painting", label:"Painting", enabled:false, icon:"🎨" },
+    { id:"Pool & Spa", label:"Pool & Spa", enabled:false, icon:"🏊" },
+    { id:"Windows & Doors", label:"Windows & Doors", enabled:false, icon:"🪟" }
+  ],
+  markets: [
+    { id:"houston-tx", city:"Houston", state:"TX", zips:["770","773","774"], enabled:true },
+    { id:"dallas-tx", city:"Dallas", state:"TX", zips:["750","751","752","753"], enabled:false },
+    { id:"san-antonio-tx", city:"San Antonio", state:"TX", zips:["782","781"], enabled:false },
+    { id:"austin-tx", city:"Austin", state:"TX", zips:["787","786","785"], enabled:false },
+    { id:"fort-worth-tx", city:"Fort Worth", state:"TX", zips:["760","761","762"], enabled:false }
+  ]
+};
+let originalConfig = JSON.stringify(config);
+let hasChanges = false;
+
+// === RENDER ===
+function renderAll(){
+  renderCategories();
+  renderMarkets();
+  generateConfig();
+}
+
+function renderCategories(){
+  const list = document.getElementById('cat-list');
+  const active = config.categories.filter(c=>c.enabled).length;
+  document.getElementById('cat-count').textContent = active + ' of ' + config.categories.length + ' active';
+  list.innerHTML = config.categories.map((cat,i) => `
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-icon">${cat.icon||'📋'}</div>
+        <div>
+          <div class="toggle-label">${cat.label}</div>
+          <div class="toggle-sub">ID: ${cat.id}</div>
+        </div>
+      </div>
+      <div class="toggle-right">
+        <span class="status-badge ${cat.enabled?'active':'inactive'}">${cat.enabled?'Live':'Off'}</span>
+        <label class="toggle-switch">
+          <input type="checkbox" ${cat.enabled?'checked':''} onchange="toggleCat(${i},this.checked)"/>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderMarkets(){
+  const list = document.getElementById('market-list');
+  const active = config.markets.filter(m=>m.enabled).length;
+  document.getElementById('market-count').textContent = active + ' of ' + config.markets.length + ' active';
+  list.innerHTML = config.markets.map((m,i) => `
+    <div class="toggle-row">
+      <div class="toggle-info">
+        <div class="toggle-icon">📍</div>
+        <div>
+          <div class="toggle-label">${m.city}, ${m.state}</div>
+          <div class="toggle-sub">ZIP prefixes: ${m.zips.join(', ')}</div>
+        </div>
+      </div>
+      <div class="toggle-right">
+        <span class="status-badge ${m.enabled?'active':'inactive'}">${m.enabled?'Live':'Off'}</span>
+        <label class="toggle-switch">
+          <input type="checkbox" ${m.enabled?'checked':''} onchange="toggleMarket(${i},this.checked)"/>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+  `).join('');
+}
+
+// === TOGGLES ===
+function toggleCat(idx, val){
+  config.categories[idx].enabled = val;
+  markChanged();
+  renderCategories();
+  generateConfig();
+}
+function toggleMarket(idx, val){
+  config.markets[idx].enabled = val;
+  markChanged();
+  renderMarkets();
+  generateConfig();
+}
+function addMarket(){
+  const city = document.getElementById('new-city').value.trim();
+  const state = document.getElementById('new-state').value.trim().toUpperCase();
+  const zips = document.getElementById('new-zips').value.trim().split(',').map(z=>z.trim()).filter(z=>z);
+  if(!city||!state||zips.length===0){alert('Please fill in city, state, and at least one ZIP prefix.');return;}
+  const id = city.toLowerCase().replace(/\s+/g,'-') + '-' + state.toLowerCase();
+  config.markets.push({ id, city, state, zips, enabled:false });
+  document.getElementById('new-city').value='';
+  document.getElementById('new-state').value='';
+  document.getElementById('new-zips').value='';
+  document.getElementById('add-form').classList.remove('visible');
+  markChanged();
+  renderMarkets();
+  generateConfig();
+}
+
+function markChanged(){
+  hasChanges = JSON.stringify(config) !== originalConfig;
+  document.getElementById('save-bar').classList.toggle('visible', hasChanges);
+}
+function discardChanges(){
+  config = JSON.parse(originalConfig);
+  hasChanges = false;
+  document.getElementById('save-bar').classList.remove('visible');
+  renderAll();
+}
+
+// === GENERATE CONFIG OUTPUT ===
+function generateConfig(){
+  const cats = config.categories.map(c => `    { id: "${c.id}", label: "${c.label}", enabled: ${c.enabled} }`).join(',\n');
+  const mkts = config.markets.map(m => `    { id: "${m.id}", city: "${m.city}", state: "${m.state}", zips: ${JSON.stringify(m.zips)}, enabled: ${m.enabled} }`).join(',\n');
+
+  const output = `const SSP_CONFIG = {
+  categories: [
+${cats}
+  ],
+  markets: [
+${mkts}
+  ],
+  settings: {
+    maxLeadsPerContractor: 3,
+    eliteWindowMinutes: 60,
+    proWindowMinutes: 45,
+    basicWindowMinutes: 30,
+    adminEmail: "dave@selecthomewarranty.com"
+  }
+};
+if (typeof module !== 'undefined') module.exports = SSP_CONFIG;
+if (typeof window !== 'undefined') window.SSP_CONFIG = SSP_CONFIG;`;
+
+  document.getElementById('config-output').textContent = output;
+}
+
+function copyConfig(){
+  const text = document.getElementById('config-output').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✓ Copied!';
+    setTimeout(()=>{ btn.textContent = 'Copy to Clipboard'; }, 2000);
+  });
+}
+</script>
+</body>
+</html>
