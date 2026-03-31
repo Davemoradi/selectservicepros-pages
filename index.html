@@ -329,8 +329,6 @@ a{text-decoration:none;color:inherit;}
 <div class="mobile-menu">
   <a href="#categories" onclick="this.parentElement.classList.remove('open')">Find Pros</a>
   <a href="#how-it-works" onclick="this.parentElement.classList.remove('open')">How It Works</a>
-  <a href="faq-homeowners.html">Homeowner FAQ</a>
-  <a href="faq-contractors.html">Contractor FAQ</a>
   <a href="contractor-signup.html" class="mobile-menu-cta">Join as a Pro</a>
 </div>
 
@@ -529,12 +527,11 @@ a{text-decoration:none;color:inherit;}
         <h4>Homeowners</h4>
         <a href="#categories">Find pros</a>
         <a href="#how-it-works">How it works</a>
-        <a href="faq-homeowners.html">FAQ</a>
+        <a href="#categories">Browse categories</a>
       </div>
       <div class="footer-col">
         <h4>For Pros</h4>
         <a href="contractor-signup.html">Join the network</a>
-        <a href="faq-contractors.html">Contractor FAQ</a>
       </div>
       <div class="footer-col">
         <h4>Company</h4>
@@ -872,7 +869,7 @@ function submitLead(){
   const urgency=answers.find(a=>a.answer.toLowerCase().match(/emergency|urgent|now|24|today/))?.answer||answers[1]?.answer||"";
   const preferred_date_1=date1?(date1+" "+time1).trim():"";
   const preferred_date_2=date2?(date2+" "+time2).trim():"";
-  fetch(GHL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,phone,email,zip,service,urgency,score,preferred_date_1,preferred_date_2,source:"SelectServicePros.com",category:selectedCategory,lead_id:"SSP-"+Date.now(),answers:JSON.stringify(answersObj),full_conversation:answers.map(a=>"Q: "+a.question+" | A: "+a.answer).join(" || ")})}).catch(e=>console.error(e));
+  fetch(GHL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,phone,email,zip,service,urgency,score,preferred_date_1,preferred_date_2,source:"SelectServicePros.com",category:selectedCategory,lead_id:"SSP-"+Date.now(),answers:JSON.stringify(answersObj),full_conversation:answers.map(a=>"Q: "+a.question+" | A: "+a.answer).join(" || ")})}).catch(e=>console.error(e));
   document.getElementById("hist").innerHTML="";
   document.getElementById("qa").innerHTML='<div class="success-wrap fade"><div class="s-icon">✓</div><div class="s-title">You are all set, '+name.split(" ")[0]+'!</div><p class="s-msg">Your request has been received. Licensed Houston '+selectedCategory+' contractors in your area will be in touch shortly with free quotes.</p><div class="summary-box"><div class="s-row"><span>Service</span><span>'+service+'</span></div><div class="s-row"><span>1st Availability</span><span>'+(preferred_date_1||"—")+'</span></div><div class="s-row"><span>2nd Availability</span><span>'+(preferred_date_2||"—")+'</span></div><div class="s-row"><span>Contact</span><span>'+phone+'</span></div><div class="s-row"><span>ZIP</span><span>'+(zip||"—")+'</span></div></div><p style="font-size:12px;color:var(--text3);line-height:1.7;">A confirmation has been sent to <strong style="color:var(--text2)">'+email+'</strong>. Expect your first response within <strong style="color:var(--text2)">47 minutes</strong> on average.</p></div>';
 }
