@@ -38,11 +38,39 @@ export default async function handler(req) {
       });
     }
 
-    // Use zip-codes.com API — first get ZIP info for the city, then do radius search
-    // Step 1: Get a ZIP code for this city using QuickGetZipCodeDetails
-    const infoUrl = `https://api.zip-codes.com/ZipCodesAPI.svc/1.0/FindZipCodesByCityState?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}&key=${apiKey}`;
+    // Step 1: Get a center ZIP code for this city using GetZipCodeOfAddress with a generic address
+    const addressUrl = `https://api.zip-codes.com/ZipCodesAPI.svc/1.0/GetZipCodeOfAddress?address=${encodeURIComponent('City Hall')}&city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}&key=${apiKey}`;
+    const addrResp = await fetch(addressUrl);
+    const addrRaw = (await addrResp.text()).replace(/^\uFEFF/, '').trim();
+    
+    let addrData;
+    try { addrData = JSON.parse(addrRaw); } catch(e) {
+      return new Response(JSON.stringify({ error: 'Failed to parse address lookup', raw: addrRaw.substring(0,300) }), {
+        status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
-    const response = await fetch(infoUrl);
+    // If address lookup fails, try with "Main St" as fallback
+    let centerZip = addrData.ZipCode;
+    if (!centerZip || addrData.Error) {
+      const fallbackUrl = `https://api.zip-codes.com/ZipCodesAPI.svc/1.0/GetZipCodeOfAddress?address=${encodeURIComponent('100 Main St')}&city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}&key=${apiKey}`;
+      const fbResp = await fetch(fallbackUrl);
+      const fbRaw = (await fbResp.text()).replace(/^\uFEFF/, '').trim();
+      try {
+        const fbData = JSON.parse(fbRaw);
+        centerZip = fbData.ZipCode;
+      } catch(e) {}
+    }
+
+    if (!centerZip) {
+      return new Response(JSON.stringify({ error: 'Could not find a ZIP code for ' + city + ', ' + state + '. Try entering a known ZIP code for this city instead.' }), {
+        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Step 2: Find all ZIP codes within 25-mile radius of that city center
+    const radiusUrl = `https://api.zip-codes.com/ZipCodesAPI.svc/1.0/FindZipCodesInRadius?zipcode=${centerZip}&minimumradius=0&maximumradius=25&key=${apiKey}`;
+    const response = await fetch(radiusUrl);
 
     if (!response.ok) {
       const errText = await response.text();
