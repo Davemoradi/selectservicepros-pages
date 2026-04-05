@@ -114,6 +114,31 @@ body{font-family:'DM Sans',sans-serif;color:#1a1a2e;background:#fff;overflow-x:h
 .footer{background:var(--navy);color:rgba(255,255,255,.5);padding:28px 24px;text-align:center;font-size:13px}
 .footer a{color:rgba(255,255,255,.5);text-decoration:none}
 .footer a:hover{color:#fff}
+
+/* ── SAVINGS CALCULATOR ── */
+.calc-section{background:#fff;padding:64px 24px;border-top:1px solid var(--gray2)}
+.calc-inner{max-width:780px;margin:0 auto}
+.calc-header{text-align:center;margin-bottom:36px}
+.calc-header h2{font-size:clamp(20px,3vw,28px);font-weight:700;color:var(--navy);margin-bottom:8px}
+.calc-header p{font-size:15px;color:var(--gray4)}
+.calc-slider-wrap{background:var(--gray1);border-radius:var(--radius);padding:28px 32px;margin-bottom:28px}
+.calc-slider-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.calc-slider-label span{font-size:14px;font-weight:600;color:var(--navy)}
+.calc-lead-count{font-size:32px;font-weight:700;color:var(--orange)}
+input[type=range]{width:100%;height:6px;border-radius:4px;background:var(--gray2);outline:none;-webkit-appearance:none;cursor:pointer;accent-color:var(--orange)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--orange);cursor:pointer;box-shadow:0 2px 8px rgba(240,85,40,.4)}
+.calc-range-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--gray4);margin-top:8px}
+.calc-results{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:600px){.calc-results{grid-template-columns:1fr}}
+.calc-card{border-radius:var(--radius);padding:22px 20px;border:2px solid var(--gray2);background:#fff;transition:all .2s;position:relative}
+.calc-card.best{border-color:var(--orange);background:rgba(240,85,40,.03)}
+.calc-card-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:2px 12px;border-radius:20px;white-space:nowrap;text-transform:uppercase;letter-spacing:.4px}
+.calc-plan-name{font-size:12px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.calc-total{font-size:26px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.calc-breakdown{font-size:12px;color:var(--gray4);line-height:1.6;margin-bottom:10px}
+.calc-saving{font-size:13px;font-weight:700;color:var(--green)}
+.calc-losing{font-size:13px;font-weight:700;color:var(--gray4)}
+.calc-note{text-align:center;font-size:13px;color:var(--gray4);margin-top:20px}
 </style>
 </head>
 <body>
@@ -148,6 +173,29 @@ body{font-family:'DM Sans',sans-serif;color:#1a1a2e;background:#fff;overflow-x:h
     <div class="plans-grid" id="plans-grid">
       <!-- Populated from SSP_CONFIG.plans -->
     </div>
+  </div>
+</section>
+
+
+<!-- SAVINGS CALCULATOR -->
+<section class="calc-section">
+  <div class="calc-inner">
+    <div class="calc-header">
+      <h2>Calculate your monthly cost</h2>
+      <p>Drag the slider to see exactly what you'd pay at each tier — and which plan saves you the most.</p>
+    </div>
+    <div class="calc-slider-wrap">
+      <div class="calc-slider-label">
+        <span>Leads you expect per month</span>
+        <span class="calc-lead-count" id="calc-lead-display">10 leads</span>
+      </div>
+      <input type="range" id="calc-slider" min="1" max="50" value="10" oninput="updateCalc(this.value)"/>
+      <div class="calc-range-labels"><span>1 lead</span><span>25 leads</span><span>50 leads</span></div>
+    </div>
+    <div class="calc-results" id="calc-results">
+      <!-- Populated by updateCalc() -->
+    </div>
+    <p class="calc-note">* Monthly membership + per-lead fees combined. You only pay per-lead when you <em>accept</em> a lead.</p>
   </div>
 </section>
 
@@ -283,6 +331,49 @@ function renderPlans() {
   const faqEl = document.getElementById('faq-markets');
   if (faqEl && activeMarkets) faqEl.textContent = `We're currently serving: ${activeMarkets}. Additional markets coming soon.`;
 }
+
+
+function updateCalc(leads) {
+  leads = parseInt(leads);
+  document.getElementById('calc-lead-display').textContent = leads + (leads === 1 ? ' lead' : ' leads');
+
+  if (typeof SSP_CONFIG === 'undefined' || !SSP_CONFIG.plans) return;
+
+  const plans = SSP_CONFIG.plans;
+  const totals = plans.map(p => ({
+    ...p,
+    total: p.monthlyPrice + (leads * p.leadPrice)
+  }));
+
+  const cheapest = Math.min(...totals.map(t => t.total));
+
+  document.getElementById('calc-results').innerHTML = totals.map(t => {
+    const isBest = t.total === cheapest;
+    const saving = totals.find(x => x.id === 'basic').total - t.total;
+    const savingText = t.id === 'basic'
+      ? '<span class="calc-losing">Highest cost at this volume</span>'
+      : saving > 0
+        ? `<span class="calc-saving">Save $${saving.toLocaleString()}/mo vs Basic</span>`
+        : '<span class="calc-losing">No savings vs Basic</span>';
+
+    return `
+      <div class="calc-card ${isBest ? 'best' : ''}">
+        ${isBest ? '<div class="calc-card-badge">Best value</div>' : ''}
+        <div class="calc-plan-name">${t.name} Plan</div>
+        <div class="calc-total">$${t.total.toLocaleString()}<span style="font-size:14px;font-weight:400;color:var(--gray4)">/mo</span></div>
+        <div class="calc-breakdown">$${t.monthlyPrice} membership<br/>+ ${leads} leads × $${t.leadPrice} = $${(leads * t.leadPrice).toLocaleString()}</div>
+        ${savingText}
+      </div>
+    `;
+  }).join('');
+}
+
+// Init calculator after plans render
+const origRender = renderPlans;
+renderPlans = function() {
+  origRender();
+  updateCalc(10);
+};
 
 function toggleFaq(el) {
   const item = el.closest('.faq-item');
