@@ -111,20 +111,20 @@ const SSP_CONFIG = {
   // stripeLink: the Stripe payment link for this tier
   plans: [
     {
-      id: "elite",
-      name: "Elite",
-      bd_plan_id: 3,
-      monthlyPrice: 499,
-      leadPrice: 15,
-      leadWindowMinutes: 60,
-      stripeLink: "https://buy.stripe.com/REPLACE_ELITE_LINK",
-      highlight: true,
-      badge: "Most Popular",
+      id: "basic",
+      name: "Basic",
+      bd_plan_id: 1,
+      monthlyPrice: 99,
+      leadPrice: 35,
+      leadWindowMinutes: 30,
+      stripeLink: "https://buy.stripe.com/cNi6oI6OZ7OO4wO0hH0Fi00",
+      highlight: false,
+      badge: null,
       features: [
-        "First access to every lead — 60 min exclusive window",
-        "Lowest per-lead cost at $15",
-        "Priority ranking in search results",
-        "Dedicated account support",
+        "Access to leads after Elite and Pro windows",
+        "$35 per lead — only pay when you accept",
+        "Standard search ranking",
+        "Email support",
         "Up to 3 leads matched per job"
       ]
     },
@@ -135,32 +135,32 @@ const SSP_CONFIG = {
       monthlyPrice: 249,
       leadPrice: 25,
       leadWindowMinutes: 45,
-      stripeLink: "https://buy.stripe.com/REPLACE_PRO_LINK",
-      highlight: false,
-      badge: null,
+      stripeLink: "https://buy.stripe.com/5kQ14o5KV3yyd3k0hH0Fi01",
+      highlight: true,
+      badge: "Most Popular",
       features: [
-        "Second access — after Elite window closes",
-        "$25 per lead",
+        "Second access — 45 min window after Elite",
+        "$25 per lead — only pay when you accept",
         "Standard search ranking",
         "Email support",
         "Up to 3 leads matched per job"
       ]
     },
     {
-      id: "basic",
-      name: "Basic",
-      bd_plan_id: 1,
-      monthlyPrice: 99,
-      leadPrice: 35,
-      leadWindowMinutes: 30,
-      stripeLink: "https://buy.stripe.com/REPLACE_BASIC_LINK",
+      id: "elite",
+      name: "Elite",
+      bd_plan_id: 3,
+      monthlyPrice: 499,
+      leadPrice: 15,
+      leadWindowMinutes: 60,
+      stripeLink: "https://buy.stripe.com/9B66oIa1bfhg2oG1lL0Fi02",
       highlight: false,
-      badge: null,
+      badge: "Best Value Per Lead",
       features: [
-        "Third access — after Pro window closes",
-        "$35 per lead",
-        "Standard search ranking",
-        "Email support",
+        "First access — 60 min exclusive window",
+        "Lowest per-lead cost at $15",
+        "Priority ranking in search results",
+        "Dedicated account support",
         "Up to 3 leads matched per job"
       ]
     }
