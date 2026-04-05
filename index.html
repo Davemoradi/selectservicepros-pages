@@ -957,9 +957,126 @@ function handleFreeFormSearch(text) {
   }
 }
 
+// Returns the active market if ZIP is covered, null otherwise
+function getMarketForZip(zip) {
+  if (!zip || zip.length < 3) return null;
+  if (typeof SSP_CONFIG === 'undefined') return null;
+  const prefix3 = zip.substring(0, 3);
+  const prefix5 = zip.substring(0, 5);
+  return SSP_CONFIG.markets.find(m =>
+    m.enabled && m.zips.some(z => prefix3 === z || prefix5 === z)
+  ) || null;
+}
+
+function showZipNotCovered(zip) {
+  const section = document.getElementById('intake-section');
+  document.getElementById('intake-service-name').textContent = 'Service Area';
+  section.style.display = 'block';
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  document.getElementById('hist').innerHTML = '';
+  document.getElementById('prog').style.width = '0%';
+  document.getElementById('step-pct').textContent = '';
+  document.getElementById('step-lbl').textContent = '';
+  document.getElementById('thinking').style.display = 'none';
+  document.getElementById('q-area').style.display = 'block';
+
+  // Build list of active markets for display
+  const activeMarkets = (typeof SSP_CONFIG !== 'undefined')
+    ? SSP_CONFIG.markets.filter(m => m.enabled).map(m => `${m.city}, ${m.state}`)
+    : ['Houston, TX'];
+
+  document.getElementById('q-area').innerHTML = `
+    <div class="not-available">
+      <div class="na-icon">📍</div>
+      <h3>ZIP code ${zip ? `<strong>${zip}</strong> is` : 'You\'re'} not in our service area yet.</h3>
+      <p>We currently serve: <strong>${activeMarkets.join(' · ')}</strong>.<br/><br/>
+      We're expanding quickly. Leave your info and we'll notify you when we launch in your area.</p>
+      <button class="btn-notify" onclick="showZipWaitlistForm('${zip || ''}')">Notify Me When Available</button>
+    </div>
+  `;
+}
+
+function showZipWaitlistForm(zip) {
+  document.getElementById('q-area').innerHTML = `
+    <div class="contact-form">
+      <h3>We'll notify you when we launch in your area</h3>
+      <p class="sub">We're expanding fast. You'll be first to know.</p>
+      <div class="contact-row">
+        <div class="field-group">
+          <label>First Name *</label>
+          <input type="text" id="cf-first" placeholder="Jane"/>
+        </div>
+        <div class="field-group">
+          <label>Last Name *</label>
+          <input type="text" id="cf-last" placeholder="Smith"/>
+        </div>
+      </div>
+      <div class="contact-row">
+        <div class="field-group">
+          <label>Email *</label>
+          <input type="email" id="cf-email" placeholder="jane@email.com"/>
+        </div>
+        <div class="field-group">
+          <label>ZIP Code *</label>
+          <input type="text" id="cf-zip" placeholder="10001" maxlength="5" inputmode="numeric" value="${zip}"/>
+        </div>
+      </div>
+      <div class="intake-actions">
+        <button class="btn-back" onclick="showZipNotCovered('${zip}')">← Back</button>
+        <button class="btn-submit" onclick="submitZipWaitlist()">Notify Me →</button>
+      </div>
+    </div>
+  `;
+}
+
+async function submitZipWaitlist() {
+  const first = document.getElementById('cf-first')?.value.trim();
+  const last = document.getElementById('cf-last')?.value.trim();
+  const email = document.getElementById('cf-email')?.value.trim();
+  const zip = document.getElementById('cf-zip')?.value.trim();
+
+  if (!first || !email || !zip) { alert('Please fill in all required fields.'); return; }
+
+  const btn = document.querySelector('.btn-submit');
+  if (btn) { btn.textContent = 'Submitting…'; btn.disabled = true; }
+
+  try {
+    await fetch('https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName: first, lastName: last, email, zip,
+        source: 'waitlist-zip',
+        submittedAt: new Date().toISOString()
+      })
+    });
+  } catch(e) { console.warn('Webhook error:', e); }
+
+  document.getElementById('q-area').innerHTML = `
+    <div class="success-msg">
+      <div class="success-icon">✅</div>
+      <h3>You're on the list!</h3>
+      <p>We'll email you at <strong>${email}</strong> as soon as we launch in your area.</p>
+    </div>
+  `;
+}
+
 function handleSearch() {
   const text = document.getElementById('hero-service').value.trim();
+  const zip = document.getElementById('hero-zip').value.trim();
   document.getElementById('suggestions').style.display = 'none';
+
+  // If they entered a ZIP, validate it against active markets first
+  if (zip && zip.length >= 3) {
+    const market = getMarketForZip(zip);
+    if (!market) {
+      showZipNotCovered(zip);
+      return;
+    }
+  }
+
+  // ZIP is valid (or blank) — now check the service
   if (text) {
     handleFreeFormSearch(text);
   } else {
