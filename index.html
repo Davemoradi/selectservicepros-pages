@@ -138,6 +138,13 @@ body{font-family:'DM Sans',sans-serif;color:#1a1a2e;background:#fff;overflow-x:h
 .btn-continue{background:var(--orange);color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s,transform .1s;margin-left:auto}
 .btn-continue:hover{background:var(--orange2)}
 .btn-continue:active{transform:scale(.98)}
+/* Not available message */
+.not-available{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:40px 28px;text-align:center}
+.not-available .na-icon{font-size:44px;margin-bottom:14px}
+.not-available h3{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.not-available p{font-size:15px;color:var(--gray4);line-height:1.6;margin-bottom:20px}
+.not-available .btn-notify{background:var(--orange);color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer}
+.not-available .btn-notify:hover{background:var(--orange2)}
 /* Contact form */
 .contact-form{padding:20px;display:flex;flex-direction:column;gap:14px}
 .contact-form h3{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:4px}
@@ -783,24 +790,127 @@ async function submitLead() {
 // ── Hero search ──
 
 const SERVICE_KEYWORDS = {
-  'HVAC': ['ac','air conditioning','hvac','heating','furnace','heat pump','duct','cooling','thermostat'],
-  'Plumbing': ['plumb','pipe','drain','leak','toilet','faucet','water heater','sewer'],
-  'Electrical': ['electric','wiring','outlet','breaker','panel','light','switch','generator'],
-  'Roofing': ['roof','shingle','gutter','skylight','leak'],
-  'Handyman': ['handyman','fix','repair','install','odd jobs','general'],
-  'Appliance Repair': ['appliance','washer','dryer','refrigerator','oven','dishwasher','microwave'],
-  'Construction': ['remodel','renovation','addition','basement','kitchen','bathroom','construction'],
-  'Painting': ['paint','stain','interior','exterior','primer'],
-  'Pool & Spa': ['pool','spa','hot tub','jacuzzi'],
-  'Windows & Doors': ['window','door','glass','siding']
+  'HVAC':            ['ac','air conditioning','hvac','heating','furnace','heat pump','duct','cooling','thermostat','air conditioner'],
+  'Plumbing':        ['plumb','pipe','drain','leak','toilet','faucet','water heater','sewer','clog','water pressure','garbage disposal'],
+  'Electrical':      ['electric','wiring','outlet','breaker','panel','light','switch','generator','circuit'],
+  'Roofing':         ['roof','shingle','gutter','skylight'],
+  'Handyman':        ['handyman','odd jobs','general repair','fix','patch','drywall','caulk'],
+  'Appliance Repair':['appliance','washer','dryer','refrigerator','fridge','oven','dishwasher','microwave','freezer'],
+  'Construction':    ['remodel','renovation','addition','basement','kitchen remodel','bathroom remodel','construction'],
+  'Painting':        ['paint','stain','interior paint','exterior paint','primer'],
+  'Pool & Spa':      ['pool','spa','hot tub','jacuzzi'],
+  'Windows & Doors': ['window','door','glass','sliding door','siding']
 };
 
-function matchCategory(text) {
+// Match text against ALL categories (enabled or not) — returns { catId, enabled }
+function matchCategoryFull(text) {
   const lower = text.toLowerCase();
-  for (const [cat, keywords] of Object.entries(SERVICE_KEYWORDS)) {
-    if (keywords.some(kw => lower.includes(kw))) return cat;
+  const allCats = (typeof SSP_CONFIG !== 'undefined') ? SSP_CONFIG.categories : [];
+  for (const [catId, keywords] of Object.entries(SERVICE_KEYWORDS)) {
+    if (keywords.some(kw => lower.includes(kw))) {
+      const catConfig = allCats.find(c => c.id === catId);
+      return { catId, enabled: catConfig ? catConfig.enabled : false };
+    }
   }
   return null;
+}
+
+function showNotAvailable(catId) {
+  const catConfig = (typeof SSP_CONFIG !== 'undefined')
+    ? SSP_CONFIG.categories.find(c => c.id === catId)
+    : null;
+  const label = catConfig?.displayName || catConfig?.label || catId;
+  const activeMarket = (typeof SSP_CONFIG !== 'undefined') ? SSP_CONFIG.markets.find(m => m.enabled) : null;
+  const city = activeMarket?.city || 'your area';
+
+  // Show intake section with "not available" message
+  const section = document.getElementById('intake-section');
+  document.getElementById('intake-service-name').textContent = label;
+  section.style.display = 'block';
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  document.getElementById('hist').innerHTML = '';
+  document.getElementById('prog').style.width = '0%';
+  document.getElementById('step-pct').textContent = '';
+  document.getElementById('step-lbl').textContent = '';
+
+  document.getElementById('thinking').style.display = 'none';
+  document.getElementById('q-area').style.display = 'block';
+  document.getElementById('q-area').innerHTML = `
+    <div class="not-available">
+      <div class="na-icon">🔧</div>
+      <h3>${label} isn't available in ${city} yet.</h3>
+      <p>We're actively recruiting ${label.toLowerCase()} contractors in ${city}.<br/>
+      Leave your info and we'll notify you the moment we go live in your area.</p>
+      <button class="btn-notify" onclick="showNotifyForm('${catId}', '${label}')">Notify Me When Available</button>
+    </div>
+  `;
+}
+
+function showNotifyForm(catId, label) {
+  document.getElementById('q-area').innerHTML = `
+    <div class="contact-form">
+      <h3>We'll let you know when ${label} is available</h3>
+      <p class="sub">We're expanding fast. Drop your info and you'll be first in line.</p>
+      <div class="contact-row">
+        <div class="field-group">
+          <label>First Name *</label>
+          <input type="text" id="cf-first" placeholder="Jane"/>
+        </div>
+        <div class="field-group">
+          <label>Last Name *</label>
+          <input type="text" id="cf-last" placeholder="Smith"/>
+        </div>
+      </div>
+      <div class="contact-row">
+        <div class="field-group">
+          <label>Email *</label>
+          <input type="email" id="cf-email" placeholder="jane@email.com"/>
+        </div>
+        <div class="field-group">
+          <label>ZIP Code *</label>
+          <input type="text" id="cf-zip" placeholder="77001" maxlength="5" inputmode="numeric" value="${document.getElementById('hero-zip')?.value || ''}"/>
+        </div>
+      </div>
+      <div class="intake-actions">
+        <button class="btn-back" onclick="showNotAvailable('${catId}')">← Back</button>
+        <button class="btn-submit" onclick="submitNotifyRequest('${catId}', '${label}')">Notify Me →</button>
+      </div>
+    </div>
+  `;
+}
+
+async function submitNotifyRequest(catId, label) {
+  const first = document.getElementById('cf-first')?.value.trim();
+  const last = document.getElementById('cf-last')?.value.trim();
+  const email = document.getElementById('cf-email')?.value.trim();
+  const zip = document.getElementById('cf-zip')?.value.trim();
+
+  if (!first || !email || !zip) { alert('Please fill in all required fields.'); return; }
+
+  const btn = document.querySelector('.btn-submit');
+  if (btn) { btn.textContent = 'Submitting…'; btn.disabled = true; }
+
+  try {
+    await fetch('https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName: first, lastName: last, email, zip,
+        serviceCategory: catId,
+        source: 'waitlist',
+        submittedAt: new Date().toISOString()
+      })
+    });
+  } catch(e) { console.warn('Webhook error:', e); }
+
+  document.getElementById('q-area').innerHTML = `
+    <div class="success-msg">
+      <div class="success-icon">✅</div>
+      <h3>You're on the list!</h3>
+      <p>We'll email you at <strong>${email}</strong> as soon as ${label} contractors are available in your area.</p>
+    </div>
+  `;
 }
 
 function showSuggestions(text) {
@@ -834,17 +944,16 @@ function pickSuggestion(catId, label) {
 }
 
 function handleFreeFormSearch(text) {
-  const cat = matchCategory(text);
-  if (cat) {
-    selectCategory(cat);
-  } else {
-    // Show intake with first enabled category and prime with the typed text
-    const enabledCats = (typeof SSP_CONFIG !== 'undefined')
-      ? SSP_CONFIG.categories.filter(c => c.enabled)
-      : [];
-    if (enabledCats.length > 0) {
-      selectCategory(enabledCats[0].id);
+  const match = matchCategoryFull(text);
+  if (match) {
+    if (match.enabled) {
+      selectCategory(match.catId);
+    } else {
+      showNotAvailable(match.catId);
     }
+  } else {
+    // No match at all — scroll to category strip
+    document.getElementById('categories').scrollIntoView({ behavior: 'smooth' });
   }
 }
 
@@ -854,23 +963,26 @@ function handleSearch() {
   if (text) {
     handleFreeFormSearch(text);
   } else {
-    // Scroll to categories
     document.getElementById('categories').scrollIntoView({ behavior: 'smooth' });
   }
 }
 
 function detectLocation() {
   if (!navigator.geolocation) return;
+  const btn = document.getElementById('geo-btn');
+  if (btn) btn.style.opacity = '1';
   navigator.geolocation.getCurrentPosition(async pos => {
     try {
       const { latitude: lat, longitude: lng } = pos.coords;
-      const res = await fetch(`https://api.zippopotam.us/us/${lat},${lng}`);
+      // Use BigDataCloud free reverse geocode — no key required
+      const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
       if (!res.ok) return;
       const data = await res.json();
-      const zip = data?.['post code'];
+      const zip = data?.postcode;
       if (zip) document.getElementById('hero-zip').value = zip;
     } catch(e) { /* silently fail */ }
-  });
+    finally { if (btn) btn.style.opacity = '0.5'; }
+  }, () => { if (btn) btn.style.opacity = '0.5'; });
 }
 
 // Close suggestions on outside click
