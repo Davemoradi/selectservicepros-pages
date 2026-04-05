@@ -104,6 +104,68 @@ const SSP_CONFIG = {
     { id: "fort-worth-tx",   city: "Fort Worth",  state: "TX", zips: ["760","761","762"],          enabled: false }
   ],
 
+  // === MEMBERSHIP PLANS ===
+  // Single source of truth for contractor tiers.
+  // When you update here, manually mirror changes in BD Admin → Finance → Membership Plans.
+  // bd_plan_id: the Brilliant Directories plan ID this maps to
+  // stripeLink: the Stripe payment link for this tier
+  plans: [
+    {
+      id: "elite",
+      name: "Elite",
+      bd_plan_id: 3,
+      monthlyPrice: 499,
+      leadPrice: 15,
+      leadWindowMinutes: 60,
+      stripeLink: "https://buy.stripe.com/REPLACE_ELITE_LINK",
+      highlight: true,
+      badge: "Most Popular",
+      features: [
+        "First access to every lead — 60 min exclusive window",
+        "Lowest per-lead cost at $15",
+        "Priority ranking in search results",
+        "Dedicated account support",
+        "Up to 3 leads matched per job"
+      ]
+    },
+    {
+      id: "pro",
+      name: "Pro",
+      bd_plan_id: 2,
+      monthlyPrice: 249,
+      leadPrice: 25,
+      leadWindowMinutes: 45,
+      stripeLink: "https://buy.stripe.com/REPLACE_PRO_LINK",
+      highlight: false,
+      badge: null,
+      features: [
+        "Second access — after Elite window closes",
+        "$25 per lead",
+        "Standard search ranking",
+        "Email support",
+        "Up to 3 leads matched per job"
+      ]
+    },
+    {
+      id: "basic",
+      name: "Basic",
+      bd_plan_id: 1,
+      monthlyPrice: 99,
+      leadPrice: 35,
+      leadWindowMinutes: 30,
+      stripeLink: "https://buy.stripe.com/REPLACE_BASIC_LINK",
+      highlight: false,
+      badge: null,
+      features: [
+        "Third access — after Pro window closes",
+        "$35 per lead",
+        "Standard search ranking",
+        "Email support",
+        "Up to 3 leads matched per job"
+      ]
+    }
+  ],
+
   // === PLATFORM SETTINGS ===
   settings: {
     maxLeadsPerContractor: 3,
