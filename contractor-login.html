@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Contractor Login — Select Service Pros</title>
+<meta name="robots" content="noindex,nofollow"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:ital,wght@0,700;1,700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:#0c2340;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  position:relative;
+}
+
+/* ── BACKGROUND TEXTURE ── */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 50%, rgba(240,85,40,.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 20%, rgba(15,76,117,.4) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 70% 80%, rgba(240,85,40,.06) 0%, transparent 50%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* Grid lines */
+body::after{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size:60px 60px;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ── LAYOUT ── */
+.page{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  position:relative;
+  z-index:1;
+}
+
+/* ── CARD ── */
+.card{
+  width:100%;
+  max-width:440px;
+  animation:fadeUp .5s ease both;
+}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* ── LOGO ── */
+.logo-wrap{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:40px;
+}
+.logo-mark{
+  width:40px;
+  height:40px;
+  flex-shrink:0;
+}
+.logo-text{font-size:20px;font-weight:700;letter-spacing:-.3px}
+.logo-text .s1{color:#fff}
+.logo-text .s2{color:#f05528}
+.logo-text .s3{color:#fff}
+
+/* ── HEADLINE ── */
+.headline{
+  font-family:'Fraunces',serif;
+  font-size:clamp(28px,4vw,36px);
+  font-weight:700;
+  color:#fff;
+  line-height:1.15;
+  margin-bottom:8px;
+}
+.headline em{font-style:italic;color:#f05528}
+.sub{
+  font-size:15px;
+  color:rgba(255,255,255,.55);
+  margin-bottom:36px;
+  line-height:1.5;
+}
+
+/* ── FORM ── */
+.form-panel{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;
+  padding:32px;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+
+.field{margin-bottom:18px}
+.field label{
+  display:block;
+  font-size:12px;
+  font-weight:700;
+  color:rgba(255,255,255,.5);
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  margin-bottom:8px;
+}
+.field input{
+  width:100%;
+  background:rgba(255,255,255,.06);
+  border:1.5px solid rgba(255,255,255,.1);
+  border-radius:10px;
+  padding:13px 16px;
+  font-size:15px;
+  font-family:inherit;
+  color:#fff;
+  outline:none;
+  transition:border-color .2s, background .2s;
+}
+.field input::placeholder{color:rgba(255,255,255,.25)}
+.field input:focus{
+  border-color:rgba(240,85,40,.6);
+  background:rgba(255,255,255,.09);
+}
+
+.forgot{
+  display:block;
+  text-align:right;
+  font-size:12px;
+  color:rgba(255,255,255,.4);
+  text-decoration:none;
+  margin-top:-10px;
+  margin-bottom:24px;
+  transition:color .15s;
+}
+.forgot:hover{color:rgba(255,255,255,.7)}
+
+.btn-login{
+  width:100%;
+  background:linear-gradient(135deg, #f05528 0%, #d94d24 100%);
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  padding:14px;
+  font-size:16px;
+  font-weight:700;
+  font-family:inherit;
+  cursor:pointer;
+  letter-spacing:.2px;
+  transition:opacity .15s, transform .1s;
+  position:relative;
+  overflow:hidden;
+}
+.btn-login::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(135deg, rgba(255,255,255,.15) 0%, transparent 50%);
+}
+.btn-login:hover{opacity:.92}
+.btn-login:active{transform:scale(.99)}
+.btn-login:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── ERROR / STATUS ── */
+.alert{
+  border-radius:10px;
+  padding:12px 16px;
+  font-size:13px;
+  font-weight:600;
+  margin-bottom:18px;
+  display:none;
+  align-items:center;
+  gap:8px;
+}
+.alert.error{background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);color:#fca5a5}
+.alert.info{background:rgba(240,85,40,.12);border:1px solid rgba(240,85,40,.25);color:#fed7c7}
+.alert.visible{display:flex}
+
+/* ── DIVIDER ── */
+.divider{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:24px 0;
+}
+.divider::before,.divider::after{
+  content:'';flex:1;height:1px;
+  background:rgba(255,255,255,.1);
+}
+.divider span{font-size:12px;color:rgba(255,255,255,.3);white-space:nowrap}
+
+/* ── APPLY LINK ── */
+.apply-row{
+  text-align:center;
+  font-size:14px;
+  color:rgba(255,255,255,.45);
+}
+.apply-row a{
+  color:#f05528;
+  text-decoration:none;
+  font-weight:600;
+  transition:opacity .15s;
+}
+.apply-row a:hover{opacity:.8}
+
+/* ── FOOTER ── */
+.page-footer{
+  position:relative;
+  z-index:1;
+  text-align:center;
+  padding:16px 24px 24px;
+  font-size:12px;
+  color:rgba(255,255,255,.2);
+}
+.page-footer a{color:rgba(255,255,255,.3);text-decoration:none}
+.page-footer a:hover{color:rgba(255,255,255,.5)}
+
+/* ── LOADING SPINNER ── */
+.spinner{
+  width:18px;height:18px;
+  border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  display:none;
+  margin:0 auto;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-login.loading .btn-text{display:none}
+.btn-login.loading .spinner{display:block}
+
+/* ── MOBILE ── */
+@media(max-width:480px){
+  .form-panel{padding:24px 20px}
+  .headline{font-size:26px}
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="card">
+
+    <!-- Logo -->
+    <div class="logo-wrap">
+      <svg class="logo-mark" viewBox="0 0 40 40" fill="none">
+        <path d="M20 2L6 12v16c0 6 6 10 14 10s14-4 14-10V12L20 2z" fill="#f05528"/>
+        <path d="M14 20l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="logo-text">
+        <span class="s1">Select</span><span class="s2">Service</span><span class="s3">Pros</span>
+      </div>
+    </div>
+
+    <!-- Headline -->
+    <h1 class="headline">Welcome back,<br/><em>contractor.</em></h1>
+    <p class="sub">Sign in to your portal to view leads, manage your profile, and update your membership.</p>
+
+    <!-- Form -->
+    <div class="form-panel">
+
+      <div class="alert error" id="alert-error">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="alert-error-text">Invalid email or password. Please try again.</span>
+      </div>
+
+      <div class="alert info" id="alert-info">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="alert-info-text">Signing you in…</span>
+      </div>
+
+      <div class="field">
+        <label>Email Address</label>
+        <input
+          type="email"
+          id="email"
+          placeholder="you@company.com"
+          autocomplete="email"
+          onkeydown="if(event.key==='Enter')handleLogin()"
+        />
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <input
+          type="password"
+          id="password"
+          placeholder="••••••••"
+          autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')handleLogin()"
+        />
+      </div>
+
+      <a href="https://contractors.selectservicepros.com/member-password-reset" class="forgot">
+        Forgot your password?
+      </a>
+
+      <button class="btn-login" id="login-btn" onclick="handleLogin()">
+        <span class="btn-text">Sign In to Portal</span>
+        <div class="spinner"></div>
+      </button>
+
+      <div class="divider"><span>New to Select Service Pros?</span></div>
+
+      <div class="apply-row">
+        <a href="/contractor-signup.html">Apply to join the network →</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<footer class="page-footer">
+  <a href="/">SelectServicePros.com</a> &nbsp;·&nbsp;
+  <a href="mailto:support@selectservicepros.com">Support</a> &nbsp;·&nbsp;
+  <a href="#">Privacy</a>
+</footer>
+
+<script>
+// ══════════════════════════════════════════
+// BD PORTAL URL — update if domain changes
+// ══════════════════════════════════════════
+const BD_PORTAL = 'https://contractors.selectservicepros.com';
+const BD_LOGIN_ENDPOINT = BD_PORTAL + '/ajax/loginMember.php';
+const BD_DASHBOARD = BD_PORTAL + '/member-account/dashboard';
+const BD_LOGIN_PAGE = BD_PORTAL + '/member-login';
+
+// ══════════════════════════════════════════
+// LOGIN HANDLER
+// ══════════════════════════════════════════
+async function handleLogin() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('login-btn');
+
+  clearAlerts();
+
+  if (!email || !password) {
+    showError('Please enter your email and password.');
+    return;
+  }
+
+  // Loading state
+  btn.classList.add('loading');
+  btn.disabled = true;
+  showInfo('Signing you in…');
+
+  try {
+    // Attempt BD login via their AJAX endpoint
+    const formData = new FormData();
+    formData.append('member_email_address', email);
+    formData.append('member_password', password);
+    formData.append('action', 'member_login');
+
+    const response = await fetch(BD_LOGIN_ENDPOINT, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include'  // critical — carries BD session cookie
+    });
+
+    if (response.ok) {
+      const data = await response.json().catch(() => null);
+      
+      if (data && (data.success || data.status === 'success' || data.logged_in)) {
+        // Login successful — redirect to dashboard
+        showInfo('Logged in! Redirecting…');
+        window.location.href = BD_DASHBOARD;
+      } else if (data && data.error) {
+        showError(data.error);
+        resetBtn();
+      } else {
+        // BD returned OK but unclear response
+        // Try navigating directly — if session was set, they'll land logged in
+        window.location.href = BD_DASHBOARD;
+      }
+    } else {
+      // CORS or network issue — fall back to BD native login with pre-filled form
+      redirectToBDLogin(email, password);
+    }
+  } catch(err) {
+    // CORS blocked — use the redirect fallback
+    redirectToBDLogin(email, password);
+  }
+}
+
+// ══════════════════════════════════════════
+// FALLBACK: redirect to BD login page
+// Uses a hidden form POST to BD's native login
+// so credentials aren't in the URL
+// ══════════════════════════════════════════
+function redirectToBDLogin(email, password) {
+  showInfo('Connecting to portal…');
+
+  // Create and submit a hidden form that POSTs directly to BD login
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = BD_LOGIN_PAGE;
+  form.style.display = 'none';
+
+  const fields = {
+    'member_email_address': email,
+    'member_password': password,
+    'redirect_url': '/member-account/dashboard',
+    'login_action': '1'
+  };
+
+  Object.entries(fields).forEach(([name, value]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
+}
+
+// ══════════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════════
+function showError(msg) {
+  document.getElementById('alert-error-text').textContent = msg;
+  document.getElementById('alert-error').classList.add('visible');
+  document.getElementById('alert-info').classList.remove('visible');
+  resetBtn();
+}
+
+function showInfo(msg) {
+  document.getElementById('alert-info-text').textContent = msg;
+  document.getElementById('alert-info').classList.add('visible');
+  document.getElementById('alert-error').classList.remove('visible');
+}
+
+function clearAlerts() {
+  document.getElementById('alert-error').classList.remove('visible');
+  document.getElementById('alert-info').classList.remove('visible');
+}
+
+function resetBtn() {
+  const btn = document.getElementById('login-btn');
+  btn.classList.remove('loading');
+  btn.disabled = false;
+}
+
+// Auto-focus email field
+document.getElementById('email').focus();
+</script>
+</body>
+</html>
