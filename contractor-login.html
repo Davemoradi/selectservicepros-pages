@@ -309,7 +309,7 @@ body::after{
         />
       </div>
 
-      <a href="https://contractors.selectservicepros.com/member-password-reset" class="forgot">
+      <a href="https://contractors.selectservicepros.com/login/retrieval" class="forgot">
         Forgot your password?
       </a>
 
@@ -339,12 +339,13 @@ body::after{
 // BD PORTAL URL — update if domain changes
 // ══════════════════════════════════════════
 const BD_PORTAL = 'https://contractors.selectservicepros.com';
-const BD_LOGIN_ENDPOINT = BD_PORTAL + '/ajax/loginMember.php';
+const BD_LOGIN_ACTION = BD_PORTAL + '/api/widget/json/get/Bootstrap%20Theme%20-%20Member%20Login%20Page';
 const BD_DASHBOARD = BD_PORTAL + '/member-account/dashboard';
-const BD_LOGIN_PAGE = BD_PORTAL + '/member-login';
 
 // ══════════════════════════════════════════
 // LOGIN HANDLER
+// Submits directly to BD's login endpoint
+// using the exact fields BD's own form uses.
 // ══════════════════════════════════════════
 async function handleLogin() {
   const email = document.getElementById('email').value.trim();
@@ -358,68 +359,71 @@ async function handleLogin() {
     return;
   }
 
-  // Loading state
   btn.classList.add('loading');
   btn.disabled = true;
   showInfo('Signing you in…');
 
   try {
-    // Attempt BD login via their AJAX endpoint
+    // POST to BD's login endpoint with exact field names BD expects
     const formData = new FormData();
-    formData.append('member_email_address', email);
-    formData.append('member_password', password);
-    formData.append('action', 'member_login');
+    formData.append('form', 'myform');
+    formData.append('formname', 'member_login');
+    formData.append('dowiz', '1');
+    formData.append('save', '1');
+    formData.append('action', 'login');
+    formData.append('email', email);
+    formData.append('pass', password);
 
-    const response = await fetch(BD_LOGIN_ENDPOINT, {
+    const response = await fetch(BD_LOGIN_ACTION, {
       method: 'POST',
       body: formData,
-      credentials: 'include'  // critical — carries BD session cookie
+      credentials: 'include'
     });
 
-    if (response.ok) {
-      const data = await response.json().catch(() => null);
-      
-      if (data && (data.success || data.status === 'success' || data.logged_in)) {
-        // Login successful — redirect to dashboard
-        showInfo('Logged in! Redirecting…');
-        window.location.href = BD_DASHBOARD;
-      } else if (data && data.error) {
-        showError(data.error);
-        resetBtn();
-      } else {
-        // BD returned OK but unclear response
-        // Try navigating directly — if session was set, they'll land logged in
-        window.location.href = BD_DASHBOARD;
-      }
+    const text = await response.text();
+    let data = null;
+    try { data = JSON.parse(text); } catch(e) {}
+
+    if (data && data.success === true) {
+      showInfo('Logged in! Redirecting to your dashboard…');
+      window.location.href = BD_DASHBOARD;
+    } else if (data && (data.error || data.message || data.success === false)) {
+      showError(data.error || data.message || 'Invalid email or password. Please try again.');
+      resetBtn();
+    } else if (response.ok && text.includes('member-account')) {
+      // BD redirected us — we're logged in
+      window.location.href = BD_DASHBOARD;
     } else {
-      // CORS or network issue — fall back to BD native login with pre-filled form
-      redirectToBDLogin(email, password);
+      // Unknown response — fall back to direct form submit
+      submitDirectForm(email, password);
     }
   } catch(err) {
-    // CORS blocked — use the redirect fallback
-    redirectToBDLogin(email, password);
+    // CORS blocked — submit form directly to BD login page
+    submitDirectForm(email, password);
   }
 }
 
 // ══════════════════════════════════════════
-// FALLBACK: redirect to BD login page
-// Uses a hidden form POST to BD's native login
-// so credentials aren't in the URL
+// DIRECT FORM SUBMIT FALLBACK
+// If CORS blocks the fetch, submit a hidden
+// form directly to BD — browser handles auth
 // ══════════════════════════════════════════
-function redirectToBDLogin(email, password) {
-  showInfo('Connecting to portal…');
-
-  // Create and submit a hidden form that POSTs directly to BD login
+function submitDirectForm(email, password) {
+  showInfo('Connecting to your portal…');
   const form = document.createElement('form');
   form.method = 'POST';
-  form.action = BD_LOGIN_PAGE;
+  form.action = BD_LOGIN_ACTION;
   form.style.display = 'none';
 
   const fields = {
-    'member_email_address': email,
-    'member_password': password,
-    'redirect_url': '/member-account/dashboard',
-    'login_action': '1'
+    'form': 'myform',
+    'formname': 'member_login',
+    'dowiz': '1',
+    'save': '1',
+    'action': 'login',
+    'email': email,
+    'pass': password,
+    'url_origin_pars': '/member-account/dashboard'
   };
 
   Object.entries(fields).forEach(([name, value]) => {
