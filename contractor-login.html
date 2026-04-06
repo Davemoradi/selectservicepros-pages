@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Contractor Login — SelectServicePros</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500;1,700&display=swap" rel="stylesheet"/>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -25,6 +25,7 @@
     color: var(--white);
   }
 
+  /* ── LOGO — matches original exactly ── */
   .logo {
     font-size: 22px;
     font-weight: 700;
@@ -40,8 +41,11 @@
     display: flex; align-items: center; justify-content: center;
   }
   .logo-icon svg { width: 20px; height: 20px; }
-  .logo span { color: var(--orange); }
+  .logo-select { color: var(--white); }
+  .logo-service { color: var(--orange); }
+  .logo-pros { color: var(--white); }
 
+  /* ── CARD ── */
   .login-card {
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.08);
@@ -68,6 +72,7 @@
     margin-bottom: 28px;
   }
 
+  /* ── FORM ── */
   .form-group { margin-bottom: 18px; }
   .form-group label {
     display: block;
@@ -105,6 +110,7 @@
   }
   .forgot-link:hover { color: var(--orange); }
 
+  /* ── BUTTON ── */
   .btn-login {
     width: 100%;
     padding: 16px;
@@ -117,23 +123,48 @@
     font-family: inherit;
     cursor: pointer;
     transition: background 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
   }
   .btn-login:hover { background: var(--orange-hover); }
   .btn-login:active { transform: scale(0.98); }
-
-  .login-error {
+  .btn-login:disabled { opacity: 0.7; cursor: not-allowed; }
+  .btn-login .spinner {
     display: none;
-    background: rgba(220,53,69,0.1);
-    border: 1px solid rgba(220,53,69,0.3);
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  .btn-login.loading .btn-text { display: none; }
+  .btn-login.loading .spinner { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── MESSAGES ── */
+  .msg {
+    display: none;
     border-radius: 10px;
     padding: 12px 14px;
     margin-top: 16px;
     font-size: 13px;
-    color: #ff6b7a;
     line-height: 1.5;
   }
-  .login-error.show { display: block; }
+  .msg.show { display: block; }
+  .msg-error {
+    background: rgba(220,53,69,0.1);
+    border: 1px solid rgba(220,53,69,0.3);
+    color: #ff6b7a;
+  }
+  .msg-success {
+    background: rgba(40,167,69,0.1);
+    border: 1px solid rgba(40,167,69,0.3);
+    color: #6ce68a;
+  }
 
+  /* ── BOTTOM ── */
   .bottom-links {
     text-align: center;
     margin-top: 24px;
@@ -155,40 +186,36 @@
 </head>
 <body>
 
+<!-- LOGO — original branding: Select (white) Service (orange) Pros (white) -->
 <div class="logo">
   <div class="logo-icon">
     <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
   </div>
-  Select<span>Service</span>Pros
+  <span class="logo-select">Select</span><span class="logo-service">Service</span><span class="logo-pros">Pros</span>
 </div>
 
 <div class="login-card">
   <h1>Welcome back,<br/><em>contractor.</em></h1>
   <p class="subtitle">Sign in to your portal to view leads, manage your profile, and update your membership.</p>
 
-  <!--
-    DIRECT FORM POST to BD's login page.
-    No JavaScript auth, no fetch, no CORS.
-    The browser submits the form natively to BD,
-    which handles authentication and redirects.
-  -->
-  <form id="login-form" method="POST" action="https://contractors.selectservicepros.com/login" onsubmit="return validateForm()">
+  <div class="form-group">
+    <label>Email Address</label>
+    <input type="email" id="login-email" placeholder="you@company.com" autocomplete="email"/>
+  </div>
+  <div class="form-group">
+    <label>Password</label>
+    <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"/>
+  </div>
 
-    <div class="form-group">
-      <label>Email Address</label>
-      <input type="email" name="email" id="login-email" placeholder="you@company.com" autocomplete="email" required/>
-    </div>
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" name="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required/>
-    </div>
+  <a href="https://contractors.selectservicepros.com/login/retrieval" class="forgot-link">Forgot your password?</a>
 
-    <a href="https://contractors.selectservicepros.com/login/retrieval" class="forgot-link">Forgot your password?</a>
+  <button class="btn-login" id="btn-login" onclick="handleLogin()">
+    <span class="btn-text">Sign In</span>
+    <div class="spinner"></div>
+  </button>
 
-    <button type="submit" class="btn-login">Sign In</button>
-
-    <div class="login-error" id="login-error"></div>
-  </form>
+  <div class="msg msg-error" id="msg-error"></div>
+  <div class="msg msg-success" id="msg-success"></div>
 
   <div class="bottom-links">
     New to Select Service Pros?<br/>
@@ -197,33 +224,74 @@
 </div>
 
 <script>
-// Client-side validation only — no auth attempts
-function validateForm() {
+function showError(text) {
+  const el = document.getElementById('msg-error');
+  el.textContent = text;
+  el.classList.add('show');
+  document.getElementById('msg-success').classList.remove('show');
+}
+
+function showSuccess(text) {
+  const el = document.getElementById('msg-success');
+  el.textContent = text;
+  el.classList.add('show');
+  document.getElementById('msg-error').classList.remove('show');
+}
+
+function setLoading(on) {
+  const btn = document.getElementById('btn-login');
+  btn.disabled = on;
+  btn.classList.toggle('loading', on);
+}
+
+async function handleLogin() {
   const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
-  const errorEl = document.getElementById('login-error');
 
-  errorEl.classList.remove('show');
+  // Hide previous messages
+  document.getElementById('msg-error').classList.remove('show');
+  document.getElementById('msg-success').classList.remove('show');
 
-  if (!email) {
-    errorEl.textContent = 'Please enter your email address.';
-    errorEl.classList.add('show');
-    return false;
-  }
-  if (!email.includes('@')) {
-    errorEl.textContent = 'Please enter a valid email address.';
-    errorEl.classList.add('show');
-    return false;
-  }
-  if (!password) {
-    errorEl.textContent = 'Please enter your password.';
-    errorEl.classList.add('show');
-    return false;
-  }
+  // Validate
+  if (!email) { showError('Please enter your email address.'); return; }
+  if (!email.includes('@')) { showError('Please enter a valid email address.'); return; }
+  if (!password) { showError('Please enter your password.'); return; }
 
-  // Let the form submit natively to BD
-  return true;
+  setLoading(true);
+
+  try {
+    // Call our Vercel proxy — this talks to BD server-side, no CORS
+    const res = await fetch('/api/bd-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      showSuccess('Login successful! Redirecting to your portal…');
+      // Redirect to BD portal after a short delay
+      setTimeout(() => {
+        window.location.href = data.redirect || 'https://contractors.selectservicepros.com/account';
+      }, 1200);
+    } else {
+      setLoading(false);
+      showError(data.error || 'Incorrect email or password. Please try again.');
+    }
+
+  } catch (err) {
+    setLoading(false);
+    showError('Unable to connect. Please check your internet connection and try again.');
+  }
 }
+
+// Enter key submits
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !document.getElementById('btn-login').disabled) {
+    handleLogin();
+  }
+});
 </script>
 </body>
 </html>
