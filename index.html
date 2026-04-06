@@ -2,555 +2,1187 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SelectServicePros — Find Trusted Home Service Pros in Houston</title>
-<meta name="description" content="Get free quotes from licensed, background-checked home service pros. Fast, easy, zero obligation."/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SelectServicePros — Licensed Home Service Pros in Houston</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:ital,wght@0,700;1,700&display=swap" rel="stylesheet"/>
-
-<!-- SSP CONFIG: controls which categories + markets are live -->
-<script src="/ssp-config.js"></script>
-
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,700&display=swap" rel="stylesheet"/>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'DM Sans',sans-serif;color:#1a1a2e;background:#fff;overflow-x:hidden}
-
-/* ── VARIABLES ── */
-:root{
-  --navy:#0c2340;
-  --orange:#f05528;
-  --orange2:#d94d24;
-  --green:#1a8a4a;
-  --white:#fff;
-  --gray1:#f8f9fb;
-  --gray2:#e8ecf0;
-  --gray3:#b0b8c4;
-  --gray4:#6b7a8d;
-  --text:#1a1a2e;
-  --radius:14px;
-  --shadow:0 2px 16px rgba(0,0,0,.08);
-  --shadow-lg:0 8px 40px rgba(0,0,0,.13);
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #0c2340;
+  --navy-light: #1a3a5c;
+  --orange: #f05528;
+  --orange-hover: #d94a22;
+  --orange-light: #fff4f0;
+  --white: #ffffff;
+  --bg: #fafbfc;
+  --gray1: #f5f6f8;
+  --gray2: #e8eaed;
+  --gray3: #c4c8ce;
+  --gray4: #6b7280;
+  --gray5: #374151;
+  --text: #1a1a2e;
+  --text2: #4b5563;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
+  --radius: 14px;
+  --radius-sm: 10px;
+}
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ── NAV ── */
-.nav{position:sticky;top:0;z-index:100;background:var(--navy);border-bottom:1px solid rgba(255,255,255,.08)}
-.nav-inner{max-width:1200px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-.logo{display:flex;align-items:center;gap:9px;text-decoration:none}
-.logo-select,.logo-pros{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.3px}
-.logo-service{font-size:18px;font-weight:700;color:var(--orange);letter-spacing:-.3px}
-.nav-links{display:flex;align-items:center;gap:20px}
-.nav-loc{display:flex;align-items:center;gap:5px;font-size:13px;color:rgba(255,255,255,.65);white-space:nowrap}
-.nav-loc svg{flex-shrink:0;opacity:.7}
-.nav-link{font-size:14px;font-weight:500;color:rgba(255,255,255,.8);text-decoration:none;transition:color .15s}
-.nav-link:hover{color:#fff}
-.nav-cta{background:var(--orange);color:#fff;font-size:13px;font-weight:600;padding:7px 16px;border-radius:8px;text-decoration:none;transition:background .15s}
-.nav-cta:hover{background:var(--orange2)}
-.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;background:none;border:none}
-.hamburger span{display:block;width:22px;height:2px;background:rgba(255,255,255,.85);border-radius:2px;transition:all .2s}
-@media(max-width:700px){
-  .nav-links{display:none}
-  .hamburger{display:flex}
+/* ─── NAV ─── */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 32px;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray2);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav-logo {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--navy);
+  text-decoration: none;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-logo .logo-icon {
+  width: 28px; height: 28px;
+  background: var(--orange);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-logo .logo-icon svg { width: 15px; height: 15px; }
+.nav-logo span { color: var(--orange); }
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-links a {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--gray4);
+  text-decoration: none;
+  padding: 7px 14px;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+.nav-links a:hover { color: var(--navy); background: var(--gray1); }
+.nav-links .nav-location {
+  color: var(--gray4);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.nav-links .nav-location svg { width: 14px; height: 14px; }
+.nav-btn {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white) !important;
+  background: var(--orange) !important;
+  padding: 8px 18px !important;
+  border-radius: 8px !important;
+  transition: background 0.15s !important;
+}
+.nav-btn:hover { background: var(--orange-hover) !important; }
+.nav-login {
+  color: var(--navy) !important;
+  font-weight: 600;
+  border: 1.5px solid var(--gray2);
+  border-radius: 8px !important;
+  padding: 7px 16px !important;
+}
+.nav-login:hover { border-color: var(--navy); background: transparent !important; }
+
+/* Mobile nav */
+.nav-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+.nav-hamburger svg { width: 24px; height: 24px; color: var(--navy); }
+@media (max-width: 768px) {
+  .nav { padding: 12px 18px; }
+  .nav-links { display: none; }
+  .nav-hamburger { display: block; }
+  .nav-links.open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--white);
+    border-bottom: 1px solid var(--gray2);
+    padding: 12px 18px;
+    gap: 4px;
+    box-shadow: var(--shadow-md);
+  }
+  .nav-links.open a { padding: 12px 14px; }
 }
 
-/* ── MOBILE MENU ── */
-.mobile-menu{display:none;flex-direction:column;background:var(--navy);padding:12px 24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
-.mobile-menu.open{display:flex}
-.mobile-menu a{color:rgba(255,255,255,.8);text-decoration:none;font-size:15px;font-weight:500;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07)}
-.mobile-menu a:last-child{border:none}
-.mobile-menu-cta{color:var(--orange)!important;font-weight:700!important}
+/* ─── HERO ─── */
+.hero {
+  background: linear-gradient(135deg, var(--navy) 0%, #163455 50%, var(--navy-light) 100%);
+  padding: 64px 32px 72px;
+  text-align: center;
+  color: var(--white);
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(240,85,40,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.hero h1 {
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1.15;
+  max-width: 640px;
+  margin: 0 auto 12px;
+  letter-spacing: -0.5px;
+  position: relative;
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--orange);
+}
+.hero .hero-sub {
+  font-size: 16px;
+  color: rgba(255,255,255,0.6);
+  max-width: 480px;
+  margin: 0 auto 36px;
+  line-height: 1.6;
+}
 
-/* ── HERO ── */
-.hero{background:linear-gradient(135deg,var(--navy) 0%,#1a3a5c 60%,#0f4c75 100%);padding:72px 24px 80px;text-align:center;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(240,85,40,.12) 0%,transparent 60%);pointer-events:none}
-.hero-inner{max-width:700px;margin:0 auto;position:relative}
-.hero h1{font-family:'Fraunces',serif;font-size:clamp(32px,5vw,52px);font-weight:700;color:#fff;line-height:1.15;margin-bottom:16px}
-.hero h1 em{font-style:italic;color:var(--orange)}
-.hero p{font-size:clamp(15px,2vw,18px);color:rgba(255,255,255,.75);margin-bottom:36px;line-height:1.6;max-width:560px;margin-left:auto;margin-right:auto}
-.hero-search{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.15);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;max-width:560px;margin:0 auto;backdrop-filter:blur(8px)}
-.hero-fields{display:flex;gap:10px;flex-wrap:wrap}
-.hero-field{flex:1;min-width:180px;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;padding:0 14px;transition:border-color .15s}
-.hero-field:focus-within{border-color:rgba(255,255,255,.4)}
-.hero-field svg{flex-shrink:0;opacity:.6;color:#fff}
-.hero-field input{flex:1;background:none;border:none;outline:none;font-size:15px;font-family:inherit;color:#fff;padding:12px 0}
-.hero-field input::placeholder{color:rgba(255,255,255,.45)}
-.hero-btn{background:var(--orange);color:#fff;border:none;border-radius:10px;padding:14px 28px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;width:100%;transition:background .15s,transform .1s}
-.hero-btn:hover{background:var(--orange2)}
-.hero-btn:active{transform:scale(.99)}
-.suggestions{position:relative;max-width:560px;margin:0 auto}
-#suggestions{position:absolute;top:0;left:0;right:0;background:#fff;border-radius:12px;box-shadow:var(--shadow-lg);z-index:50;overflow:hidden;display:none}
-.suggestion-item{padding:12px 16px;cursor:pointer;font-size:14px;border-bottom:1px solid var(--gray2);transition:background .1s}
-.suggestion-item:last-child{border:none}
-.suggestion-item:hover{background:var(--gray1)}
-.hero-trust{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-top:28px}
-.hero-trust-item{display:flex;align-items:center;gap:6px;font-size:13px;color:rgba(255,255,255,.65)}
-.hero-trust-item svg{color:var(--orange);opacity:.9}
+/* Search bar */
+.search-bar {
+  display: flex;
+  background: var(--white);
+  border-radius: 14px;
+  max-width: 560px;
+  margin: 0 auto;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+  overflow: visible;
+  position: relative;
+}
+.search-bar input {
+  flex: 1;
+  padding: 18px 20px;
+  border: none;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--text);
+  background: transparent;
+  outline: none;
+  min-width: 0;
+}
+.search-bar input::placeholder { color: var(--gray3); }
+.search-divider {
+  width: 1px;
+  background: var(--gray2);
+  margin: 12px 0;
+}
+.search-bar .search-btn {
+  padding: 12px 28px;
+  background: var(--orange);
+  color: var(--white);
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 0 14px 14px 0;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.search-bar .search-btn:hover { background: var(--orange-hover); }
 
-/* ── CATEGORY PILL STRIP ── */
-.categories{background:#fff;border-bottom:1px solid var(--gray2);padding:0 24px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.categories::-webkit-scrollbar{display:none}
-.cat-grid{display:flex;align-items:center;gap:4px;max-width:1200px;margin:0 auto;padding:12px 0}
-.cat-item{display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:30px;border:1.5px solid var(--gray2);font-size:13px;font-weight:600;color:var(--gray4);cursor:pointer;white-space:nowrap;transition:all .15s;background:#fff;flex-shrink:0}
-.cat-item svg{width:15px;height:15px;flex-shrink:0}
-.cat-item:hover{border-color:var(--orange);color:var(--orange);background:rgba(240,85,40,.04)}
-.cat-item.active{background:var(--navy);border-color:var(--navy);color:#fff}
+/* Suggestions dropdown */
+.suggestions {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+  z-index: 10;
+  overflow: hidden;
+  margin-top: 2px;
+}
+.suggestion-item {
+  padding: 14px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--text);
+  transition: background 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.suggestion-item:hover { background: var(--gray1); }
+.suggestion-item .cat-icon {
+  width: 28px;
+  height: 28px;
+  background: var(--orange-light);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
 
-/* ── INTAKE SECTION ── */
-.intake-section{display:none;background:var(--gray1);padding:48px 24px}
-.intake-inner{max-width:680px;margin:0 auto}
-.intake-tag{display:inline-flex;align-items:center;gap:7px;background:var(--navy);color:#fff;font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;letter-spacing:.3px;margin-bottom:16px}
-.intake-tag-dot{width:7px;height:7px;background:var(--orange);border-radius:50%;animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.85)}}
-.intake-section h2{font-size:clamp(20px,3vw,26px);font-weight:700;color:var(--navy);margin-bottom:6px}
-.intake-section .intake-sub{font-size:15px;color:var(--gray4);margin-bottom:24px;line-height:1.5}
-.intake-trust{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:28px}
-.intake-trust-item{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--gray4)}
-.intake-trust-item svg{color:var(--green)}
-.intake-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
-.intake-progress{padding:16px 20px 0}
-.progress-labels{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.step-lbl{font-size:12px;font-weight:600;color:var(--gray4);text-transform:uppercase;letter-spacing:.4px}
-.step-pct{font-size:12px;font-weight:700;color:var(--orange)}
-.prog-bar{background:var(--gray2);border-radius:4px;height:4px;overflow:hidden}
-#prog{height:100%;background:var(--orange);border-radius:4px;transition:width .35s}
-.intake-history{display:flex;flex-direction:column;gap:0}
-.hist-item{padding:12px 20px;background:var(--gray1);border-bottom:1px solid var(--gray2);display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.hist-q{font-size:13px;color:var(--gray4);font-weight:500}
-.hist-a{font-size:13px;color:var(--navy);font-weight:600;text-align:right}
-.qa-area{padding:20px}
-.thinking{display:none;align-items:center;gap:10px;color:var(--gray4);font-size:14px;padding:8px 0}
-.dot-flashing{display:flex;gap:4px}
-.dot-flashing span{width:7px;height:7px;background:var(--gray3);border-radius:50%;animation:dotf 1.2s infinite}
-.dot-flashing span:nth-child(2){animation-delay:.2s}
-.dot-flashing span:nth-child(3){animation-delay:.4s}
-@keyframes dotf{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
-.q-text{font-size:17px;font-weight:600;color:var(--navy);line-height:1.45;margin-bottom:16px}
-.options-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px}
-.option-btn{padding:12px 10px;border:1.5px solid var(--gray2);border-radius:10px;background:#fff;font-size:14px;font-weight:500;font-family:inherit;color:var(--text);cursor:pointer;text-align:center;transition:all .15s;line-height:1.3}
-.option-btn:hover{border-color:var(--orange);color:var(--orange);background:rgba(240,85,40,.03)}
-.option-btn.selected{border-color:var(--navy);background:var(--navy);color:#fff}
-.text-input-wrap{display:flex;gap:10px;margin-bottom:20px}
-.text-input-wrap input{flex:1;padding:12px 14px;border:1.5px solid var(--gray2);border-radius:10px;font-size:15px;font-family:inherit;outline:none;transition:border-color .15s}
-.text-input-wrap input:focus{border-color:var(--orange)}
-.intake-actions{display:flex;gap:10px;align-items:center;padding-top:8px}
-.btn-back{background:none;border:none;color:var(--gray4);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;padding:10px;transition:color .15s}
-.btn-back:hover{color:var(--navy)}
-.btn-continue{background:var(--orange);color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s,transform .1s;margin-left:auto}
-.btn-continue:hover{background:var(--orange2)}
-.btn-continue:active{transform:scale(.98)}
-/* Not available message */
-.not-available{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:40px 28px;text-align:center}
-.not-available .na-icon{font-size:44px;margin-bottom:14px}
-.not-available h3{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px}
-.not-available p{font-size:15px;color:var(--gray4);line-height:1.6;margin-bottom:20px}
-.not-available .btn-notify{background:var(--orange);color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer}
-.not-available .btn-notify:hover{background:var(--orange2)}
+/* Trust badges */
+.hero-badges {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 28px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+}
+.hero-badges span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.hero-badges svg { width: 14px; height: 14px; color: rgba(255,255,255,0.4); }
+
+@media (max-width: 600px) {
+  .hero { padding: 40px 18px 50px; }
+  .hero h1 { font-size: 28px; }
+  .hero .hero-sub { font-size: 14px; }
+  .search-bar { flex-direction: column; border-radius: 14px; }
+  .search-divider { width: 100%; height: 1px; margin: 0; }
+  .search-bar .search-btn { border-radius: 0 0 14px 14px; padding: 16px; }
+  .hero-badges { flex-direction: column; gap: 8px; }
+}
+
+/* ─── CATEGORY STRIP ─── */
+.cat-strip {
+  display: flex;
+  gap: 8px;
+  padding: 14px 32px;
+  overflow-x: auto;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray2);
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.cat-strip::-webkit-scrollbar { display: none; }
+.cat-pill {
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  border: 1.5px solid var(--gray2);
+  background: var(--white);
+  color: var(--gray4);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cat-pill:hover { border-color: var(--orange); color: var(--orange); }
+.cat-pill.active {
+  background: var(--navy);
+  color: var(--white);
+  border-color: var(--navy);
+}
+.cat-pill .pill-icon { font-size: 14px; }
+
+/* ─── INTAKE SECTION ─── */
+.intake-section {
+  max-width: 640px;
+  margin: 32px auto;
+  padding: 0 20px;
+}
+.intake-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  border: 1px solid var(--gray2);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.intake-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--gray2);
+}
+.intake-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.intake-header p {
+  font-size: 13px;
+  color: var(--gray4);
+}
+.progress-wrap { padding: 16px 24px 0; }
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.step-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.step-pct {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--orange);
+}
+.prog-bar {
+  background: var(--gray2);
+  border-radius: 4px;
+  height: 4px;
+  overflow: hidden;
+}
+#prog {
+  height: 100%;
+  background: var(--orange);
+  border-radius: 4px;
+  transition: width 0.35s;
+  width: 0%;
+}
+
+/* History */
+.intake-history { display: flex; flex-direction: column; }
+.hist-item {
+  padding: 12px 24px;
+  background: var(--gray1);
+  border-bottom: 1px solid var(--gray2);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.hist-q { font-size: 13px; color: var(--gray4); font-weight: 500; }
+.hist-a { font-size: 13px; color: var(--navy); font-weight: 600; text-align: right; }
+
+/* Question area */
+.qa-area { padding: 24px; }
+.thinking {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  color: var(--gray4);
+  font-size: 14px;
+  padding: 8px 0;
+}
+.dot-flashing { display: flex; gap: 4px; }
+.dot-flashing span {
+  width: 7px; height: 7px;
+  background: var(--gray3);
+  border-radius: 50%;
+  animation: dotf 1.2s infinite;
+}
+.dot-flashing span:nth-child(2) { animation-delay: 0.2s; }
+.dot-flashing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dotf { 0%,80%,100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+
+.q-text {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.45;
+  margin-bottom: 16px;
+}
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.option-btn {
+  padding: 12px 10px;
+  border: 1.5px solid var(--gray2);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--text);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  line-height: 1.3;
+}
+.option-btn:hover { border-color: var(--orange); color: var(--orange); background: rgba(240,85,40,0.02); }
+.option-btn.selected { border-color: var(--navy); background: var(--navy); color: var(--white); }
+
+.text-input-wrap { display: flex; gap: 10px; margin-bottom: 20px; }
+.text-input-wrap input {
+  flex: 1;
+  padding: 12px 14px;
+  border: 1.5px solid var(--gray2);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.text-input-wrap input:focus { border-color: var(--orange); }
+.intake-actions { display: flex; gap: 10px; align-items: center; padding-top: 8px; }
+.btn-back {
+  background: none; border: none; color: var(--gray4);
+  font-size: 14px; font-weight: 500; font-family: inherit;
+  cursor: pointer; padding: 8px 0;
+}
+.btn-back:hover { color: var(--navy); }
+.btn-continue {
+  margin-left: auto;
+  padding: 12px 24px;
+  background: var(--orange);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-continue:hover { background: var(--orange-hover); }
+
 /* Contact form */
-.contact-form{padding:20px;display:flex;flex-direction:column;gap:14px}
-.contact-form h3{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:4px}
-.contact-form .sub{font-size:14px;color:var(--gray4)}
-.contact-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:480px){.contact-row{grid-template-columns:1fr}}
-.field-group{display:flex;flex-direction:column;gap:5px}
-.field-group label{font-size:12px;font-weight:600;color:var(--navy)}
-.field-group input,.field-group textarea{padding:11px 14px;border:1.5px solid var(--gray2);border-radius:10px;font-size:15px;font-family:inherit;outline:none;transition:border-color .15s}
-.field-group input:focus,.field-group textarea:focus{border-color:var(--orange)}
-.field-group textarea{resize:vertical;min-height:80px}
-.btn-submit{background:var(--green);color:#fff;border:none;border-radius:10px;padding:14px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s}
-.btn-submit:hover{background:#157a3e}
-.success-msg{text-align:center;padding:32px 20px}
-.success-icon{font-size:48px;margin-bottom:12px}
-.success-msg h3{font-size:20px;font-weight:700;color:var(--green);margin-bottom:8px}
-.success-msg p{font-size:15px;color:var(--gray4);line-height:1.5}
+.contact-form { display: flex; flex-direction: column; gap: 14px; }
+.contact-form .form-group { display: flex; flex-direction: column; gap: 4px; }
+.contact-form label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray4);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.contact-form input {
+  padding: 12px 14px;
+  border: 1.5px solid var(--gray2);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+}
+.contact-form input:focus { border-color: var(--orange); }
+.btn-submit {
+  padding: 16px;
+  background: var(--orange);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-top: 4px;
+}
+.btn-submit:hover { background: var(--orange-hover); }
 
-/* ── SERVICES SECTION ── */
-.services-section{padding:64px 24px;background:#fff}
-.section-inner{max-width:1200px;margin:0 auto}
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
-.section-header h2{font-size:clamp(20px,3vw,26px);font-weight:700;color:var(--navy)}
-.section-header a{font-size:14px;color:var(--orange);text-decoration:none;font-weight:600}
-.services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
-.service-card{background:var(--gray1);border:1.5px solid var(--gray2);border-radius:var(--radius);padding:20px;cursor:pointer;transition:all .18s}
-.service-card:hover{border-color:var(--orange);box-shadow:var(--shadow);transform:translateY(-2px)}
-.service-card h3{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px}
-.service-meta{font-size:12px;color:var(--gray4)}
+/* Not available message */
+.not-available {
+  text-align: center;
+  padding: 32px 24px;
+}
+.not-available h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+.not-available p {
+  font-size: 14px;
+  color: var(--gray4);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.not-available .btn-back-home {
+  display: inline-block;
+  padding: 10px 24px;
+  background: var(--gray1);
+  color: var(--navy);
+  border: 1.5px solid var(--gray2);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+.not-available .btn-back-home:hover { background: var(--gray2); }
 
-/* ── HOW IT WORKS ── */
-.how-section{background:var(--gray1);padding:64px 24px}
-.how-inner{max-width:900px;margin:0 auto}
-.how-inner h2{font-size:clamp(22px,3vw,28px);font-weight:700;color:var(--navy);text-align:center;margin-bottom:40px}
-.how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
-@media(max-width:640px){.how-steps{grid-template-columns:1fr;gap:24px}}
-.how-step{text-align:center}
-.step-num{width:44px;height:44px;background:var(--orange);color:#fff;border-radius:50%;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
-.how-step h3{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:8px}
-.how-step p{font-size:14px;color:var(--gray4);line-height:1.6}
+/* ─── SERVICES GRID ─── */
+.services-section {
+  max-width: 900px;
+  margin: 48px auto;
+  padding: 0 20px;
+}
+.section-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.section-header h2 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 6px;
+}
+.section-header p {
+  font-size: 14px;
+  color: var(--gray4);
+}
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+.service-card {
+  background: var(--white);
+  border: 1px solid var(--gray2);
+  border-radius: var(--radius);
+  padding: 22px 18px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.service-card:hover {
+  border-color: var(--orange);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.service-card .card-icon {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+.service-card h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.service-card p {
+  font-size: 12px;
+  color: var(--gray4);
+}
 
-/* ── CTA BANNER ── */
-.cta-banner{background:linear-gradient(135deg,var(--navy),#1a3a5c);padding:56px 24px;text-align:center}
-.cta-banner h2{font-size:clamp(22px,3vw,30px);font-weight:700;color:#fff;margin-bottom:10px}
-.cta-banner p{font-size:16px;color:rgba(255,255,255,.7);margin-bottom:28px;line-height:1.6}
-.cta-banner a{display:inline-flex;align-items:center;gap:8px;background:var(--orange);color:#fff;text-decoration:none;font-size:16px;font-weight:700;padding:14px 32px;border-radius:10px;transition:background .15s}
-.cta-banner a:hover{background:var(--orange2)}
+/* ─── HOW IT WORKS ─── */
+.how-section {
+  background: var(--white);
+  border-top: 1px solid var(--gray2);
+  border-bottom: 1px solid var(--gray2);
+  padding: 56px 32px;
+  text-align: center;
+}
+.how-section h2 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 36px;
+}
+.how-grid {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+.how-step {
+  flex: 1;
+  min-width: 200px;
+  max-width: 240px;
+}
+.how-num {
+  width: 40px;
+  height: 40px;
+  background: var(--orange);
+  color: var(--white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 auto 14px;
+}
+.how-step h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 6px;
+}
+.how-step p {
+  font-size: 13px;
+  color: var(--gray4);
+  line-height: 1.6;
+}
 
-/* ── FOOTER ── */
-.footer{background:var(--navy);color:rgba(255,255,255,.65);padding:48px 24px 32px}
-.footer-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px}
-@media(max-width:640px){.footer-inner{grid-template-columns:1fr;gap:28px}}
-.footer-brand .logo-text{font-size:16px;font-weight:700;color:#fff;margin-bottom:12px}
-.footer-brand p{font-size:13px;line-height:1.6;max-width:240px}
-.footer-col h4{font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px}
-.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.6);text-decoration:none;margin-bottom:8px;transition:color .15s}
-.footer-col a:hover{color:#fff}
-.footer-bottom{max-width:1200px;margin:32px auto 0;padding-top:20px;border-top:1px solid rgba(255,255,255,.1);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:12px}
-.footer-loc{display:flex;align-items:center;gap:5px}
+/* ─── CTA ─── */
+.cta-section {
+  background: var(--navy);
+  padding: 56px 32px;
+  text-align: center;
+  color: var(--white);
+}
+.cta-section h2 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.cta-section p {
+  font-size: 15px;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 24px;
+}
+.cta-btn {
+  display: inline-block;
+  padding: 14px 32px;
+  background: var(--orange);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.cta-btn:hover { background: var(--orange-hover); }
+
+/* ─── FOOTER ─── */
+.footer {
+  background: var(--white);
+  border-top: 1px solid var(--gray2);
+  padding: 40px 32px;
+}
+.footer-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 32px;
+}
+.footer-brand .footer-logo {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+.footer-brand .footer-logo span { color: var(--orange); }
+.footer-brand p {
+  font-size: 12px;
+  color: var(--gray4);
+  line-height: 1.6;
+}
+.footer-col h4 {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--navy);
+  margin-bottom: 12px;
+}
+.footer-col a {
+  display: block;
+  font-size: 13px;
+  color: var(--gray4);
+  text-decoration: none;
+  padding: 3px 0;
+  transition: color 0.15s;
+}
+.footer-col a:hover { color: var(--orange); }
+.footer-bottom {
+  max-width: 900px;
+  margin: 24px auto 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--gray2);
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--gray3);
+}
+@media (max-width: 600px) {
+  .footer-inner { grid-template-columns: 1fr 1fr; gap: 24px; }
+  .footer-bottom { flex-direction: column; gap: 4px; }
+}
+
+/* ─── UTILITY ─── */
+.hidden { display: none !important; }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
+<!-- ═══ NAV ═══ -->
 <nav class="nav">
-  <div class="nav-inner">
-    <a href="/" class="logo">
-      <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
-        <path d="M20 2L6 12v16c0 6 6 10 14 10s14-4 14-10V12L20 2z" fill="#f05528"/>
-        <path d="M14 20l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span><span class="logo-select">Select</span><span class="logo-service">Service</span><span class="logo-pros">Pros</span></span>
-    </a>
-    <div class="nav-links">
-      <span class="nav-loc" id="nav-market">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        Houston, TX
-      </span>
-      <a href="#how-it-works" class="nav-link">How It Works</a>
-      <a href="#categories" class="nav-link">Find Pros</a>
-      <a href="contractor-signup.html" class="nav-cta">Join as a Pro</a>
+  <a href="/" class="nav-logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
-    <button class="hamburger" onclick="document.querySelector('.mobile-menu').classList.toggle('open')" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
+    Select<span>Service</span>Pros
+  </a>
+  <div class="nav-links" id="nav-links">
+    <a href="#" class="nav-location" id="nav-location">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span id="nav-city">Houston, TX</span>
+    </a>
+    <a href="#how-section">How It Works</a>
+    <a href="#services-section">Find Pros</a>
+    <a href="contractor-login.html" class="nav-login">Contractor Login</a>
+    <a href="contractor-signup.html" class="nav-btn">Join as a Pro</a>
   </div>
+  <button class="nav-hamburger" onclick="document.getElementById('nav-links').classList.toggle('open')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
 </nav>
 
-<!-- MOBILE MENU -->
-<div class="mobile-menu">
-  <a href="#categories" onclick="this.parentElement.classList.remove('open')">Find Pros</a>
-  <a href="#how-it-works" onclick="this.parentElement.classList.remove('open')">How It Works</a>
-  <a href="contractor-signup.html" class="mobile-menu-cta">Join as a Pro</a>
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <h1>Connecting you with the<br/><em>people you can trust.</em></h1>
+  <p class="hero-sub">Get free quotes from licensed, background-checked home service pros in Houston — fast, easy, and zero obligation.</p>
+
+  <div class="search-bar">
+    <input type="text" id="hero-service" placeholder="What do you need help with?" autocomplete="off" oninput="showSuggestions(this.value)"/>
+    <div class="search-divider"></div>
+    <input type="text" id="hero-zip" placeholder="ZIP code" maxlength="5" style="max-width:120px;"/>
+    <button class="search-btn" onclick="handleSearch()">Get Quotes</button>
+    <div class="suggestions" id="suggestions"></div>
+  </div>
+
+  <div class="hero-badges">
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Licensed &amp; insured contractors only</span>
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Get up to 3 competing quotes</span>
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 100% free, no obligation</span>
+  </div>
+</section>
+
+<!-- ═══ CATEGORY STRIP ═══ -->
+<div class="cat-strip" id="cat-strip"></div>
+
+<!-- ═══ INTAKE FORM ═══ -->
+<div class="intake-section hidden" id="intake-section">
+  <div class="intake-card">
+    <div class="intake-header">
+      <h2 id="intake-title">Get matched with top pros near you</h2>
+      <p>Tell us about your issue and we'll connect you with licensed, background-checked contractors in your area — fast, free, and no obligation.</p>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-labels">
+        <span class="step-lbl" id="step-lbl">STEP 1 OF 5</span>
+        <span class="step-pct" id="step-pct">0%</span>
+      </div>
+      <div class="prog-bar"><div id="prog"></div></div>
+    </div>
+    <div class="intake-history" id="hist"></div>
+    <div class="qa-area">
+      <div class="thinking" id="thinking">
+        <div class="dot-flashing"><span></span><span></span><span></span></div>
+        Finding the right question…
+      </div>
+      <div id="q-area"></div>
+    </div>
+  </div>
 </div>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-inner">
-    <h1>Connecting you with the <em>people you can trust.</em></h1>
-    <p>Get free quotes from licensed, background-checked home service pros in Houston — fast, easy, and zero obligation.</p>
-    <div class="hero-search">
-      <div class="hero-fields">
-        <div class="hero-field">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="hero-service" placeholder="What do you need help with?" autocomplete="off" oninput="showSuggestions(this.value)" onkeydown="if(event.key==='Enter')handleSearch()"/>
-        </div>
-        <div class="hero-field">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <input type="text" id="hero-zip" placeholder="ZIP code" maxlength="5" pattern="[0-9]*" inputmode="numeric"/>
-          <button id="geo-btn" onclick="detectLocation()" title="Use my location" style="background:none;border:none;cursor:pointer;padding:0;display:flex;color:rgba(255,255,255,.5)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><path d="m4.22 4.22 2.12 2.12M17.66 17.66l2.12 2.12M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
-          </button>
-        </div>
-      </div>
-      <button class="hero-btn" onclick="handleSearch()">Get Quotes</button>
+<!-- ═══ SERVICES GRID ═══ -->
+<section class="services-section" id="services-section">
+  <div class="section-header">
+    <h2>Most in-demand home services</h2>
+    <p>Select a category to get started</p>
+  </div>
+  <div class="services-grid" id="services-grid"></div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="how-section" id="how-section">
+  <h2>How it works</h2>
+  <div class="how-grid">
+    <div class="how-step">
+      <div class="how-num">1</div>
+      <h3>Tell us what you need</h3>
+      <p>Answer a few quick questions about your project. Our smart intake learns exactly what kind of pro you need.</p>
     </div>
-    <div class="suggestions" style="position:relative;max-width:560px;margin:0 auto">
-      <div id="suggestions"></div>
+    <div class="how-step">
+      <div class="how-num">2</div>
+      <h3>Get matched instantly</h3>
+      <p>We'll connect you with up to 3 licensed, background-checked professionals in your area within minutes.</p>
     </div>
-    <div class="hero-trust">
-      <div class="hero-trust-item">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        Licensed &amp; insured contractors only
-      </div>
-      <div class="hero-trust-item">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        Get up to 3 competing quotes
-      </div>
-      <div class="hero-trust-item">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        100% free, no obligation
-      </div>
+    <div class="how-step">
+      <div class="how-num">3</div>
+      <h3>Compare and hire</h3>
+      <p>Review quotes, check reviews, and pick the pro that fits your budget and timeline. It's 100% free.</p>
     </div>
   </div>
 </section>
 
-<!-- CATEGORY STRIP -->
-<section class="categories" id="categories">
-  <div class="cat-grid" id="cat-grid">
-    <!-- Populated by renderCategoryStrip() from SSP_CONFIG -->
-  </div>
-</section>
-
-<!-- INTAKE SECTION -->
-<section class="intake-section" id="intake-section">
-  <div class="intake-inner">
-    <div class="intake-tag">
-      <div class="intake-tag-dot"></div>
-      <span id="intake-service-name">HVAC Services</span> — <span id="intake-market-name">Houston</span>
-    </div>
-    <h2>Get matched with top pros near you</h2>
-    <p class="intake-sub">Tell us about your issue and we'll connect you with licensed, background-checked contractors in your area — fast, free, and no obligation.</p>
-    <div class="intake-trust">
-      <div class="intake-trust-item">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        Licensed &amp; insured contractors only
-      </div>
-      <div class="intake-trust-item">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        Get up to 3 competing quotes
-      </div>
-      <div class="intake-trust-item">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        100% free, no obligation
-      </div>
-    </div>
-    <div class="intake-card">
-      <div class="intake-progress">
-        <div class="progress-labels">
-          <span class="step-lbl" id="step-lbl">Step 1</span>
-          <span class="step-pct" id="step-pct">0%</span>
-        </div>
-        <div class="prog-bar"><div id="prog" style="width:0%"></div></div>
-      </div>
-      <div class="intake-history" id="hist"></div>
-      <div class="qa-area" id="qa">
-        <div class="thinking" id="thinking">
-          <div class="dot-flashing"><span></span><span></span><span></span></div>
-          Finding the right questions…
-        </div>
-        <div id="q-area"></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- SERVICES SECTION -->
-<section class="services-section">
-  <div class="section-inner">
-    <div class="section-header">
-      <h2>Most in-demand home services</h2>
-      <a href="#categories">View all</a>
-    </div>
-    <div class="services-grid" id="services-grid">
-      <!-- Populated by renderServicesGrid() from SSP_CONFIG -->
-    </div>
-  </div>
-</section>
-
-<!-- HOW IT WORKS -->
-<section class="how-section" id="how-it-works">
-  <div class="how-inner">
-    <h2>How it works</h2>
-    <div class="how-steps">
-      <div class="how-step">
-        <div class="step-num">1</div>
-        <h3>Tell us what you need</h3>
-        <p>Answer a few quick questions about your project. Our smart intake learns exactly what kind of pro you need.</p>
-      </div>
-      <div class="how-step">
-        <div class="step-num">2</div>
-        <h3>Get matched instantly</h3>
-        <p>We'll connect you with up to 3 licensed, background-checked professionals in your area within minutes.</p>
-      </div>
-      <div class="how-step">
-        <div class="step-num">3</div>
-        <h3>Compare and hire</h3>
-        <p>Review quotes, check reviews, and pick the pro that fits your budget and timeline. It's 100% free.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA BANNER -->
-<section class="cta-banner">
+<!-- ═══ CTA ═══ -->
+<section class="cta-section">
   <h2>Are you a service professional?</h2>
   <p>Join our network and receive qualified leads from homeowners in your area.<br/>Three membership tiers to fit your business.</p>
-  <a href="contractor-signup.html">Join The Network →</a>
+  <a href="contractor-signup.html" class="cta-btn">Join The Network →</a>
 </section>
 
-<!-- FOOTER -->
+<!-- ═══ FOOTER ═══ -->
 <footer class="footer">
   <div class="footer-inner">
     <div class="footer-brand">
-      <div class="logo-text"><span class="logo-select">Select</span><span class="logo-service">Service</span><span class="logo-pros">Pros</span></div>
-      <p>Connecting <span id="footer-market">Houston</span> homeowners with licensed, background-checked service professionals since 2025.</p>
+      <div class="footer-logo">Select<span>Service</span>Pros</div>
+      <p>Connecting Houston homeowners with licensed, background-checked service professionals since 2025.</p>
     </div>
     <div class="footer-col">
       <h4>Homeowners</h4>
-      <a href="#categories">Find pros</a>
-      <a href="#how-it-works">How it works</a>
-      <a href="#categories">Browse categories</a>
+      <a href="#">Find pros</a>
+      <a href="#how-section">How it works</a>
+      <a href="#">Browse categories</a>
     </div>
     <div class="footer-col">
       <h4>For Pros</h4>
       <a href="contractor-signup.html">Join the network</a>
-      <a href="contractor-dashboard.html">Contractor login</a>
-      <h4 style="margin-top:20px">Company</h4>
-      <a href="mailto:support@selectservicepros.com">Contact us</a>
+      <a href="contractor-login.html">Contractor login</a>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <a href="#">Contact us</a>
       <a href="#">Terms of use</a>
       <a href="#">Privacy policy</a>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 SelectServicePros.com. All rights reserved.</span>
-    <span class="footer-loc">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      <span id="footer-market-loc">Houston, TX</span>
-    </span>
+    <span>&copy; 2025 SelectServicePros.com. All rights reserved.</span>
+    <span>Houston, TX</span>
   </div>
 </footer>
 
+<!-- ═══ CONFIG ═══ -->
+<script src="ssp-config.js"></script>
 <script>
-// ═══════════════════════════════════════════════════════════
-// SSP CONFIG INTEGRATION
-// Reads SSP_CONFIG (from ssp-config.js loaded in <head>) and
-// renders category strip, services grid, and market displays.
-// ═══════════════════════════════════════════════════════════
-
-// SVG icon paths for each category ID
-const CAT_ICONS = {
-  'HVAC':            '<path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/>',
-  'Plumbing':        '<path d="M10 2v4"/><path d="M14 2v4"/><path d="M8 6h8a1 1 0 0 1 1 1v3a5 5 0 0 1-10 0V7a1 1 0 0 1 1-1z"/><path d="M12 15v3"/><path d="M8 18h8"/><path d="M8 18v3"/><path d="M16 18v3"/>',
-  'Electrical':      '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
-  'Roofing':         '<path d="M2 12L12 3l10 9"/><path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/><path d="M9 21v-6h6v6"/>',
-  'Handyman':        '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
-  'Appliance Repair':'<rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="14" r="4"/><path d="M12 10v1"/><path d="M8 6h8"/><line x1="12" y1="14" x2="14" y2="12"/>',
-  'Construction':    '<path d="M2 20h20"/><path d="M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/><path d="M9 11h1"/><path d="M14 11h1"/>',
-  'Painting':        '<path d="M19 3H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/><path d="M12 11v4"/><path d="M10 15h4v5a2 2 0 0 1-4 0v-5z"/><circle cx="8" cy="6" r="1" fill="currentColor"/><circle cx="12" cy="6" r="1" fill="currentColor"/><circle cx="16" cy="6" r="1" fill="currentColor"/>',
-  'Pool & Spa':      '<path d="M2 12h20"/><path d="M2 16c1.5-1 3-1.5 5 0s3.5 1 5 0 3.5-1 5 0 3.5 1 5 0"/><path d="M6 4v8"/><path d="M18 4v8"/><path d="M6 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2"/>',
-  'Windows & Doors': '<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 12h18"/><path d="M12 3v9"/><circle cx="15" cy="16" r="0.5" fill="currentColor"/>'
+// ─── AI SEARCH: Expanded keyword mapping ───
+const SERVICE_KEYWORDS = {
+  'HVAC': ['ac','a/c','air conditioning','hvac','heating','furnace','heat pump','duct','cooling','thermostat','air conditioner','central air','mini split','compressor','condenser','evaporator','refrigerant','freon','blower','ventilation','air handler','air filter','coil','condensation','not cooling','not heating','no cold air','no heat','warm air','frozen','ice on','water heater','hot water','tankless','boiler','radiator'],
+  'Plumbing': ['plumb','plumber','pipe','drain','leak','leaking','leaky','toilet','faucet','sink','sewer','clog','clogged','water line','main line','garbage disposal','sump pump','backflow','water pressure','running toilet','dripping','burst pipe','frozen pipe','p-trap','shutoff valve','hose bib','bathtub','shower head','bidet'],
+  'Electrical': ['electric','electrical','electrician','wiring','outlet','breaker','panel','circuit','light','switch','generator','ceiling fan','dimmer','gfci','arc fault','knob and tube','rewire','power outage','flickering','buzzing','sparking','surge protector','ev charger','recessed light','chandelier','sconce','landscape lighting'],
+  'Roofing': ['roof','roofing','shingle','gutter','skylight','leak','flashing','soffit','fascia','ridge','valley','dormer','chimney','ice dam','moss','slate','tile roof','metal roof','flat roof','tar','membrane','downspout','eave'],
+  'Handyman': ['handyman','fix','odd jobs','general repair','mount tv','hang shelves','drywall','patch','caulk','weather strip','door adjustment','screen repair','furniture assembly','baby proof','grab bar','towel rack','curtain rod','picture hanging'],
+  'Appliance Repair': ['appliance','washer','dryer','refrigerator','fridge','oven','stove','range','dishwasher','microwave','ice maker','disposal','freezer','wine cooler','range hood','cooktop','warming drawer','trash compactor','laundry'],
+  'Construction': ['remodel','renovation','addition','basement','kitchen remodel','bathroom remodel','construction','build','contractor','general contractor','framing','foundation','structural','load bearing','permit','blueprint','extension','adu','garage conversion','deck','patio','pergola','fence','retaining wall'],
+  'Painting': ['paint','painting','painter','stain','interior paint','exterior paint','primer','cabinet paint','trim','accent wall','wallpaper','texture','popcorn ceiling','epoxy','garage floor'],
+  'Pool & Spa': ['pool','spa','hot tub','jacuzzi','pool pump','pool filter','pool heater','pool cleaning','pool repair','pool resurfacing','pool deck','chlorine','salt water','pool light'],
+  'Windows & Doors': ['window','door','glass','siding','pane','double pane','storm door','sliding door','french door','patio door','screen door','window seal','weatherstripping','vinyl siding','hardie board','trim','shutter']
 };
 
-function renderConfigDrivenUI() {
-  if (typeof SSP_CONFIG === 'undefined') {
-    console.warn('[SSP] SSP_CONFIG not loaded — ssp-config.js missing from <head>');
+const CATEGORY_ICONS = {
+  'HVAC': '❄️', 'Plumbing': '🔧', 'Electrical': '⚡', 'Roofing': '🏠',
+  'Handyman': '🔨', 'Appliance Repair': '🔌', 'Construction': '🏗️',
+  'Painting': '🎨', 'Pool & Spa': '🏊', 'Windows & Doors': '🪟'
+};
+
+// ─── STATE ───
+let selectedCategory = null;
+let qaHistory = [];
+let stepNum = 0;
+let currentQuestion = null;
+const totalSteps = 5;  // HARD CAP
+let detectedZip = '';
+
+// ─── INIT ───
+document.addEventListener('DOMContentLoaded', () => {
+  renderCategoryStrip();
+  renderServicesGrid();
+  detectLocation();
+});
+
+// ─── GEOLOCATION — uses BigDataCloud free API ───
+async function detectLocation() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    try {
+      const { latitude, longitude } = pos.coords;
+      const res = await fetch(
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+      );
+      const data = await res.json();
+      if (data.postcode) {
+        detectedZip = data.postcode;
+        document.getElementById('hero-zip').value = detectedZip;
+      }
+      if (data.city) {
+        const region = data.principalSubdivisionCode
+          ? data.principalSubdivisionCode.replace('US-', '')
+          : '';
+        document.getElementById('nav-city').textContent = `${data.city}${region ? ', ' + region : ''}`;
+      }
+    } catch (e) {
+      console.log('Geolocation reverse geocode failed:', e);
+    }
+  }, () => {
+    // User denied or error — keep defaults
+  }, { enableHighAccuracy: false, timeout: 5000 });
+}
+
+// ─── CONFIG HELPERS ───
+function getEnabledCategories() {
+  if (typeof SSP_CONFIG !== 'undefined' && SSP_CONFIG.categories) {
+    return SSP_CONFIG.categories.filter(c => c.enabled);
+  }
+  // Default fallback
+  return [{ id: 'HVAC', label: 'HVAC', displayName: 'AC Repair & Installation', enabled: true }];
+}
+
+function getAllCategories() {
+  if (typeof SSP_CONFIG !== 'undefined' && SSP_CONFIG.categories) {
+    return SSP_CONFIG.categories;
+  }
+  return [{ id: 'HVAC', label: 'HVAC', displayName: 'AC Repair & Installation', enabled: true }];
+}
+
+// ─── RENDER CATEGORY STRIP ───
+function renderCategoryStrip() {
+  const strip = document.getElementById('cat-strip');
+  const enabled = getEnabledCategories();
+  strip.innerHTML = enabled.map(cat => `
+    <button class="cat-pill" onclick="selectCategory('${cat.id}')">
+      <span class="pill-icon">${CATEGORY_ICONS[cat.id] || '🔧'}</span>
+      ${cat.displayName || cat.label}
+    </button>
+  `).join('');
+}
+
+// ─── RENDER SERVICES GRID ───
+function renderServicesGrid() {
+  const grid = document.getElementById('services-grid');
+  const enabled = getEnabledCategories();
+  grid.innerHTML = enabled.map(cat => `
+    <div class="service-card" onclick="selectCategory('${cat.id}')">
+      <div class="card-icon">${CATEGORY_ICONS[cat.id] || '🔧'}</div>
+      <h3>${cat.displayName || cat.label}</h3>
+      <p>Licensed pros near you</p>
+    </div>
+  `).join('');
+}
+
+// ─── AI SEARCH: Match free-form text to category ───
+function matchCategory(text) {
+  const lower = text.toLowerCase();
+  let bestMatch = null;
+  let bestScore = 0;
+
+  for (const [cat, keywords] of Object.entries(SERVICE_KEYWORDS)) {
+    let score = 0;
+    for (const kw of keywords) {
+      if (lower.includes(kw)) {
+        // Longer keyword matches are worth more
+        score += kw.length;
+      }
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = cat;
+    }
+  }
+
+  return bestMatch;
+}
+
+function showSuggestions(text) {
+  const box = document.getElementById('suggestions');
+  if (!text || text.length < 2) { box.style.display = 'none'; return; }
+
+  const enabledCats = getEnabledCategories();
+  const allCats = getAllCategories();
+
+  // First try to match enabled categories
+  const enabledMatches = enabledCats.filter(cat =>
+    cat.label.toLowerCase().includes(text.toLowerCase()) ||
+    (cat.displayName || '').toLowerCase().includes(text.toLowerCase()) ||
+    SERVICE_KEYWORDS[cat.id]?.some(kw => kw.includes(text.toLowerCase()) || text.toLowerCase().includes(kw))
+  );
+
+  // Also check disabled categories for "not available" messaging
+  const disabledMatches = allCats.filter(cat =>
+    !cat.enabled && (
+      cat.label.toLowerCase().includes(text.toLowerCase()) ||
+      (cat.displayName || '').toLowerCase().includes(text.toLowerCase()) ||
+      SERVICE_KEYWORDS[cat.id]?.some(kw => kw.includes(text.toLowerCase()) || text.toLowerCase().includes(kw))
+    )
+  );
+
+  if (enabledMatches.length === 0 && disabledMatches.length === 0) {
+    box.style.display = 'none';
     return;
   }
 
-  const enabledCats = SSP_CONFIG.categories.filter(c => c.enabled);
-  const activeMarket = SSP_CONFIG.markets.find(m => m.enabled);
+  let html = '';
 
-  // ── 1. Category pill strip ──
-  const catGrid = document.getElementById('cat-grid');
-  if (catGrid && enabledCats.length > 0) {
-    catGrid.innerHTML = enabledCats.map(cat => `
-      <div class="cat-item" data-cat="${cat.id}" onclick="selectCategory('${cat.id}')">
-        <div class="cat-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15">
-            ${CAT_ICONS[cat.id] || '<circle cx="12" cy="12" r="9"/>'}
-          </svg>
-        </div>
-        <span class="cat-label">${cat.label}</span>
+  // Show enabled matches first
+  html += enabledMatches.slice(0, 4).map(cat => `
+    <div class="suggestion-item" onclick="pickSuggestion('${cat.id}', '${(cat.displayName || cat.label).replace(/'/g, "\\'")}')">
+      <div class="cat-icon">${CATEGORY_ICONS[cat.id] || '🔧'}</div>
+      <div>
+        <strong>${cat.displayName || cat.label}</strong>
       </div>
-    `).join('');
-  }
+    </div>
+  `).join('');
 
-  // ── 2. Services grid ──
-  const servicesGrid = document.getElementById('services-grid');
-  if (servicesGrid && enabledCats.length > 0) {
-    servicesGrid.innerHTML = enabledCats.map(cat => `
-      <div class="service-card" onclick="selectCategory('${cat.id}')">
-        <h3>${cat.displayName || cat.label}</h3>
-        <div class="service-meta">${cat.meta || '★ 4.7 · Verified pros available'}</div>
+  // Show disabled matches with "not available" label
+  html += disabledMatches.slice(0, 2).map(cat => `
+    <div class="suggestion-item" style="opacity:0.5;cursor:default;">
+      <div class="cat-icon">${CATEGORY_ICONS[cat.id] || '🔧'}</div>
+      <div>
+        <strong>${cat.displayName || cat.label}</strong>
+        <div style="font-size:11px;color:var(--gray3);">Not available in your area yet</div>
       </div>
-    `).join('');
-  }
+    </div>
+  `).join('');
 
-  // ── 3. Market displays ──
-  if (activeMarket) {
-    const cityState = `${activeMarket.city}, ${activeMarket.state}`;
-    const city = activeMarket.city;
-
-    // Nav location
-    const navMarket = document.getElementById('nav-market');
-    if (navMarket) navMarket.innerHTML = `
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-        <circle cx="12" cy="10" r="3"/>
-      </svg>
-      ${cityState}`;
-
-    // Intake market name
-    const intakeMarket = document.getElementById('intake-market-name');
-    if (intakeMarket) intakeMarket.textContent = city;
-
-    // Footer
-    const footerMarket = document.getElementById('footer-market');
-    if (footerMarket) footerMarket.textContent = city;
-    const footerMarketLoc = document.getElementById('footer-market-loc');
-    if (footerMarketLoc) footerMarketLoc.textContent = cityState;
-
-    // Page title
-    document.title = `SelectServicePros — Find Trusted Home Service Pros in ${city}`;
-  }
+  box.innerHTML = html;
+  box.style.display = 'block';
 }
 
-// Run as soon as DOM is ready (ssp-config.js loads before this script)
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', renderConfigDrivenUI);
-} else {
-  renderConfigDrivenUI();
+function pickSuggestion(catId, label) {
+  document.getElementById('hero-service').value = label;
+  document.getElementById('suggestions').style.display = 'none';
+  selectCategory(catId);
 }
 
-// ═══════════════════════════════════════════════════════════
-// CATEGORY SELECTION + INTAKE FLOW
-// ═══════════════════════════════════════════════════════════
+// ─── SEARCH HANDLER ───
+function handleSearch() {
+  const text = document.getElementById('hero-service').value.trim();
+  if (!text) {
+    document.getElementById('hero-service').focus();
+    return;
+  }
 
-let selectedCategory = null;
-let qaHistory = [];
-let currentQuestion = null;
-let stepNum = 0;
-let totalSteps = 6;
+  const matchedCat = matchCategory(text);
 
-const CATEGORY_LABELS = {
-  'HVAC': 'HVAC Services',
-  'Plumbing': 'Plumbing Services',
-  'Electrical': 'Electrical Services',
-  'Roofing': 'Roofing Services',
-  'Handyman': 'Handyman Services',
-  'Appliance Repair': 'Appliance Repair',
-  'Construction': 'Remodeling Services',
-  'Painting': 'Painting Services',
-  'Pool & Spa': 'Pool & Spa Services',
-  'Windows & Doors': 'Windows & Doors'
-};
+  if (matchedCat) {
+    // Check if this category is enabled
+    const enabled = getEnabledCategories();
+    const isEnabled = enabled.some(c => c.id === matchedCat);
 
+    if (isEnabled) {
+      selectCategory(matchedCat);
+    } else {
+      // Category exists but not enabled — show "not available"
+      showNotAvailable(matchedCat);
+    }
+  } else {
+    // No match found — try the first enabled category with a general intake
+    const enabled = getEnabledCategories();
+    if (enabled.length > 0) {
+      selectCategory(enabled[0].id);
+    } else {
+      showNotAvailable(null);
+    }
+  }
+
+  document.getElementById('suggestions').style.display = 'none';
+}
+
+function showNotAvailable(catId) {
+  const intake = document.getElementById('intake-section');
+  intake.classList.remove('hidden');
+
+  const catName = catId || 'This service';
+  const allCats = getAllCategories();
+  const cat = allCats.find(c => c.id === catId);
+  const displayName = cat ? (cat.displayName || cat.label) : catName;
+
+  document.getElementById('q-area').innerHTML = `
+    <div class="not-available">
+      <h3>${displayName} is not available in your area yet</h3>
+      <p>We're expanding our network of licensed ${displayName.toLowerCase()} professionals. Leave your info and we'll notify you when this service becomes available.</p>
+      <button class="btn-back-home" onclick="resetIntake()">← Browse available services</button>
+    </div>
+  `;
+
+  document.querySelector('.progress-wrap').style.display = 'none';
+  document.getElementById('intake-title').textContent = 'Service Not Available';
+
+  // Scroll to intake
+  intake.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ─── SELECT CATEGORY & START INTAKE ───
 function selectCategory(catId) {
   selectedCategory = catId;
   qaHistory = [];
   stepNum = 0;
 
-  // Update active pill
-  document.querySelectorAll('.cat-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.cat === catId);
+  // Highlight pill
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+  const pills = document.querySelectorAll('.cat-pill');
+  pills.forEach(p => {
+    if (p.textContent.trim().includes(catId) || p.onclick?.toString().includes(catId)) {
+      p.classList.add('active');
+    }
   });
 
-  // Update intake header
-  const label = CATEGORY_LABELS[catId] || catId;
-  document.getElementById('intake-service-name').textContent = label;
+  // Show intake
+  const intake = document.getElementById('intake-section');
+  intake.classList.remove('hidden');
+  document.querySelector('.progress-wrap').style.display = '';
 
-  // Show intake section
-  const section = document.getElementById('intake-section');
-  section.style.display = 'block';
-  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const enabled = getEnabledCategories();
+  const cat = enabled.find(c => c.id === catId);
+  document.getElementById('intake-title').textContent =
+    `Get matched with top ${cat ? (cat.displayName || cat.label) : catId} pros near you`;
 
-  // Clear and start
-  document.getElementById('hist').innerHTML = '';
   setProg(0);
+  document.getElementById('hist').innerHTML = '';
+
+  // Scroll to intake
+  intake.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
   getNextQuestion();
 }
 
+function resetIntake() {
+  document.getElementById('intake-section').classList.add('hidden');
+  selectedCategory = null;
+  qaHistory = [];
+  stepNum = 0;
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+}
+
+// ─── PROGRESS ───
 function setProg(pct) {
   document.getElementById('prog').style.width = pct + '%';
   document.getElementById('step-pct').textContent = pct + '%';
-  document.getElementById('step-lbl').textContent = pct < 100 ? `Step ${stepNum} of ${totalSteps}` : 'Almost done!';
+  const stepDisplay = Math.min(stepNum + 1, totalSteps);
+  document.getElementById('step-lbl').textContent = `STEP ${stepDisplay} OF ${totalSteps}`;
 }
 
 function rebuildHist() {
@@ -568,6 +1200,7 @@ function showThinking(show) {
   document.getElementById('q-area').style.display = show ? 'none' : 'block';
 }
 
+// ─── RENDER QUESTION ───
 function renderQuestion(q) {
   currentQuestion = q;
   const area = document.getElementById('q-area');
@@ -602,8 +1235,40 @@ function renderQuestion(q) {
   showThinking(false);
 }
 
+function renderContact() {
+  setProg(100);
+  document.getElementById('step-lbl').textContent = 'FINAL STEP';
+  document.getElementById('step-pct').textContent = '100%';
+
+  const area = document.getElementById('q-area');
+  area.innerHTML = `
+    <div class="q-text">Great! Last step — how should the pros reach you?</div>
+    <div class="contact-form">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="c-name" placeholder="Your name" autocomplete="name"/>
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" id="c-phone" placeholder="(555) 123-4567" autocomplete="tel"/>
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="c-email" placeholder="you@email.com" autocomplete="email"/>
+      </div>
+      <div class="form-group">
+        <label>ZIP Code</label>
+        <input type="text" id="c-zip" placeholder="77001" maxlength="5" value="${detectedZip || document.getElementById('hero-zip').value || ''}" autocomplete="postal-code"/>
+      </div>
+      <button class="btn-submit" onclick="submitLead()">Get My Free Quotes →</button>
+    </div>
+  `;
+  showThinking(false);
+}
+
+// ─── NAVIGATION ───
 function goBack() {
-  if (qaHistory.length === 0) return;
+  if (qaHistory.length === 0) { resetIntake(); return; }
   qaHistory.pop();
   stepNum = Math.max(0, stepNum - 1);
   setProg(Math.round((stepNum / totalSteps) * 100));
@@ -617,9 +1282,7 @@ function submitAnswer(answer, btnEl) {
   if (btnEl) {
     document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
     btnEl.classList.add('selected');
-    setTimeout(() => {
-      proceedWithAnswer(answer.trim());
-    }, 200);
+    setTimeout(() => { proceedWithAnswer(answer.trim()); }, 200);
   } else {
     proceedWithAnswer(answer.trim());
   }
@@ -628,13 +1291,27 @@ function submitAnswer(answer, btnEl) {
 function proceedWithAnswer(answer) {
   qaHistory.push({ question: currentQuestion.question, answer });
   stepNum++;
+
+  // HARD CAP: if we've hit the max, go to contact
+  if (stepNum >= totalSteps) {
+    renderContact();
+    return;
+  }
+
   const pct = Math.min(Math.round((stepNum / totalSteps) * 100), 90);
   setProg(pct);
   rebuildHist();
   getNextQuestion();
 }
 
+// ─── AI QUESTION FETCHER (with hard cap) ───
 async function getNextQuestion() {
+  // HARD CAP enforced on frontend too
+  if (stepNum >= totalSteps) {
+    renderContact();
+    return;
+  }
+
   showThinking(true);
   try {
     const res = await fetch('/api/next-question', {
@@ -646,465 +1323,81 @@ async function getNextQuestion() {
         stepNum
       })
     });
+    if (!res.ok) throw new Error('API error');
     const q = await res.json();
     renderQuestion(q);
-  } catch(e) {
-    // Fallback question on API error
-    renderQuestion({
-      type: 'text',
-      question: 'Can you describe what you need help with?',
-      placeholder: 'e.g. AC not cooling, need installation, etc.'
-    });
+  } catch (e) {
+    // Fallback question
+    const fallbacks = [
+      { type: 'options', question: 'What type of service do you need?', options: ['Repair', 'Installation', 'Maintenance', 'Inspection'] },
+      { type: 'options', question: 'How urgent is this?', options: ['Emergency', 'Within a few days', 'This week', 'Planning ahead'] },
+      { type: 'options', question: 'What type of property?', options: ['House', 'Apartment/condo', 'Townhouse', 'Commercial'] },
+      { type: 'text', question: 'Can you describe the issue?', placeholder: 'Tell us more...' },
+      { type: 'options', question: 'What is your budget range?', options: ['Under $500', '$500–$2,000', '$2,000–$5,000', '$5,000+'] },
+    ];
+    if (stepNum < fallbacks.length) {
+      renderQuestion(fallbacks[stepNum]);
+    } else {
+      renderContact();
+    }
   }
 }
 
-function startIntakeWithQuestion(question) {
-  const area = document.getElementById('q-area');
-  showThinking(false);
-  currentQuestion = { type: 'text', question };
-  area.innerHTML = `
-    <div class="q-text">${question}</div>
-    <div class="text-input-wrap">
-      <input type="text" id="text-answer" placeholder="Type your answer…"/>
-    </div>
-    <div class="intake-actions">
-      <button class="btn-continue" onclick="submitAnswer(document.getElementById('text-answer').value)">Continue →</button>
-    </div>
-  `;
-}
-
-// ── Contact form ──
-
-function renderContact() {
-  const area = document.getElementById('q-area');
-  setProg(95);
-  area.innerHTML = `
-    <div class="contact-form">
-      <h3>Almost there — how should pros reach you?</h3>
-      <p class="sub">Your information is only shared with matched contractors.</p>
-      <div class="contact-row">
-        <div class="field-group">
-          <label>First Name *</label>
-          <input type="text" id="cf-first" placeholder="Jane"/>
-        </div>
-        <div class="field-group">
-          <label>Last Name *</label>
-          <input type="text" id="cf-last" placeholder="Smith"/>
-        </div>
-      </div>
-      <div class="contact-row">
-        <div class="field-group">
-          <label>Email *</label>
-          <input type="email" id="cf-email" placeholder="jane@email.com"/>
-        </div>
-        <div class="field-group">
-          <label>Phone *</label>
-          <input type="tel" id="cf-phone" placeholder="(713) 555-0000"/>
-        </div>
-      </div>
-      <div class="field-group">
-        <label>ZIP Code *</label>
-        <input type="text" id="cf-zip" placeholder="77001" maxlength="5" inputmode="numeric" value="${document.getElementById('hero-zip')?.value || ''}"/>
-      </div>
-      <div class="field-group">
-        <label>Additional Notes</label>
-        <textarea id="cf-notes" placeholder="Anything else we should know?"></textarea>
-      </div>
-      <div class="intake-actions">
-        <button class="btn-back" onclick="goBackFromContact()">← Back</button>
-        <button class="btn-submit" onclick="submitLead()">Get My Quotes →</button>
-      </div>
-    </div>
-  `;
-  showThinking(false);
-}
-
-function goBackFromContact() {
-  if (qaHistory.length > 0) qaHistory.pop();
-  stepNum = Math.max(0, stepNum - 1);
-  rebuildHist();
-  getNextQuestion();
-}
-
-function getTodayStr() {
-  return new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-}
-
+// ─── SUBMIT LEAD ───
 async function submitLead() {
-  const first = document.getElementById('cf-first')?.value.trim();
-  const last = document.getElementById('cf-last')?.value.trim();
-  const email = document.getElementById('cf-email')?.value.trim();
-  const phone = document.getElementById('cf-phone')?.value.trim();
-  const zip = document.getElementById('cf-zip')?.value.trim();
-  const notes = document.getElementById('cf-notes')?.value.trim();
+  const name = document.getElementById('c-name').value.trim();
+  const phone = document.getElementById('c-phone').value.trim();
+  const email = document.getElementById('c-email').value.trim();
+  const zip = document.getElementById('c-zip').value.trim();
 
-  if (!first || !last || !email || !phone || !zip) {
-    alert('Please fill in all required fields.');
+  if (!name || !phone) {
+    alert('Please enter your name and phone number.');
     return;
   }
 
   const btn = document.querySelector('.btn-submit');
-  if (btn) { btn.textContent = 'Submitting…'; btn.disabled = true; }
+  btn.textContent = 'Submitting…';
+  btn.disabled = true;
 
-  const activeMarket = (typeof SSP_CONFIG !== 'undefined') ? SSP_CONFIG.markets.find(m => m.enabled) : null;
-
-  const payload = {
-    firstName: first,
-    lastName: last,
-    email,
+  const leadData = {
+    name,
     phone,
+    email,
     zip,
-    notes,
-    serviceCategory: selectedCategory,
-    market: activeMarket ? `${activeMarket.city}, ${activeMarket.state}` : 'Houston, TX',
-    qaHistory,
-    submittedAt: new Date().toISOString(),
-    source: 'homepage-intake'
+    category: selectedCategory,
+    answers: qaHistory,
+    source: 'selectservicepros.com',
+    timestamp: new Date().toISOString()
   };
 
   try {
-    await fetch('https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c', {
+    const res = await fetch('https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(leadData)
     });
-  } catch(e) {
-    console.warn('Webhook error:', e);
-  }
 
-  // Success state
-  const area = document.getElementById('q-area');
-  document.getElementById('hist').innerHTML = '';
-  setProg(100);
-  area.innerHTML = `
-    <div class="success-msg">
-      <div class="success-icon">✅</div>
-      <h3>You're all set!</h3>
-      <p>We've received your request and are matching you with licensed <strong>${selectedCategory}</strong> contractors in your area.<br/><br/>
-      You'll receive quotes via email and phone within the next few hours. No obligation — compare and choose the best fit.</p>
-    </div>
-  `;
-  showThinking(false);
-}
-
-// ── Hero search ──
-
-const SERVICE_KEYWORDS = {
-  'HVAC':            ['ac','air conditioning','hvac','heating','furnace','heat pump','duct','cooling','thermostat','air conditioner'],
-  'Plumbing':        ['plumb','pipe','drain','leak','toilet','faucet','water heater','sewer','clog','water pressure','garbage disposal'],
-  'Electrical':      ['electric','wiring','outlet','breaker','panel','light','switch','generator','circuit'],
-  'Roofing':         ['roof','shingle','gutter','skylight'],
-  'Handyman':        ['handyman','odd jobs','general repair','fix','patch','drywall','caulk'],
-  'Appliance Repair':['appliance','washer','dryer','refrigerator','fridge','oven','dishwasher','microwave','freezer'],
-  'Construction':    ['remodel','renovation','addition','basement','kitchen remodel','bathroom remodel','construction'],
-  'Painting':        ['paint','stain','interior paint','exterior paint','primer'],
-  'Pool & Spa':      ['pool','spa','hot tub','jacuzzi'],
-  'Windows & Doors': ['window','door','glass','sliding door','siding']
-};
-
-// Match text against ALL categories (enabled or not) — returns { catId, enabled }
-function matchCategoryFull(text) {
-  const lower = text.toLowerCase();
-  const allCats = (typeof SSP_CONFIG !== 'undefined') ? SSP_CONFIG.categories : [];
-  for (const [catId, keywords] of Object.entries(SERVICE_KEYWORDS)) {
-    if (keywords.some(kw => lower.includes(kw))) {
-      const catConfig = allCats.find(c => c.id === catId);
-      return { catId, enabled: catConfig ? catConfig.enabled : false };
-    }
-  }
-  return null;
-}
-
-function showNotAvailable(catId) {
-  const catConfig = (typeof SSP_CONFIG !== 'undefined')
-    ? SSP_CONFIG.categories.find(c => c.id === catId)
-    : null;
-  const label = catConfig?.displayName || catConfig?.label || catId;
-  const activeMarket = (typeof SSP_CONFIG !== 'undefined') ? SSP_CONFIG.markets.find(m => m.enabled) : null;
-  const city = activeMarket?.city || 'your area';
-
-  // Show intake section with "not available" message
-  const section = document.getElementById('intake-section');
-  document.getElementById('intake-service-name').textContent = label;
-  section.style.display = 'block';
-  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-  document.getElementById('hist').innerHTML = '';
-  document.getElementById('prog').style.width = '0%';
-  document.getElementById('step-pct').textContent = '';
-  document.getElementById('step-lbl').textContent = '';
-
-  document.getElementById('thinking').style.display = 'none';
-  document.getElementById('q-area').style.display = 'block';
-  document.getElementById('q-area').innerHTML = `
-    <div class="not-available">
-      <div class="na-icon">🔧</div>
-      <h3>${label} isn't available in ${city} yet.</h3>
-      <p>We're actively recruiting ${label.toLowerCase()} contractors in ${city}.<br/>
-      Leave your info and we'll notify you the moment we go live in your area.</p>
-      <button class="btn-notify" onclick="showNotifyForm('${catId}', '${label}')">Notify Me When Available</button>
-    </div>
-  `;
-}
-
-function showNotifyForm(catId, label) {
-  document.getElementById('q-area').innerHTML = `
-    <div class="contact-form">
-      <h3>We'll let you know when ${label} is available</h3>
-      <p class="sub">We're expanding fast. Drop your info and you'll be first in line.</p>
-      <div class="contact-row">
-        <div class="field-group">
-          <label>First Name *</label>
-          <input type="text" id="cf-first" placeholder="Jane"/>
+    if (res.ok) {
+      document.getElementById('q-area').innerHTML = `
+        <div class="not-available">
+          <h3 style="color:var(--green);">You're all set!</h3>
+          <p>We've received your request and are matching you with licensed ${selectedCategory || ''} professionals in your area. Expect to hear from up to 3 pros shortly.</p>
+          <button class="btn-back-home" onclick="resetIntake()">← Submit another request</button>
         </div>
-        <div class="field-group">
-          <label>Last Name *</label>
-          <input type="text" id="cf-last" placeholder="Smith"/>
-        </div>
-      </div>
-      <div class="contact-row">
-        <div class="field-group">
-          <label>Email *</label>
-          <input type="email" id="cf-email" placeholder="jane@email.com"/>
-        </div>
-        <div class="field-group">
-          <label>ZIP Code *</label>
-          <input type="text" id="cf-zip" placeholder="77001" maxlength="5" inputmode="numeric" value="${document.getElementById('hero-zip')?.value || ''}"/>
-        </div>
-      </div>
-      <div class="intake-actions">
-        <button class="btn-back" onclick="showNotAvailable('${catId}')">← Back</button>
-        <button class="btn-submit" onclick="submitNotifyRequest('${catId}', '${label}')">Notify Me →</button>
-      </div>
-    </div>
-  `;
-}
-
-async function submitNotifyRequest(catId, label) {
-  const first = document.getElementById('cf-first')?.value.trim();
-  const last = document.getElementById('cf-last')?.value.trim();
-  const email = document.getElementById('cf-email')?.value.trim();
-  const zip = document.getElementById('cf-zip')?.value.trim();
-
-  if (!first || !email || !zip) { alert('Please fill in all required fields.'); return; }
-
-  const btn = document.querySelector('.btn-submit');
-  if (btn) { btn.textContent = 'Submitting…'; btn.disabled = true; }
-
-  try {
-    await fetch('https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        firstName: first, lastName: last, email, zip,
-        serviceCategory: catId,
-        source: 'waitlist',
-        submittedAt: new Date().toISOString()
-      })
-    });
-  } catch(e) { console.warn('Webhook error:', e); }
-
-  document.getElementById('q-area').innerHTML = `
-    <div class="success-msg">
-      <div class="success-icon">✅</div>
-      <h3>You're on the list!</h3>
-      <p>We'll email you at <strong>${email}</strong> as soon as ${label} contractors are available in your area.</p>
-    </div>
-  `;
-}
-
-function showSuggestions(text) {
-  const box = document.getElementById('suggestions');
-  if (!text || text.length < 2) { box.style.display = 'none'; return; }
-
-  const enabledCats = (typeof SSP_CONFIG !== 'undefined')
-    ? SSP_CONFIG.categories.filter(c => c.enabled)
-    : [];
-
-  const matches = enabledCats.filter(cat =>
-    cat.label.toLowerCase().includes(text.toLowerCase()) ||
-    (cat.displayName || '').toLowerCase().includes(text.toLowerCase()) ||
-    SERVICE_KEYWORDS[cat.id]?.some(kw => kw.includes(text.toLowerCase()) || text.toLowerCase().includes(kw))
-  );
-
-  if (matches.length === 0) { box.style.display = 'none'; return; }
-
-  box.innerHTML = matches.slice(0, 5).map(cat => `
-    <div class="suggestion-item" onclick="pickSuggestion('${cat.id}', '${cat.displayName || cat.label}')">
-      ${cat.displayName || cat.label}
-    </div>
-  `).join('');
-  box.style.display = 'block';
-}
-
-function pickSuggestion(catId, label) {
-  document.getElementById('hero-service').value = label;
-  document.getElementById('suggestions').style.display = 'none';
-  selectCategory(catId);
-}
-
-function handleFreeFormSearch(text) {
-  const match = matchCategoryFull(text);
-  if (match) {
-    if (match.enabled) {
-      selectCategory(match.catId);
+      `;
     } else {
-      showNotAvailable(match.catId);
+      throw new Error('Webhook error');
     }
-  } else {
-    // No match at all — scroll to category strip
-    document.getElementById('categories').scrollIntoView({ behavior: 'smooth' });
+  } catch (e) {
+    btn.textContent = 'Get My Free Quotes →';
+    btn.disabled = false;
+    alert('Something went wrong. Please try again.');
   }
 }
 
-// Returns the active market if ZIP is covered, null otherwise
-function getMarketForZip(zip) {
-  if (!zip || zip.length < 3) return null;
-  if (typeof SSP_CONFIG === 'undefined') return null;
-  const prefix3 = zip.substring(0, 3);
-  const prefix5 = zip.substring(0, 5);
-  return SSP_CONFIG.markets.find(m =>
-    m.enabled && m.zips.some(z => prefix3 === z || prefix5 === z)
-  ) || null;
-}
-
-function showZipNotCovered(zip) {
-  const section = document.getElementById('intake-section');
-  document.getElementById('intake-service-name').textContent = 'Service Area';
-  section.style.display = 'block';
-  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-  document.getElementById('hist').innerHTML = '';
-  document.getElementById('prog').style.width = '0%';
-  document.getElementById('step-pct').textContent = '';
-  document.getElementById('step-lbl').textContent = '';
-  document.getElementById('thinking').style.display = 'none';
-  document.getElementById('q-area').style.display = 'block';
-
-  // Build list of active markets for display
-  const activeMarkets = (typeof SSP_CONFIG !== 'undefined')
-    ? SSP_CONFIG.markets.filter(m => m.enabled).map(m => `${m.city}, ${m.state}`)
-    : ['Houston, TX'];
-
-  document.getElementById('q-area').innerHTML = `
-    <div class="not-available">
-      <div class="na-icon">📍</div>
-      <h3>ZIP code ${zip ? `<strong>${zip}</strong> is` : 'You\'re'} not in our service area yet.</h3>
-      <p>We currently serve: <strong>${activeMarkets.join(' · ')}</strong>.<br/><br/>
-      We're expanding quickly. Leave your info and we'll notify you when we launch in your area.</p>
-      <button class="btn-notify" onclick="showZipWaitlistForm('${zip || ''}')">Notify Me When Available</button>
-    </div>
-  `;
-}
-
-function showZipWaitlistForm(zip) {
-  document.getElementById('q-area').innerHTML = `
-    <div class="contact-form">
-      <h3>We'll notify you when we launch in your area</h3>
-      <p class="sub">We're expanding fast. You'll be first to know.</p>
-      <div class="contact-row">
-        <div class="field-group">
-          <label>First Name *</label>
-          <input type="text" id="cf-first" placeholder="Jane"/>
-        </div>
-        <div class="field-group">
-          <label>Last Name *</label>
-          <input type="text" id="cf-last" placeholder="Smith"/>
-        </div>
-      </div>
-      <div class="contact-row">
-        <div class="field-group">
-          <label>Email *</label>
-          <input type="email" id="cf-email" placeholder="jane@email.com"/>
-        </div>
-        <div class="field-group">
-          <label>ZIP Code *</label>
-          <input type="text" id="cf-zip" placeholder="10001" maxlength="5" inputmode="numeric" value="${zip}"/>
-        </div>
-      </div>
-      <div class="intake-actions">
-        <button class="btn-back" onclick="showZipNotCovered('${zip}')">← Back</button>
-        <button class="btn-submit" onclick="submitZipWaitlist()">Notify Me →</button>
-      </div>
-    </div>
-  `;
-}
-
-async function submitZipWaitlist() {
-  const first = document.getElementById('cf-first')?.value.trim();
-  const last = document.getElementById('cf-last')?.value.trim();
-  const email = document.getElementById('cf-email')?.value.trim();
-  const zip = document.getElementById('cf-zip')?.value.trim();
-
-  if (!first || !email || !zip) { alert('Please fill in all required fields.'); return; }
-
-  const btn = document.querySelector('.btn-submit');
-  if (btn) { btn.textContent = 'Submitting…'; btn.disabled = true; }
-
-  try {
-    await fetch('https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        firstName: first, lastName: last, email, zip,
-        source: 'waitlist-zip',
-        submittedAt: new Date().toISOString()
-      })
-    });
-  } catch(e) { console.warn('Webhook error:', e); }
-
-  document.getElementById('q-area').innerHTML = `
-    <div class="success-msg">
-      <div class="success-icon">✅</div>
-      <h3>You're on the list!</h3>
-      <p>We'll email you at <strong>${email}</strong> as soon as we launch in your area.</p>
-    </div>
-  `;
-}
-
-function handleSearch() {
-  const text = document.getElementById('hero-service').value.trim();
-  const zip = document.getElementById('hero-zip').value.trim();
-  document.getElementById('suggestions').style.display = 'none';
-
-  // If they entered a ZIP, validate it against active markets first
-  if (zip && zip.length >= 3) {
-    const market = getMarketForZip(zip);
-    if (!market) {
-      showZipNotCovered(zip);
-      return;
-    }
-  }
-
-  // ZIP is valid (or blank) — now check the service
-  if (text) {
-    handleFreeFormSearch(text);
-  } else {
-    document.getElementById('categories').scrollIntoView({ behavior: 'smooth' });
-  }
-}
-
-function detectLocation() {
-  if (!navigator.geolocation) return;
-  const btn = document.getElementById('geo-btn');
-  if (btn) btn.style.opacity = '1';
-  navigator.geolocation.getCurrentPosition(async pos => {
-    try {
-      const { latitude: lat, longitude: lng } = pos.coords;
-      // Use BigDataCloud free reverse geocode — no key required
-      const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`);
-      if (!res.ok) return;
-      const data = await res.json();
-      const zip = data?.postcode;
-      if (zip) document.getElementById('hero-zip').value = zip;
-    } catch(e) { /* silently fail */ }
-    finally { if (btn) btn.style.opacity = '0.5'; }
-  }, () => { if (btn) btn.style.opacity = '0.5'; });
-}
-
-// Close suggestions on outside click
-document.addEventListener('click', e => {
-  if (!e.target.closest('#hero-service') && !e.target.closest('#suggestions')) {
+// Close suggestions on click outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.search-bar')) {
     document.getElementById('suggestions').style.display = 'none';
   }
 });
