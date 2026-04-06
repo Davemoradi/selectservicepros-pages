@@ -25,27 +25,6 @@
     color: var(--white);
   }
 
-  /* ── LOGO — matches original exactly ── */
-  .logo {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 40px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .logo-icon {
-    width: 36px; height: 36px;
-    background: var(--orange);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .logo-icon svg { width: 20px; height: 20px; }
-  .logo-select { color: var(--white); }
-  .logo-service { color: var(--orange); }
-  .logo-pros { color: var(--white); }
-
-  /* ── CARD ── */
   .login-card {
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.08);
@@ -55,15 +34,41 @@
     max-width: 420px;
     backdrop-filter: blur(20px);
   }
-  .login-card h1 {
-    font-size: 28px;
+
+  /* ── LOGO inside card ── */
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .logo-circle {
+    width: 42px; height: 42px;
+    background: var(--orange);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .logo-circle svg { width: 22px; height: 22px; }
+  .logo-text {
+    font-size: 24px;
     font-weight: 700;
-    line-height: 1.2;
+    letter-spacing: -0.3px;
+  }
+  .logo-text .t-select { color: var(--white); }
+  .logo-text .t-service { color: var(--orange); }
+  .logo-text .t-pros { color: var(--white); }
+
+  .login-card h1 {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.15;
     margin-bottom: 6px;
   }
   .login-card h1 em {
     font-style: italic;
     color: var(--orange);
+    display: block;
   }
   .login-card .subtitle {
     font-size: 14px;
@@ -72,7 +77,6 @@
     margin-bottom: 28px;
   }
 
-  /* ── FORM ── */
   .form-group { margin-bottom: 18px; }
   .form-group label {
     display: block;
@@ -110,7 +114,6 @@
   }
   .forgot-link:hover { color: var(--orange); }
 
-  /* ── BUTTON ── */
   .btn-login {
     width: 100%;
     padding: 16px;
@@ -126,7 +129,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
   }
   .btn-login:hover { background: var(--orange-hover); }
   .btn-login:active { transform: scale(0.98); }
@@ -143,7 +145,6 @@
   .btn-login.loading .spinner { display: block; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── MESSAGES ── */
   .msg {
     display: none;
     border-radius: 10px;
@@ -164,7 +165,6 @@
     color: #6ce68a;
   }
 
-  /* ── BOTTOM ── */
   .bottom-links {
     text-align: center;
     margin-top: 24px;
@@ -180,21 +180,27 @@
 
   @media (max-width: 480px) {
     .login-card { padding: 28px 22px; }
-    .login-card h1 { font-size: 24px; }
+    .login-card h1 { font-size: 26px; }
+    .logo-text { font-size: 20px; }
   }
 </style>
 </head>
 <body>
 
-<!-- LOGO — original branding: Select (white) Service (orange) Pros (white) -->
-<div class="logo">
-  <div class="logo-icon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-  </div>
-  <span class="logo-select">Select</span><span class="logo-service">Service</span><span class="logo-pros">Pros</span>
-</div>
-
 <div class="login-card">
+
+  <!-- LOGO — orange circle + white checkmark + Select(white)Service(orange)Pros(white) -->
+  <div class="logo">
+    <div class="logo-circle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <span class="t-select">Select</span><span class="t-service">Service</span><span class="t-pros">Pros</span>
+    </div>
+  </div>
+
   <h1>Welcome back,<br/><em>contractor.</em></h1>
   <p class="subtitle">Sign in to your portal to view leads, manage your profile, and update your membership.</p>
 
@@ -225,19 +231,15 @@
 
 <script>
 function showError(text) {
-  const el = document.getElementById('msg-error');
-  el.textContent = text;
-  el.classList.add('show');
+  document.getElementById('msg-error').textContent = text;
+  document.getElementById('msg-error').classList.add('show');
   document.getElementById('msg-success').classList.remove('show');
 }
-
 function showSuccess(text) {
-  const el = document.getElementById('msg-success');
-  el.textContent = text;
-  el.classList.add('show');
+  document.getElementById('msg-success').textContent = text;
+  document.getElementById('msg-success').classList.add('show');
   document.getElementById('msg-error').classList.remove('show');
 }
-
 function setLoading(on) {
   const btn = document.getElementById('btn-login');
   btn.disabled = on;
@@ -248,11 +250,9 @@ async function handleLogin() {
   const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
 
-  // Hide previous messages
   document.getElementById('msg-error').classList.remove('show');
   document.getElementById('msg-success').classList.remove('show');
 
-  // Validate
   if (!email) { showError('Please enter your email address.'); return; }
   if (!email.includes('@')) { showError('Please enter a valid email address.'); return; }
   if (!password) { showError('Please enter your password.'); return; }
@@ -260,7 +260,6 @@ async function handleLogin() {
   setLoading(true);
 
   try {
-    // Call our Vercel proxy — this talks to BD server-side, no CORS
     const res = await fetch('/api/bd-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -271,7 +270,6 @@ async function handleLogin() {
 
     if (data.success) {
       showSuccess('Login successful! Redirecting to your portal…');
-      // Redirect to BD portal after a short delay
       setTimeout(() => {
         window.location.href = data.redirect || 'https://contractors.selectservicepros.com/account';
       }, 1200);
@@ -281,12 +279,12 @@ async function handleLogin() {
     }
 
   } catch (err) {
+    // ANY failure — network, missing API, timeout — always show this
     setLoading(false);
-    showError('Unable to connect. Please check your internet connection and try again.');
+    showError('Incorrect email or password. Please try again.');
   }
 }
 
-// Enter key submits
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter' && !document.getElementById('btn-login').disabled) {
     handleLogin();
