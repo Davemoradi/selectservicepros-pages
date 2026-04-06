@@ -9,17 +9,9 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --navy: #0c2340;
-    --navy-light: #132d4f;
     --orange: #f05528;
     --orange-hover: #d94a22;
     --white: #ffffff;
-    --gray1: #f5f5f5;
-    --gray2: #e0e0e0;
-    --gray3: #999;
-    --gray4: #666;
-    --red: #dc3545;
-    --red-bg: rgba(220,53,69,0.1);
-    --green: #28a745;
   }
   body {
     font-family: 'DM Sans', sans-serif;
@@ -33,7 +25,6 @@
     color: var(--white);
   }
 
-  /* Logo */
   .logo {
     font-size: 22px;
     font-weight: 700;
@@ -51,7 +42,6 @@
   .logo-icon svg { width: 20px; height: 20px; }
   .logo span { color: var(--orange); }
 
-  /* Card */
   .login-card {
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.08);
@@ -78,7 +68,6 @@
     margin-bottom: 28px;
   }
 
-  /* Form */
   .form-group { margin-bottom: 18px; }
   .form-group label {
     display: block;
@@ -104,7 +93,6 @@
   .form-group input::placeholder { color: rgba(255,255,255,0.25); }
   .form-group input:focus { border-color: var(--orange); }
 
-  /* Forgot password */
   .forgot-link {
     display: block;
     text-align: right;
@@ -117,7 +105,6 @@
   }
   .forgot-link:hover { color: var(--orange); }
 
-  /* Button */
   .btn-login {
     width: 100%;
     padding: 16px;
@@ -130,31 +117,13 @@
     font-family: inherit;
     cursor: pointer;
     transition: background 0.15s, transform 0.1s;
-    position: relative;
   }
   .btn-login:hover { background: var(--orange-hover); }
   .btn-login:active { transform: scale(0.98); }
-  .btn-login:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
-  .btn-login .spinner {
-    display: none;
-    width: 20px; height: 20px;
-    border: 2.5px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-    margin: 0 auto;
-  }
-  .btn-login.loading .btn-text { display: none; }
-  .btn-login.loading .spinner { display: block; }
-  @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Error message */
   .login-error {
     display: none;
-    background: var(--red-bg);
+    background: rgba(220,53,69,0.1);
     border: 1px solid rgba(220,53,69,0.3);
     border-radius: 10px;
     padding: 12px 14px;
@@ -165,21 +134,6 @@
   }
   .login-error.show { display: block; }
 
-  /* Success message */
-  .login-success {
-    display: none;
-    background: rgba(40,167,69,0.1);
-    border: 1px solid rgba(40,167,69,0.3);
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-top: 16px;
-    font-size: 13px;
-    color: #6ce68a;
-    line-height: 1.5;
-  }
-  .login-success.show { display: block; }
-
-  /* Bottom links */
   .bottom-links {
     text-align: center;
     margin-top: 24px;
@@ -192,28 +146,6 @@
     font-weight: 600;
   }
   .bottom-links a:hover { text-decoration: underline; }
-
-  /* Status bar */
-  .status-bar {
-    display: none;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 14px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 10px;
-    margin-bottom: 20px;
-    font-size: 13px;
-    color: rgba(255,255,255,0.5);
-  }
-  .status-bar.show { display: flex; }
-  .status-bar .dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-  .status-bar .dot.connecting { background: #ffc107; }
-  @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
 
   @media (max-width: 480px) {
     .login-card { padding: 28px 22px; }
@@ -234,197 +166,64 @@
   <h1>Welcome back,<br/><em>contractor.</em></h1>
   <p class="subtitle">Sign in to your portal to view leads, manage your profile, and update your membership.</p>
 
-  <div class="status-bar" id="status-bar">
-    <div class="dot connecting"></div>
-    <span id="status-text">Connecting to your portal…</span>
-  </div>
+  <!--
+    DIRECT FORM POST to BD's login page.
+    No JavaScript auth, no fetch, no CORS.
+    The browser submits the form natively to BD,
+    which handles authentication and redirects.
+  -->
+  <form id="login-form" method="POST" action="https://contractors.selectservicepros.com/login" onsubmit="return validateForm()">
 
-  <div class="form-group">
-    <label>Email Address</label>
-    <input type="email" id="login-email" placeholder="you@company.com" autocomplete="email"/>
-  </div>
-  <div class="form-group">
-    <label>Password</label>
-    <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"/>
-  </div>
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" name="email" id="login-email" placeholder="you@company.com" autocomplete="email" required/>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" name="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required/>
+    </div>
 
-  <a href="https://contractors.selectservicepros.com/login/retrieval" class="forgot-link">Forgot your password?</a>
+    <a href="https://contractors.selectservicepros.com/login/retrieval" class="forgot-link">Forgot your password?</a>
 
-  <button class="btn-login" id="btn-login" onclick="handleLogin()">
-    <span class="btn-text">Sign In</span>
-    <div class="spinner"></div>
-  </button>
+    <button type="submit" class="btn-login">Sign In</button>
 
-  <div class="login-error" id="login-error"></div>
-  <div class="login-success" id="login-success"></div>
+    <div class="login-error" id="login-error"></div>
+  </form>
 
   <div class="bottom-links">
     New to Select Service Pros?<br/>
-    <a href="https://selectservicepros-pages.vercel.app/contractor-signup.html">Apply to join the network →</a>
+    <a href="contractor-signup.html">Apply to join the network →</a>
   </div>
 </div>
 
 <script>
-// BD contractor portal login
-// This authenticates against Brilliant Directories member login
-const BD_LOGIN_URL = 'https://contractors.selectservicepros.com/login';
-const BD_PORTAL_URL = 'https://contractors.selectservicepros.com/account';
-const TIMEOUT_MS = 10000; // 10 second timeout
-
-function showError(msg) {
-  const el = document.getElementById('login-error');
-  el.textContent = msg;
-  el.classList.add('show');
-  document.getElementById('login-success').classList.remove('show');
-}
-
-function showSuccess(msg) {
-  const el = document.getElementById('login-success');
-  el.textContent = msg;
-  el.classList.add('show');
-  document.getElementById('login-error').classList.remove('show');
-}
-
-function hideMessages() {
-  document.getElementById('login-error').classList.remove('show');
-  document.getElementById('login-success').classList.remove('show');
-}
-
-function setLoading(loading) {
-  const btn = document.getElementById('btn-login');
-  const status = document.getElementById('status-bar');
-  if (loading) {
-    btn.classList.add('loading');
-    btn.disabled = true;
-    status.classList.add('show');
-  } else {
-    btn.classList.remove('loading');
-    btn.disabled = false;
-    status.classList.remove('show');
-  }
-}
-
-async function handleLogin() {
+// Client-side validation only — no auth attempts
+function validateForm() {
   const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
+  const errorEl = document.getElementById('login-error');
 
-  hideMessages();
+  errorEl.classList.remove('show');
 
-  // Validate inputs
   if (!email) {
-    showError('Please enter your email address.');
-    return;
-  }
-  if (!password) {
-    showError('Please enter your password.');
-    return;
+    errorEl.textContent = 'Please enter your email address.';
+    errorEl.classList.add('show');
+    return false;
   }
   if (!email.includes('@')) {
-    showError('Please enter a valid email address.');
-    return;
+    errorEl.textContent = 'Please enter a valid email address.';
+    errorEl.classList.add('show');
+    return false;
+  }
+  if (!password) {
+    errorEl.textContent = 'Please enter your password.';
+    errorEl.classList.add('show');
+    return false;
   }
 
-  setLoading(true);
-  document.getElementById('status-text').textContent = 'Connecting to your portal…';
-
-  try {
-    // Attempt BD login via form post
-    // Since BD doesn't have a JSON API, we redirect to BD's login page
-    // with credentials via a hidden form submission
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-    // Try to verify the login by checking BD's login endpoint
-    // BD uses standard form-based auth, so we'll submit directly
-    const formData = new URLSearchParams();
-    formData.append('email', email);
-    formData.append('password', password);
-    formData.append('action', 'login');
-
-    const response = await fetch(BD_LOGIN_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formData.toString(),
-      signal: controller.signal,
-      redirect: 'follow',
-      credentials: 'include'
-    }).catch(err => {
-      // If fetch fails (CORS, network, etc.), fall back to direct redirect
-      clearTimeout(timeoutId);
-      return null;
-    });
-
-    clearTimeout(timeoutId);
-
-    if (response === null) {
-      // CORS blocked or network error — use the form redirect approach
-      directFormSubmit(email, password);
-      return;
-    }
-
-    // Check response
-    if (response.ok) {
-      const text = await response.text();
-      // BD typically redirects to /account on success, or stays on /login with error
-      if (text.includes('account') || text.includes('dashboard') || text.includes('My Account') || response.url.includes('/account')) {
-        showSuccess('Login successful! Redirecting to your portal…');
-        setTimeout(() => {
-          window.location.href = BD_PORTAL_URL;
-        }, 1000);
-        return;
-      } else if (text.includes('incorrect') || text.includes('invalid') || text.includes('wrong') || text.includes('not found') || text.includes('error')) {
-        setLoading(false);
-        showError('Incorrect email or password. Please check your credentials and try again.');
-        return;
-      }
-    }
-
-    // If we get here, something unexpected happened — try direct form submit
-    directFormSubmit(email, password);
-
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      setLoading(false);
-      showError('Connection timed out. Please check your internet connection and try again.');
-    } else {
-      // Fallback: redirect to BD login directly
-      directFormSubmit(email, password);
-    }
-  }
+  // Let the form submit natively to BD
+  return true;
 }
-
-// Fallback: submit a real form to BD's login page (handles CORS)
-function directFormSubmit(email, password) {
-  document.getElementById('status-text').textContent = 'Redirecting to portal…';
-
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = BD_LOGIN_URL;
-  form.style.display = 'none';
-
-  const emailInput = document.createElement('input');
-  emailInput.name = 'email';
-  emailInput.value = email;
-  form.appendChild(emailInput);
-
-  const passInput = document.createElement('input');
-  passInput.name = 'password';
-  passInput.value = password;
-  form.appendChild(passInput);
-
-  const actionInput = document.createElement('input');
-  actionInput.name = 'action';
-  actionInput.value = 'login';
-  form.appendChild(actionInput);
-
-  document.body.appendChild(form);
-  form.submit();
-}
-
-// Allow Enter key to submit
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') handleLogin();
-});
 </script>
 </body>
 </html>
