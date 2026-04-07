@@ -4,214 +4,296 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Join the Network — Select Service Pros</title>
+<meta name="description" content="Join Houston's fastest-growing home services network. Three membership tiers, qualified leads, cancel anytime."/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:ital,wght@0,700;1,700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700;800&display=swap" rel="stylesheet"/>
 <script src="/ssp-config.js"></script>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'DM Sans',sans-serif;color:#1a1a2e;background:#f8f9fb;overflow-x:hidden}
 :root{
-  --navy:#0c2340;--orange:#f05528;--orange2:#d94d24;--green:#1a8a4a;
-  --gray1:#f8f9fb;--gray2:#e8ecf0;--gray3:#b0b8c4;--gray4:#6b7a8d;
-  --radius:14px;--shadow:0 2px 16px rgba(0,0,0,.08);--shadow-lg:0 8px 40px rgba(0,0,0,.14);
+  --navy:#0a1628;--navy2:#122240;--navy3:#1a3158;
+  --orange:#f05528;--orange2:#d94a20;--orange-light:rgba(240,85,40,.08);
+  --green:#1a8a4a;--green-light:#e6f9ed;
+  --bg:#f8f7f4;--white:#ffffff;
+  --text1:#111318;--text2:#3d3f44;--text3:#6b6e76;--text4:#9ca0a8;
+  --border:#e5e4e0;--border2:#d4d3cf;
+  --radius:12px;--radius-sm:8px;--radius-lg:16px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.1);
+  --font-display:'Fraunces',serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --max-w:1140px;
 }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text1);-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
 
-/* NAV */
-.nav{position:sticky;top:0;z-index:100;background:var(--navy);border-bottom:1px solid rgba(255,255,255,.08)}
-.nav-inner{max-width:1200px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between}
-.logo{display:flex;align-items:center;gap:9px;text-decoration:none}
-.logo-select,.logo-pros{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.3px}
-.logo-service{font-size:18px;font-weight:700;color:var(--orange);letter-spacing:-.3px}
-.nav-back{font-size:14px;color:rgba(255,255,255,.7);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color .15s}
-.nav-back:hover{color:#fff}
+/* === NAV (matches homepage) === */
+.nav{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-inner{max-width:var(--max-w);margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--font-body);font-size:20px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}
+.logo svg{flex-shrink:0}
+.logo-select,.logo-pros{color:var(--navy)}
+.logo-service{color:var(--orange)}
+.nav-links{display:flex;align-items:center;gap:8px}
+.nav-link{font-size:14px;font-weight:500;color:var(--text2);padding:8px 14px;border-radius:var(--radius-sm);transition:background .15s}
+.nav-link:hover{background:var(--orange-light)}
+.nav-cta{font-size:14px;font-weight:700;color:var(--white);background:var(--orange);padding:8px 18px;border-radius:var(--radius-sm);transition:all .2s}
+.nav-cta:hover{background:var(--orange2)}
+@media(max-width:600px){.nav-links .nav-link{display:none}.nav-inner{height:56px}.logo{font-size:17px}.logo svg{width:24px;height:24px}.nav-cta{font-size:13px;padding:7px 14px}}
 
-/* HERO */
-.hero{background:linear-gradient(150deg,var(--navy) 0%,#1a3a5c 100%);padding:56px 24px 48px;text-align:center}
-.hero-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(240,85,40,.15);border:1px solid rgba(240,85,40,.3);color:var(--orange);font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;letter-spacing:.4px;margin-bottom:18px;text-transform:uppercase}
-.hero h1{font-family:'Fraunces',serif;font-size:clamp(26px,4vw,44px);font-weight:700;color:#fff;line-height:1.15;margin-bottom:12px}
-.hero h1 em{font-style:italic;color:var(--orange)}
-.hero p{font-size:clamp(14px,2vw,17px);color:rgba(255,255,255,.65);line-height:1.6;max-width:520px;margin:0 auto}
+/* === HERO === */
+.hero{background:var(--white);padding:56px 24px 48px;text-align:center;border-bottom:1px solid var(--border)}
+.hero-inner{max-width:680px;margin:0 auto}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:var(--orange-light);border:1px solid rgba(240,85,40,.2);color:var(--orange);font-size:12px;font-weight:700;padding:5px 14px;border-radius:100px;letter-spacing:.4px;margin-bottom:18px;text-transform:uppercase}
+.hero h1{font-family:var(--font-display);font-size:42px;font-weight:800;line-height:1.15;color:var(--text1);margin-bottom:14px;letter-spacing:-.5px}
+.hero h1 em{font-style:normal;color:var(--orange)}
+.hero-sub{font-size:17px;color:var(--text3);line-height:1.6}
+@media(max-width:600px){.hero{padding:36px 16px 32px}.hero h1{font-size:28px}.hero-sub{font-size:15px}}
 
-/* PLANS SECTION */
-.plans-section{padding:48px 24px 56px;background:var(--gray1)}
-.plans-label{text-align:center;font-size:13px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.6px;margin-bottom:24px}
-.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1060px;margin:0 auto 16px}
+/* === PLANS === */
+.plans-section{padding:48px 24px 40px;max-width:var(--max-w);margin:0 auto}
+.plans-label{text-align:center;font-size:13px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.6px;margin-bottom:24px}
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
 @media(max-width:860px){.plans-grid{grid-template-columns:1fr;max-width:460px;margin:0 auto 16px}}
+.compare-note{text-align:center;font-size:12px;color:var(--text4);max-width:600px;margin:0 auto}
 
 /* PLAN CARD */
-.plan{background:#fff;border-radius:20px;border:2px solid var(--gray2);overflow:hidden;cursor:pointer;transition:all .2s;position:relative}
-.plan:hover{border-color:var(--gray3);box-shadow:var(--shadow)}
-.plan.selected{border-color:var(--orange);box-shadow:0 0 0 4px rgba(240,85,40,.1),var(--shadow-lg)}
+.plan{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:all .2s;position:relative}
+.plan:hover{border-color:var(--border2);box-shadow:var(--shadow-md)}
+.plan.selected{border-color:var(--orange);box-shadow:0 0 0 3px rgba(240,85,40,.1),var(--shadow-lg)}
 .plan.popular{border-color:var(--orange)}
-.plan-badge{background:var(--orange);color:#fff;font-size:11px;font-weight:700;text-align:center;padding:6px 0;letter-spacing:.5px;text-transform:uppercase}
+.plan-badge{background:var(--orange);color:var(--white);font-size:11px;font-weight:700;text-align:center;padding:6px 0;letter-spacing:.5px;text-transform:uppercase}
 .plan-head{padding:24px 22px 18px}
-.plan-name{font-size:13px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
-.plan-tagline{font-size:13px;color:var(--gray4);margin-bottom:14px;line-height:1.4}
+.plan-name{font-size:13px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.plan-tagline{font-size:13px;color:var(--text3);margin-bottom:14px;line-height:1.4}
 .price-row{display:flex;align-items:baseline;gap:3px;margin-bottom:6px}
-.price-amt{font-size:42px;font-weight:700;color:var(--navy);letter-spacing:-1.5px}
-.price-mo{font-size:15px;color:var(--gray4);font-weight:500}
-.lead-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(240,85,40,.08);color:var(--orange);font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;margin-bottom:4px}
-.window-badge{font-size:12px;color:var(--gray4);margin-bottom:0}
+.price-amt{font-size:42px;font-weight:800;color:var(--text1);letter-spacing:-1.5px}
+.price-mo{font-size:15px;color:var(--text4);font-weight:500}
+.lead-badge{display:inline-flex;align-items:center;gap:5px;background:var(--orange-light);color:var(--orange);font-size:12px;font-weight:700;padding:4px 10px;border-radius:100px;margin-bottom:4px}
+.window-badge{font-size:12px;color:var(--text4)}
+.plan-div{height:1px;background:var(--border);margin:0 22px}
 
-/* FEATURE GROUPS */
-.plan-div{height:1px;background:var(--gray2);margin:0 22px}
+/* Features in cards */
 .feats{padding:16px 22px 20px;display:flex;flex-direction:column;gap:3px}
-.fg-lbl{font-size:11px;font-weight:700;color:var(--gray3);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 4px}
+.fg-lbl{font-size:11px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 4px}
 .fg-lbl:first-child{margin-top:0}
-.fi{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--gray4);padding:2px 0}
-.fi.yes{color:#1a1a2e}
+.fi{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3);padding:2px 0}
+.fi.yes{color:var(--text2)}
 .fi.no{opacity:.45}
-.fi-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--gray2)}
-.fi.yes .fi-dot{background:rgba(26,138,74,.12)}
-.fi.no .fi-dot{background:var(--gray2)}
+.fi-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+.fi.yes .fi-dot{background:var(--green-light)}
 .fi-check{width:10px;height:10px}
-.fi-x{width:10px;height:10px;color:var(--gray3)}
+.fi-x{width:10px;height:10px;color:var(--text4)}
 
-/* SELECTED BAR + CTA */
 .plan-foot{padding:0 22px 22px}
-.plan-sel-bar{display:none;background:rgba(240,85,40,.08);color:var(--orange);font-size:13px;font-weight:700;text-align:center;padding:10px;border-radius:10px;margin-bottom:12px}
+.plan-sel-bar{display:none;background:var(--orange-light);color:var(--orange);font-size:13px;font-weight:700;text-align:center;padding:10px;border-radius:var(--radius-sm);margin-bottom:12px}
 .plan.selected .plan-sel-bar{display:block}
-.btn-plan{display:block;width:100%;text-align:center;padding:13px;border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;text-decoration:none;transition:all .15s;border:2px solid var(--gray2);background:#fff;color:var(--navy);cursor:pointer}
-.btn-plan:hover,.plan.selected .btn-plan{background:var(--orange);color:#fff;border-color:var(--orange)}
-.compare-note{text-align:center;font-size:12px;color:var(--gray4);max-width:600px;margin:0 auto}
+.btn-plan{display:block;width:100%;text-align:center;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:700;font-family:inherit;text-decoration:none;transition:all .15s;border:1px solid var(--border);background:var(--white);color:var(--text1);cursor:pointer}
+.btn-plan:hover,.plan.selected .btn-plan{background:var(--orange);color:var(--white);border-color:var(--orange)}
 
-/* CALCULATOR */
-.calc-section{background:#fff;padding:56px 24px;border-top:1px solid var(--gray2)}
-.calc-inner{max-width:760px;margin:0 auto}
+/* === COMPARISON TABLE === */
+.compare-section{padding:0 24px 48px;max-width:var(--max-w);margin:0 auto}
+.compare-toggle{text-align:center;margin-bottom:20px}
+.compare-toggle button{background:var(--white);border:1px solid var(--border);padding:10px 24px;border-radius:100px;font-family:inherit;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s}
+.compare-toggle button:hover{border-color:var(--orange);color:var(--orange)}
+.compare-wrap{overflow-x:auto}
+.compare-table{width:100%;border-collapse:separate;border-spacing:0;background:var(--white);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border)}
+.compare-table thead th{padding:16px 14px;text-align:center;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text4);border-bottom:1px solid var(--border);background:var(--white)}
+.compare-table thead th:first-child{text-align:left;color:var(--text1);width:38%}
+.compare-table thead th.pop{background:var(--orange-light);color:var(--orange);position:relative}
+.compare-table thead th.pop::before{content:'★ BEST VALUE';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--orange);color:var(--white);font-size:9px;font-weight:700;padding:2px 10px;border-radius:0 0 8px 8px;letter-spacing:.4px}
+.compare-table tbody td{padding:11px 14px;text-align:center;font-size:13px;color:var(--text3);border-bottom:1px solid var(--border);vertical-align:middle}
+.compare-table tbody td:first-child{text-align:left;font-weight:500;color:var(--text2)}
+.compare-table tbody td.pop{background:rgba(240,85,40,.02)}
+.compare-table tbody tr:last-child td{border-bottom:none}
+.compare-table tbody tr.group-header td{background:var(--bg);font-size:11px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;padding:10px 14px}
+.ct-check{color:var(--green);font-size:16px;font-weight:700}
+.ct-x{color:var(--text4);font-size:14px}
+.ct-text{font-size:12px;font-weight:600;color:var(--text1)}
+.compare-table tfoot td{padding:14px;text-align:center;border-top:1px solid var(--border);background:var(--bg)}
+.compare-table tfoot td:first-child{text-align:left;font-weight:700;color:var(--text1)}
+.ct-cta{display:inline-block;background:var(--orange);color:var(--white);text-decoration:none;font-size:13px;font-weight:700;padding:9px 18px;border-radius:var(--radius-sm);transition:background .15s}
+.ct-cta:hover{background:var(--orange2)}
+@media(max-width:600px){.compare-table thead th,.compare-table tbody td,.compare-table tfoot td{padding:9px 7px;font-size:12px}}
+
+/* === ROI CALCULATOR === */
+.calc-section{padding:56px 24px;background:var(--white);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.calc-inner{max-width:900px;margin:0 auto}
 .calc-header{text-align:center;margin-bottom:32px}
-.calc-header h2{font-size:clamp(20px,3vw,26px);font-weight:700;color:var(--navy);margin-bottom:8px}
-.calc-header p{font-size:15px;color:var(--gray4)}
-.calc-slider-wrap{background:var(--gray1);border-radius:var(--radius);padding:24px 28px;margin-bottom:24px}
-.calc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.calc-top span{font-size:14px;font-weight:600;color:var(--navy)}
-.calc-lead-count{font-size:30px;font-weight:700;color:var(--orange)}
-input[type=range]{width:100%;height:6px;border-radius:4px;background:var(--gray2);outline:none;-webkit-appearance:none;cursor:pointer;accent-color:var(--orange)}
+.calc-header h2{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text1);margin-bottom:8px}
+.calc-header p{font-size:15px;color:var(--text3)}
+.calc-controls{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+@media(max-width:600px){.calc-controls{grid-template-columns:1fr}}
+.calc-slider-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:22px 24px}
+.calc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.calc-top span{font-size:13px;font-weight:600;color:var(--text1)}
+.calc-lead-count{font-size:26px;font-weight:800;color:var(--orange)}
+input[type=range]{width:100%;height:6px;border-radius:4px;background:var(--border);outline:none;-webkit-appearance:none;cursor:pointer}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--orange);cursor:pointer;box-shadow:0 2px 8px rgba(240,85,40,.35)}
-.calc-range-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--gray4);margin-top:8px}
+.calc-range-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text4);margin-top:6px}
+.calc-job-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:22px 24px}
+.calc-job-label{font-size:13px;font-weight:600;color:var(--text1);margin-bottom:12px}
+.calc-job-input{display:flex;align-items:center;gap:0;margin-bottom:6px}
+.calc-job-input span{font-size:26px;font-weight:800;color:var(--text1);margin-right:4px}
+.calc-job-input input{font-family:inherit;font-size:26px;font-weight:800;color:var(--text1);border:none;background:transparent;width:120px;outline:none;border-bottom:2px solid var(--border);padding-bottom:2px;transition:border-color .15s}
+.calc-job-input input:focus{border-color:var(--orange)}
+.calc-job-hint{font-size:11px;color:var(--text4)}
+
 .calc-results{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 @media(max-width:600px){.calc-results{grid-template-columns:1fr}}
-.calc-card{border-radius:var(--radius);padding:20px;border:2px solid var(--gray2);background:#fff;position:relative;transition:all .2s}
+.calc-card{border-radius:var(--radius);padding:22px 20px;border:1px solid var(--border);background:var(--white);position:relative;transition:all .2s}
 .calc-card.best{border-color:var(--orange);background:rgba(240,85,40,.02)}
-.calc-card-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:2px 12px;border-radius:20px;white-space:nowrap;text-transform:uppercase;letter-spacing:.4px}
-.calc-plan-name{font-size:12px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.calc-total{font-size:28px;font-weight:700;color:var(--navy);margin-bottom:4px}
-.calc-breakdown{font-size:12px;color:var(--gray4);line-height:1.6;margin-bottom:8px}
-.calc-saving{font-size:13px;font-weight:700;color:var(--green)}
-.calc-neutral{font-size:13px;color:var(--gray4)}
-.calc-note{text-align:center;font-size:12px;color:var(--gray4);margin-top:18px}
+.calc-card-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--orange);color:var(--white);font-size:10px;font-weight:700;padding:2px 12px;border-radius:100px;white-space:nowrap;text-transform:uppercase;letter-spacing:.4px}
+.calc-plan-name{font-size:12px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.calc-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border)}
+.calc-row:last-child{border-bottom:none}
+.calc-row-label{font-size:12px;color:var(--text3)}
+.calc-row-value{font-size:13px;font-weight:600;color:var(--text1);text-align:right}
+.calc-revenue{background:var(--green-light);border-radius:var(--radius-sm);padding:14px;margin-top:12px;text-align:center}
+.calc-revenue-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;font-weight:600;margin-bottom:2px}
+.calc-revenue-amt{font-size:24px;font-weight:800;color:var(--green)}
+.calc-roi{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;padding:8px 12px;border-radius:var(--radius-sm);font-size:13px;font-weight:700}
+.calc-roi.great{background:var(--green-light);color:var(--green)}
+.calc-roi.good{background:var(--orange-light);color:var(--orange)}
+.calc-note{text-align:center;font-size:12px;color:var(--text4);margin-top:20px;line-height:1.6}
 
-/* HOW IT WORKS */
-.how-section{padding:64px 24px;background:var(--gray1)}
-.how-inner{max-width:900px;margin:0 auto;text-align:center}
-.how-inner h2{font-size:clamp(20px,3vw,28px);font-weight:700;color:var(--navy);margin-bottom:8px}
-.how-sub{font-size:15px;color:var(--gray4);margin-bottom:44px}
-.how-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-@media(max-width:700px){.how-steps{grid-template-columns:repeat(2,1fr)}}
-.how-step{text-align:center;padding:22px 16px;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow)}
-.how-num{width:40px;height:40px;background:var(--orange);color:#fff;border-radius:50%;font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
-.how-step h3{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px}
-.how-step p{font-size:13px;color:var(--gray4);line-height:1.5}
+/* === HOW IT WORKS === */
+.how-section{padding:56px 24px;background:var(--bg)}
+.how-inner{max-width:var(--max-w);margin:0 auto;text-align:center}
+.section-title{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text1);margin-bottom:40px}
+.how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:700px){.how-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.how-grid{grid-template-columns:1fr}}
+.how-step{text-align:center;padding:22px 16px;background:var(--white);border-radius:var(--radius);border:1px solid var(--border)}
+.how-num{width:40px;height:40px;background:var(--orange-light);color:var(--orange);border-radius:50%;font-family:var(--font-display);font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.how-step h3{font-size:14px;font-weight:700;color:var(--text1);margin-bottom:6px}
+.how-step p{font-size:13px;color:var(--text3);line-height:1.5}
 
-/* TRUST */
-.trust-section{background:#fff;padding:56px 24px}
-.trust-inner{max-width:900px;margin:0 auto;text-align:center}
-.trust-inner h2{font-size:clamp(20px,2.5vw,26px);font-weight:700;color:var(--navy);margin-bottom:36px}
-.trust-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+/* === TRUST === */
+.trust-section{background:var(--white);padding:56px 24px;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.trust-inner{max-width:var(--max-w);margin:0 auto;text-align:center}
+.trust-inner h2{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text1);margin-bottom:36px}
+.trust-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 @media(max-width:600px){.trust-grid{grid-template-columns:1fr}}
-.trust-item{background:var(--gray1);border-radius:var(--radius);padding:22px}
+.trust-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:22px}
 .trust-icon{font-size:28px;margin-bottom:10px}
-.trust-item h3{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px}
-.trust-item p{font-size:13px;color:var(--gray4);line-height:1.55}
+.trust-item h3{font-size:15px;font-weight:700;color:var(--text1);margin-bottom:6px}
+.trust-item p{font-size:13px;color:var(--text3);line-height:1.55}
 
-/* FAQ */
-.faq-section{padding:64px 24px;background:var(--gray1)}
+/* === FAQ === */
+.faq-section{padding:56px 24px;background:var(--bg)}
 .faq-inner{max-width:680px;margin:0 auto}
-.faq-inner h2{font-size:clamp(20px,3vw,26px);font-weight:700;color:var(--navy);margin-bottom:32px;text-align:center}
-.faq-item{border-bottom:1px solid var(--gray2);padding:18px 0}
-.faq-q{font-size:15px;font-weight:600;color:var(--navy);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.faq-inner h2{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text1);margin-bottom:32px;text-align:center}
+.faq-item{border-bottom:1px solid var(--border);padding:18px 0}
+.faq-q{font-size:15px;font-weight:600;color:var(--text1);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px}
 .faq-q::after{content:'＋';font-size:20px;color:var(--orange);flex-shrink:0;transition:transform .2s}
 .faq-item.open .faq-q::after{transform:rotate(45deg)}
-.faq-a{font-size:14px;color:var(--gray4);line-height:1.7;max-height:0;overflow:hidden;transition:max-height .3s,padding .2s}
+.faq-a{font-size:14px;color:var(--text3);line-height:1.7;max-height:0;overflow:hidden;transition:max-height .3s,padding .2s}
 .faq-item.open .faq-a{max-height:300px;padding-top:12px}
 
-/* CTA */
-.cta-section{background:var(--orange);padding:56px 24px;text-align:center}
-.cta-section h2{font-size:clamp(20px,3vw,28px);font-weight:700;color:#fff;margin-bottom:10px}
-.cta-section p{font-size:16px;color:rgba(255,255,255,.82);margin-bottom:28px}
-.btn-cta{display:inline-block;background:#fff;color:var(--orange);text-decoration:none;font-size:16px;font-weight:700;padding:14px 36px;border-radius:11px;transition:all .15s}
-.btn-cta:hover{background:var(--navy);color:#fff}
+/* === CTA BANNER === */
+.cta-banner{padding:48px 24px;max-width:var(--max-w);margin:0 auto}
+.cta-box{background:var(--navy);border-radius:var(--radius-lg);padding:48px;display:flex;justify-content:space-between;align-items:center;gap:32px}
+.cta-box h2{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--white);margin-bottom:10px}
+.cta-box p{font-size:15px;color:rgba(255,255,255,.65);line-height:1.6}
+.cta-btn{background:var(--orange);color:var(--white);font-family:var(--font-body);font-size:15px;font-weight:700;padding:14px 32px;border-radius:var(--radius-sm);border:none;cursor:pointer;white-space:nowrap;transition:background .2s;text-decoration:none;display:inline-block}
+.cta-btn:hover{background:var(--orange2)}
+@media(max-width:700px){.cta-box{flex-direction:column;text-align:center;padding:36px 24px}.cta-btn{width:100%;text-align:center}}
 
-/* FOOTER */
-.footer{background:var(--navy);color:rgba(255,255,255,.5);padding:28px 24px;text-align:center;font-size:13px}
-.footer a{color:rgba(255,255,255,.5);text-decoration:none}
-.footer a:hover{color:#fff}
+/* === FOOTER === */
+.footer{background:var(--white);border-top:1px solid var(--border);padding:28px 24px;text-align:center}
+.footer-inner{max-width:var(--max-w);margin:0 auto;font-size:13px;color:var(--text4)}
+.footer-inner a{color:var(--text4);transition:color .15s}
+.footer-inner a:hover{color:var(--orange)}
 </style>
 </head>
 <body>
 
+<!-- NAV -->
 <nav class="nav">
   <div class="nav-inner">
     <a href="/" class="logo">
-      <svg width="26" height="26" viewBox="0 0 40 40" fill="none">
-        <path d="M20 2L6 12v16c0 6 6 10 14 10s14-4 14-10V12L20 2z" fill="#f05528"/>
-        <path d="M14 20l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <svg width="28" height="33" viewBox="0 0 48 56" fill="none"><path d="M24 2C13 2 4 11 4 22c0 14 20 32 20 32s20-18 20-32C44 11 35 2 24 2z" fill="#f05528"/><circle cx="24" cy="20" r="12" fill="#fff"/><path d="M18 20l4.5 4.5 7.5-7.5" stroke="#f05528" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span><span class="logo-select">Select</span><span class="logo-service">Service</span><span class="logo-pros">Pros</span></span>
     </a>
-    <a href="/" class="nav-back">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-      Back to home
-    </a>
+    <div class="nav-links">
+      <a href="/" class="nav-link">← Back to Home</a>
+      <a href="#plans" class="nav-cta">View Plans</a>
+    </div>
   </div>
 </nav>
 
+<!-- HERO -->
 <section class="hero">
-  <div class="hero-tag">🔧 For Contractors</div>
-  <h1>Get qualified leads. <em>Grow your business.</em></h1>
-  <p>Join Houston's fastest-growing home services network. Pick the plan that fits — cancel anytime.</p>
+  <div class="hero-inner">
+    <div class="hero-tag">🔧 For Contractors</div>
+    <h1>Get qualified leads. <em>Grow your business.</em></h1>
+    <p class="hero-sub">Join Houston's fastest-growing home services network. Pick the plan that fits — cancel anytime.</p>
+  </div>
 </section>
 
-<section class="plans-section">
+<!-- PLANS -->
+<section class="plans-section" id="plans">
   <div class="plans-label">Choose your membership plan</div>
-  <div class="plans-grid" id="plans-grid">
-    <!-- Populated from SSP_CONFIG.plans -->
-  </div>
+  <div class="plans-grid" id="plans-grid"></div>
   <p class="compare-note">Lead fees are charged only when you accept a lead · Memberships renew monthly · Cancel anytime</p>
 </section>
 
-<section class="calc-section">
-  <div class="calc-inner">
-    <div class="calc-header">
-      <h2>See what you'd actually pay</h2>
-      <p>Drag the slider to your expected monthly lead volume — see the total cost per tier.</p>
-    </div>
-    <div class="calc-slider-wrap">
-      <div class="calc-top">
-        <span>Leads you accept per month</span>
-        <span class="calc-lead-count" id="calc-lead-display">10 leads</span>
-      </div>
-      <input type="range" id="calc-slider" min="1" max="50" value="10" oninput="updateCalc(this.value)"/>
-      <div class="calc-range-labels"><span>1 lead</span><span>25 leads</span><span>50 leads</span></div>
-    </div>
-    <div class="calc-results" id="calc-results"></div>
-    <p class="calc-note">* Total = monthly membership + (leads accepted × per-lead fee). You only pay the lead fee when you accept.</p>
+<!-- COMPARISON TABLE -->
+<section class="compare-section">
+  <div class="compare-toggle">
+    <button id="compare-btn" onclick="toggleCompare()">Compare all plans side by side ↓</button>
+  </div>
+  <div class="compare-wrap" id="compare-wrap" style="display:none">
+    <table class="compare-table" id="compare-table"></table>
   </div>
 </section>
 
+<!-- ROI CALCULATOR -->
+<section class="calc-section">
+  <div class="calc-inner">
+    <div class="calc-header">
+      <h2>See your real ROI</h2>
+      <p>Drag the slider and enter your average job value — see what you'd earn vs. what you'd spend.</p>
+    </div>
+    <div class="calc-controls">
+      <div class="calc-slider-wrap">
+        <div class="calc-top">
+          <span>Leads you accept / month</span>
+          <span class="calc-lead-count" id="calc-lead-display">10 leads</span>
+        </div>
+        <input type="range" id="calc-slider" min="1" max="50" value="10" oninput="updateCalc()"/>
+        <div class="calc-range-labels"><span>1</span><span>25</span><span>50</span></div>
+      </div>
+      <div class="calc-job-wrap">
+        <div class="calc-job-label">Your average job value</div>
+        <div class="calc-job-input">
+          <span>$</span>
+          <input type="number" id="calc-job-value" value="800" min="100" max="50000" step="50" oninput="updateCalc()"/>
+        </div>
+        <div class="calc-job-hint">What you typically charge a homeowner per job</div>
+      </div>
+    </div>
+    <div class="calc-results" id="calc-results"></div>
+    <p class="calc-note">Total cost = monthly membership + (accepted leads × per-lead fee).<br/>Estimated revenue = accepted leads × your avg job value. Actual results vary.<br/>You only pay the lead fee when you click Accept — pass on any lead for free.</p>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
 <section class="how-section">
   <div class="how-inner">
-    <h2>How it works</h2>
-    <p class="how-sub">From signup to your first lead in minutes.</p>
-    <div class="how-steps">
+    <h2 class="section-title">How it works</h2>
+    <div class="how-grid">
       <div class="how-step"><div class="how-num">1</div><h3>Choose a plan</h3><p>Pick the tier that fits your business and budget.</p></div>
       <div class="how-step"><div class="how-num">2</div><h3>Complete your profile</h3><p>Add your license, service areas, and trade specialties.</p></div>
-      <div class="how-step"><div class="how-num">3</div><h3>Get notified</h3><p>Receive lead alerts by email the moment a homeowner in your area submits a request.</p></div>
+      <div class="how-step"><div class="how-num">3</div><h3>Get notified</h3><p>Receive lead alerts the moment a homeowner in your area submits a request.</p></div>
       <div class="how-step"><div class="how-num">4</div><h3>Accept &amp; win</h3><p>Connect directly with the homeowner. You keep 100% of the revenue.</p></div>
     </div>
   </div>
 </section>
 
+<!-- TRUST -->
 <section class="trust-section">
   <div class="trust-inner">
     <h2>Why contractors choose Select Service Pros</h2>
@@ -223,221 +305,163 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
   </div>
 </section>
 
+<!-- FAQ -->
 <section class="faq-section">
   <div class="faq-inner">
     <h2>Frequently asked questions</h2>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">How does the tiered lead routing work?</div>
-      <div class="faq-a">When a homeowner submits a request, Elite members get first access for 60 minutes. If no Elite member accepts, Pro members are notified for 45 minutes. Then Basic for 30 minutes. Higher tiers always get first pick.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">Am I charged if I pass on a lead?</div>
-      <div class="faq-a">No. The per-lead fee is only charged when you click Accept. Pass on as many leads as you want — no charge.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">Do I need a license to join?</div>
-      <div class="faq-a">Yes. We verify all contractor licenses through the Texas Department of Licensing and Regulation (TDLR) and other state boards. Only licensed, insured contractors are accepted.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">Can I change my plan later?</div>
-      <div class="faq-a">Yes. Upgrade or downgrade at any time. Changes take effect at the start of your next billing cycle. Your rate is locked at the price you signed up at.</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">What markets are currently active?</div>
-      <div class="faq-a" id="faq-markets">We're currently serving Houston, TX. Additional markets coming soon.</div>
-    </div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How does the tiered lead routing work?</div><div class="faq-a">When a homeowner submits a request, Elite members get first access for 60 minutes. If no Elite member accepts, Pro members are notified for 45 minutes. Then Basic for 30 minutes. Higher tiers always get first pick.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Am I charged if I pass on a lead?</div><div class="faq-a">No. The per-lead fee is only charged when you click Accept. Pass on as many leads as you want — no charge.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Do I need a license to join?</div><div class="faq-a">Yes. We verify all contractor licenses through the Texas Department of Licensing and Regulation (TDLR) and other state boards. Only licensed, insured contractors are accepted.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Can I change my plan later?</div><div class="faq-a">Yes. Upgrade or downgrade at any time. Changes take effect at the start of your next billing cycle.</div></div>
+    <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What markets are currently active?</div><div class="faq-a" id="faq-markets">We're currently serving Houston, TX. Additional markets coming soon.</div></div>
   </div>
 </section>
 
-<section class="cta-section">
-  <h2>Ready to start getting leads?</h2>
-  <p>Pick a plan above — you'll be set up in minutes.</p>
-  <a href="#" class="btn-cta" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">See Plans →</a>
+<!-- CTA -->
+<section class="cta-banner">
+  <div class="cta-box">
+    <div>
+      <h2>Ready to start getting leads?</h2>
+      <p>Pick a plan above — you'll be set up and receiving qualified leads in minutes.</p>
+    </div>
+    <a href="#plans" class="cta-btn" onclick="window.scrollTo({top:document.getElementById('plans').offsetTop-80,behavior:'smooth'});return false;">See Plans →</a>
+  </div>
 </section>
 
+<!-- FOOTER -->
 <footer class="footer">
-  <p>© 2025 SelectServicePros.com &nbsp;·&nbsp; <a href="/">Home</a> &nbsp;·&nbsp; <a href="mailto:support@selectservicepros.com">Contact</a> &nbsp;·&nbsp; <a href="#">Terms</a> &nbsp;·&nbsp; <a href="#">Privacy</a></p>
+  <div class="footer-inner">
+    <p>© 2025 SelectServicePros.com &nbsp;·&nbsp; <a href="/">Home</a> &nbsp;·&nbsp; <a href="/cdn-cgi/l/email-protection#384b4d4848574a4c784b5d545d5b4c4b5d4a4e515b5d484a574b165b5755">Contact</a> &nbsp;·&nbsp; <a href="#">Terms</a> &nbsp;·&nbsp; <a href="#">Privacy</a></p>
+  </div>
 </footer>
 
-<script>
-// Feature definitions per plan
-const PLAN_FEATURES = {
-  basic: {
-    tagline: 'Get started and test the platform',
-    leads: [
-      { yes: true,  text: '30-min access window (after Elite & Pro)' },
-      { yes: true,  text: 'Up to 3 leads matched per job' },
-      { yes: false, text: 'Priority access window' },
-    ],
-    notifications: [
-      { yes: true,  text: 'Email lead alerts' },
-      { yes: false, text: 'SMS lead alerts' },
-    ],
-    profile: [
-      { yes: true,  text: 'Public contractor profile' },
-      { yes: false, text: 'Verified badge' },
-      { yes: false, text: 'Priority listing placement' },
-      { yes: false, text: 'Dedicated account support' },
-    ]
-  },
-  pro: {
-    tagline: 'The best value for growing contractors',
-    leads: [
-      { yes: true,  text: '45-min access window (after Elite only)' },
-      { yes: true,  text: 'Up to 3 leads matched per job' },
-      { yes: true,  text: 'Seen before Basic members' },
-    ],
-    notifications: [
-      { yes: true,  text: 'Email lead alerts' },
-      { yes: true,  text: 'SMS lead alerts' },
-    ],
-    profile: [
-      { yes: true,  text: 'Public contractor profile' },
-      { yes: true,  text: 'Verified badge' },
-      { yes: true,  text: 'Priority listing placement' },
-      { yes: false, text: 'Dedicated account support' },
-    ]
-  },
-  elite: {
-    tagline: 'For contractors who want every lead first',
-    leads: [
-      { yes: true,  text: '60-min exclusive first-access window' },
-      { yes: true,  text: 'Up to 3 leads matched per job' },
-      { yes: true,  text: 'First access — before everyone else' },
-    ],
-    notifications: [
-      { yes: true,  text: 'Email lead alerts' },
-      { yes: true,  text: 'SMS lead alerts' },
-    ],
-    profile: [
-      { yes: true,  text: 'Public contractor profile' },
-      { yes: true,  text: 'Verified badge' },
-      { yes: true,  text: 'Priority listing placement' },
-      { yes: true,  text: 'Dedicated account support' },
-    ]
-  }
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+/* ─── Feature definitions ─── */
+const PLAN_FEATURES={
+  basic:{tagline:'Get started and test the platform',leads:[{yes:true,text:'30-min access window (after Elite & Pro)'},{yes:true,text:'Up to 3 leads matched per job'},{yes:false,text:'Priority access window'}],notifications:[{yes:true,text:'Email lead alerts'},{yes:false,text:'SMS lead alerts'}],profile:[{yes:true,text:'Public contractor profile'},{yes:false,text:'Verified badge'},{yes:false,text:'Priority listing placement'},{yes:false,text:'Dedicated account support'}]},
+  pro:{tagline:'The best value for growing contractors',leads:[{yes:true,text:'45-min access window (after Elite only)'},{yes:true,text:'Up to 3 leads matched per job'},{yes:true,text:'Seen before Basic members'}],notifications:[{yes:true,text:'Email lead alerts'},{yes:true,text:'SMS lead alerts'}],profile:[{yes:true,text:'Public contractor profile'},{yes:true,text:'Verified badge'},{yes:true,text:'Priority listing placement'},{yes:false,text:'Dedicated account support'}]},
+  elite:{tagline:'For contractors who want every lead first',leads:[{yes:true,text:'60-min exclusive first-access window'},{yes:true,text:'Up to 3 leads matched per job'},{yes:true,text:'First access — before everyone else'}],notifications:[{yes:true,text:'Email lead alerts'},{yes:true,text:'SMS lead alerts'}],profile:[{yes:true,text:'Public contractor profile'},{yes:true,text:'Verified badge'},{yes:true,text:'Priority listing placement'},{yes:true,text:'Dedicated account support'}]}
 };
 
-let selectedPlan = 'pro';
+/* ─── Comparison table rows ─── */
+const COMPARE_ROWS=[
+  {group:'Pricing'},
+  {label:'Monthly membership',basic:'$MONTHLY',pro:'$MONTHLY',elite:'$MONTHLY',type:'price'},
+  {label:'Per accepted lead',basic:'$LEAD',pro:'$LEAD',elite:'$LEAD',type:'price'},
+  {group:'Lead access'},
+  {label:'Lead access window',basic:'30 min',pro:'45 min',elite:'60 min',type:'text'},
+  {label:'First access priority',basic:false,pro:'2nd',elite:'1st',type:'mixed'},
+  {label:'Max leads matched per job',basic:'3',pro:'3',elite:'3',type:'text'},
+  {group:'Notifications'},
+  {label:'Email lead alerts',basic:true,pro:true,elite:true,type:'bool'},
+  {label:'SMS lead alerts',basic:false,pro:true,elite:true,type:'bool'},
+  {group:'Profile & visibility'},
+  {label:'Public contractor profile',basic:true,pro:true,elite:true,type:'bool'},
+  {label:'Verified Pro badge',basic:false,pro:true,elite:true,type:'bool'},
+  {label:'Priority listing placement',basic:false,pro:true,elite:true,type:'bool'},
+  {group:'Support'},
+  {label:'Dedicated account support',basic:false,pro:false,elite:true,type:'bool'},
+];
 
-function checkIcon() {
-  return `<svg class="fi-check" viewBox="0 0 10 10" fill="none" stroke="#1a8a4a" stroke-width="2" stroke-linecap="round"><path d="M1.5 5l2.5 2.5 4.5-4.5"/></svg>`;
-}
-function xIcon() {
-  return `<svg class="fi-x" viewBox="0 0 10 10" fill="none" stroke="#b0b8c4" stroke-width="2" stroke-linecap="round"><path d="M2 2l6 6M8 2l-6 6"/></svg>`;
-}
+let selectedPlan='pro';
 
-function renderFeatureGroup(label, items) {
-  return `<div class="fg-lbl">${label}</div>` +
-    items.map(f => `
-      <div class="fi ${f.yes ? 'yes' : 'no'}">
-        <div class="fi-dot">${f.yes ? checkIcon() : xIcon()}</div>
-        <div>${f.text}</div>
-      </div>`).join('');
-}
+function checkIcon(){return `<svg class="fi-check" viewBox="0 0 10 10" fill="none" stroke="#1a8a4a" stroke-width="2" stroke-linecap="round"><path d="M1.5 5l2.5 2.5 4.5-4.5"/></svg>`}
+function xIcon(){return `<svg class="fi-x" viewBox="0 0 10 10" fill="none" stroke="#9ca0a8" stroke-width="2" stroke-linecap="round"><path d="M2 2l6 6M8 2l-6 6"/></svg>`}
+function renderFeatureGroup(label,items){return `<div class="fg-lbl">${label}</div>`+items.map(f=>`<div class="fi ${f.yes?'yes':'no'}"><div class="fi-dot">${f.yes?checkIcon():xIcon()}</div><div>${f.text}</div></div>`).join('')}
+function selPlan(id){selectedPlan=id;document.querySelectorAll('.plan').forEach(el=>el.classList.remove('selected'));const c=document.getElementById('pl-'+id);if(c)c.classList.add('selected')}
 
-function selPlan(id) {
-  selectedPlan = id;
-  document.querySelectorAll('.plan').forEach(el => el.classList.remove('selected'));
-  const card = document.getElementById('pl-' + id);
-  if (card) card.classList.add('selected');
-}
-
-function renderPlans() {
-  if (typeof SSP_CONFIG === 'undefined' || !SSP_CONFIG.plans) {
-    console.warn('[SSP] SSP_CONFIG.plans not loaded');
-    return;
-  }
-
-  const grid = document.getElementById('plans-grid');
-  if (!grid) return;
-
-  grid.innerHTML = SSP_CONFIG.plans.map(plan => {
-    const feats = PLAN_FEATURES[plan.id] || {};
-    const isSelected = plan.id === selectedPlan;
-    const isPopular = !!plan.badge;
-
-    return `
-      <div class="plan ${isPopular ? 'popular' : ''} ${isSelected ? 'selected' : ''}" id="pl-${plan.id}" onclick="selPlan('${plan.id}')">
-        ${isPopular ? `<div class="plan-badge">${plan.badge}</div>` : ''}
-        <div class="plan-head">
-          <div class="plan-name">${plan.name}</div>
-          <div class="plan-tagline">${feats.tagline || ''}</div>
-          <div class="price-row">
-            <div class="price-amt">$${plan.monthlyPrice}</div>
-            <div class="price-mo">/month</div>
-          </div>
-          <div class="lead-badge">+ $${plan.leadPrice} per accepted lead</div>
-          <div class="window-badge">⏱ ${plan.leadWindowMinutes}-min lead access window</div>
-        </div>
-        <div class="plan-div"></div>
-        <div class="feats">
-          ${renderFeatureGroup('Leads', feats.leads || [])}
-          ${renderFeatureGroup('Notifications', feats.notifications || [])}
-          ${renderFeatureGroup('Profile & support', feats.profile || [])}
-        </div>
-        <div class="plan-foot">
-          <div class="plan-sel-bar">✓ Selected — ${plan.name} Plan</div>
-          <a href="${plan.stripeLink}" class="btn-plan" target="_blank" onclick="event.stopPropagation()">
-            Get Started — ${plan.name}
-          </a>
-        </div>
+function renderPlans(){
+  if(typeof SSP_CONFIG==='undefined'||!SSP_CONFIG.plans){console.warn('[SSP] SSP_CONFIG.plans not loaded');return}
+  const grid=document.getElementById('plans-grid');
+  grid.innerHTML=SSP_CONFIG.plans.map(plan=>{
+    const feats=PLAN_FEATURES[plan.id]||{};
+    const isSelected=plan.id===selectedPlan;
+    const isPopular=!!plan.badge;
+    return `<div class="plan ${isPopular?'popular':''} ${isSelected?'selected':''}" id="pl-${plan.id}" onclick="selPlan('${plan.id}')">
+      ${isPopular?`<div class="plan-badge">${plan.badge}</div>`:''}
+      <div class="plan-head">
+        <div class="plan-name">${plan.name}</div>
+        <div class="plan-tagline">${feats.tagline||''}</div>
+        <div class="price-row"><div class="price-amt">$${plan.monthlyPrice}</div><div class="price-mo">/month</div></div>
+        <div class="lead-badge">+ $${plan.leadPrice} per accepted lead</div>
+        <div class="window-badge">⏱ ${plan.leadWindowMinutes}-min lead access window</div>
       </div>
-    `;
+      <div class="plan-div"></div>
+      <div class="feats">
+        ${renderFeatureGroup('Leads',feats.leads||[])}
+        ${renderFeatureGroup('Notifications',feats.notifications||[])}
+        ${renderFeatureGroup('Profile & support',feats.profile||[])}
+      </div>
+      <div class="plan-foot">
+        <div class="plan-sel-bar">✓ Selected — ${plan.name} Plan</div>
+        <a href="${plan.stripeLink}" class="btn-plan" target="_blank" onclick="event.stopPropagation()">Get Started — ${plan.name}</a>
+      </div>
+    </div>`;
   }).join('');
-
-  // Update FAQ markets
-  const activeMarkets = SSP_CONFIG.markets.filter(m => m.enabled).map(m => `${m.city}, ${m.state}`).join(' · ');
-  const faqEl = document.getElementById('faq-markets');
-  if (faqEl && activeMarkets) faqEl.textContent = `We're currently serving: ${activeMarkets}. Additional markets coming soon.`;
-
-  // Init calculator
-  updateCalc(10);
+  const activeMarkets=SSP_CONFIG.markets.filter(m=>m.enabled).map(m=>`${m.city}, ${m.state}`).join(' · ');
+  const faqEl=document.getElementById('faq-markets');
+  if(faqEl&&activeMarkets)faqEl.textContent=`We're currently serving: ${activeMarkets}. Additional markets coming soon.`;
+  renderCompareTable();
+  updateCalc();
 }
 
-// CALCULATOR
-function updateCalc(leads) {
-  leads = parseInt(leads);
-  document.getElementById('calc-lead-display').textContent = leads + (leads === 1 ? ' lead' : ' leads');
-  if (typeof SSP_CONFIG === 'undefined' || !SSP_CONFIG.plans) return;
+/* ─── Comparison table ─── */
+function toggleCompare(){
+  const wrap=document.getElementById('compare-wrap');
+  const btn=document.getElementById('compare-btn');
+  if(wrap.style.display==='none'){wrap.style.display='block';btn.textContent='Hide comparison ↑'}
+  else{wrap.style.display='none';btn.textContent='Compare all plans side by side ↓'}
+}
 
-  const totals = SSP_CONFIG.plans.map(p => ({
-    ...p, total: p.monthlyPrice + (leads * p.leadPrice)
-  }));
-  const cheapest = Math.min(...totals.map(t => t.total));
-  const basicTotal = totals.find(t => t.id === 'basic')?.total || 0;
+function renderCompareTable(){
+  if(typeof SSP_CONFIG==='undefined'||!SSP_CONFIG.plans)return;
+  const table=document.getElementById('compare-table');
+  const plans=SSP_CONFIG.plans;const planMap={};plans.forEach(p=>planMap[p.id]=p);
+  function cellVal(row,planId){
+    const val=row[planId];
+    if(row.type==='price'){
+      if(val==='$MONTHLY')return `<span class="ct-text">$${planMap[planId].monthlyPrice}/mo</span>`;
+      if(val==='$LEAD')return `<span class="ct-text">$${planMap[planId].leadPrice}/lead</span>`;
+      return `<span class="ct-text">${val}</span>`;
+    }
+    if(row.type==='bool')return val?`<span class="ct-check">✓</span>`:`<span class="ct-x">✗</span>`;
+    if(row.type==='text')return `<span class="ct-text">${val}</span>`;
+    if(row.type==='mixed')return val===false?`<span class="ct-x">✗</span>`:`<span class="ct-text">${val}</span>`;
+    return val;
+  }
+  const proIdx=plans.findIndex(p=>p.id==='pro');
+  let html=`<thead><tr><th>Feature</th>${plans.map((p,i)=>`<th class="${i===proIdx?'pop':''}">${p.name}</th>`).join('')}</tr></thead><tbody>`;
+  COMPARE_ROWS.forEach(row=>{
+    if(row.group){html+=`<tr class="group-header"><td colspan="${plans.length+1}">${row.group}</td></tr>`}
+    else{html+=`<tr><td>${row.label}</td>${plans.map((p,i)=>`<td class="${i===proIdx?'pop':''}">${cellVal(row,p.id)}</td>`).join('')}</tr>`}
+  });
+  html+=`</tbody><tfoot><tr><td></td>${plans.map((p,i)=>`<td class="${i===proIdx?'pop':''}"><a href="${p.stripeLink}" class="ct-cta" target="_blank">Get ${p.name}</a></td>`).join('')}</tr></tfoot>`;
+  table.innerHTML=html;
+}
 
-  document.getElementById('calc-results').innerHTML = totals.map(t => {
-    const isBest = t.total === cheapest;
-    const saving = basicTotal - t.total;
-    const savingHtml = t.id === 'basic'
-      ? `<div class="calc-neutral">Baseline — compare others</div>`
-      : saving > 0
-        ? `<div class="calc-saving">Save $${saving.toLocaleString()}/mo vs Basic</div>`
-        : `<div class="calc-neutral">Similar cost to Basic</div>`;
-    return `
-      <div class="calc-card ${isBest ? 'best' : ''}">
-        ${isBest ? '<div class="calc-card-badge">Best value</div>' : ''}
-        <div class="calc-plan-name">${t.name} Plan</div>
-        <div class="calc-total">$${t.total.toLocaleString()}<span style="font-size:13px;font-weight:400;color:var(--gray4)">/mo</span></div>
-        <div class="calc-breakdown">$${t.monthlyPrice} membership<br/>+ ${leads} leads × $${t.leadPrice} = $${(leads * t.leadPrice).toLocaleString()}</div>
-        ${savingHtml}
-      </div>`;
+/* ─── ROI Calculator ─── */
+function updateCalc(){
+  if(typeof SSP_CONFIG==='undefined'||!SSP_CONFIG.plans)return;
+  const leads=parseInt(document.getElementById('calc-slider').value)||10;
+  const jobValue=parseInt(document.getElementById('calc-job-value').value)||800;
+  document.getElementById('calc-lead-display').textContent=leads+(leads===1?' lead':' leads');
+  const revenue=leads*jobValue;
+  const totals=SSP_CONFIG.plans.map(p=>({...p,totalCost:p.monthlyPrice+(leads*p.leadPrice),leadCost:leads*p.leadPrice,revenue,profit:revenue-(p.monthlyPrice+(leads*p.leadPrice)),roi:revenue/(p.monthlyPrice+(leads*p.leadPrice))}));
+  const bestRoi=Math.max(...totals.map(t=>t.roi));
+  document.getElementById('calc-results').innerHTML=totals.map(t=>{
+    const isBest=t.roi===bestRoi;
+    const roiX=t.roi.toFixed(1);
+    const roiClass=t.roi>=8?'great':'good';
+    return `<div class="calc-card ${isBest?'best':''}">
+      ${isBest?'<div class="calc-card-badge">Best ROI</div>':''}
+      <div class="calc-plan-name">${t.name} Plan</div>
+      <div class="calc-row"><span class="calc-row-label">Membership</span><span class="calc-row-value">$${t.monthlyPrice}/mo</span></div>
+      <div class="calc-row"><span class="calc-row-label">${leads} leads × $${t.leadPrice}</span><span class="calc-row-value">$${t.leadCost.toLocaleString()}</span></div>
+      <div class="calc-row" style="border-bottom:2px solid var(--border)"><span class="calc-row-label" style="font-weight:700;color:var(--text1)">Total cost</span><span class="calc-row-value" style="font-size:16px;font-weight:800">$${t.totalCost.toLocaleString()}/mo</span></div>
+      <div class="calc-revenue"><div class="calc-revenue-label">Est. revenue</div><div class="calc-revenue-amt">$${t.revenue.toLocaleString()}</div></div>
+      <div class="calc-roi ${roiClass}"><span style="font-size:20px">${roiX}x</span> return on investment</div>
+    </div>`;
   }).join('');
 }
 
-function toggleFaq(el) {
-  const item = el.closest('.faq-item');
-  const isOpen = item.classList.contains('open');
-  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
-  if (!isOpen) item.classList.add('open');
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', renderPlans);
-} else {
-  renderPlans();
-}
-</script>
-</body>
-</html>
+function toggleFaq(el){const item=el.closest('.faq-item');const isOpen=item.classList.contains('open');document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));if(!isOpen)item.clas
