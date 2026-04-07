@@ -1,32 +1,60 @@
+// SSP Configuration — Phase 1: Pay-Per-Lead
+// Last updated: 2026-04-07
+// No membership fees. Contractors pay per accepted lead only.
+
 const SSP_CONFIG = {
-  categories: [
-    { id: "HVAC", label: "HVAC", enabled: true },
-    { id: "Plumbing", label: "Plumbing", enabled: true },
-    { id: "Electrical", label: "Electrical", enabled: true },
-    { id: "Roofing", label: "Roofing", enabled: true },
-    { id: "Handyman", label: "Handyman", enabled: true },
-    { id: "Appliance Repair", label: "Appliance Repair", enabled: true },
-    { id: "Construction", label: "Remodeling", enabled: true },
-    { id: "Painting", label: "Painting", enabled: true },
-    { id: "Pool & Spa", label: "Pool & Spa", enabled: true },
-    { id: "Windows & Doors", label: "Windows & Doors", enabled: true }
+
+  // Lead pricing by category
+  leadPricing: [
+    { id: "hvac",             name: "HVAC",             leadPrice: 45, icon: "❄" },
+    { id: "plumbing",         name: "Plumbing",         leadPrice: 35, icon: "🔧" },
+    { id: "electrical",       name: "Electrical",       leadPrice: 30, icon: "⚡" },
+    { id: "roofing",          name: "Roofing",          leadPrice: 65, icon: "🏠" },
+    { id: "remodeling",       name: "Remodeling",       leadPrice: 75, icon: "🏗" },
+    { id: "appliance-repair", name: "Appliance Repair", leadPrice: 20, icon: "🧊" },
+    { id: "handyman",         name: "Handyman",         leadPrice: 19, icon: "🔨" },
+    { id: "painting",         name: "Painting",         leadPrice: 35, icon: "🎨" },
+    { id: "pool-spa",         name: "Pool & Spa",       leadPrice: 35, icon: "🏊" },
+    { id: "windows-doors",    name: "Windows & Doors",  leadPrice: 45, icon: "🪟" },
   ],
+
+  // How it works for contractors
+  howItWorks: [
+    { step: 1, title: "Sign up free",        desc: "Create your profile — no upfront costs, no contracts." },
+    { step: 2, title: "Get lead alerts",      desc: "Receive notifications when a homeowner in your area needs help." },
+    { step: 3, title: "Accept or pass",       desc: "Review the lead details. Only pay when you click Accept." },
+    { step: 4, title: "Win the job",          desc: "Connect with the homeowner, give your quote, close the deal." },
+  ],
+
+  // Active markets
   markets: [
-    { id: "houston-tx", city: "Houston", state: "TX", zips: ["770","773","774"], enabled: true },
-    { id: "dallas-tx", city: "Dallas", state: "TX", zips: ["750","751","752","753"], enabled: true },
-    { id: "san-antonio-tx", city: "San Antonio", state: "TX", zips: ["782","781"], enabled: true },
-    { id: "austin-tx", city: "Austin", state: "TX", zips: ["787","786","785"], enabled: true },
-    { id: "fort-worth-tx", city: "Fort Worth", state: "TX", zips: ["760","761","762"], enabled: true },
-    { id: "orlando-fl", city: "orlando", state: "FL", zips: ["327","328","338","347"], enabled: true },
-    { id: "new-york-ny", city: "New york", state: "NY", zips: ["070","071","072","073","074","075","076","077","079","088","100","101","102","103","104","105","106","107","108","109","110","111","112","113","114","115","116","117","118"], enabled: true }
+    { city: "Houston", state: "TX", enabled: true },
   ],
-  settings: {
-    maxLeadsPerContractor: 3,
-    eliteWindowMinutes: 60,
-    proWindowMinutes: 45,
-    basicWindowMinutes: 30,
-    adminEmail: "dave@selecthomewarranty.com"
-  }
+
+  // Stripe payment links for lead credit purchases (Phase 1 approach)
+  // Contractors can pre-buy lead credits or pay-as-they-go via Stripe invoicing
+  stripe: {
+    // These will be set up as Stripe payment links for lead credit packs
+    // For now, leads are invoiced through GHL after acceptance
+    creditPacks: [
+      { credits: 5,  discount: 0,   label: "5 leads"  },
+      { credits: 10, discount: 5,   label: "10 leads (5% off)" },
+      { credits: 25, discount: 10,  label: "25 leads (10% off)" },
+    ],
+    // Placeholder links — replace with real Stripe links
+    buyCreditsLink: "#",
+  },
+
+  // GHL config
+  ghl: {
+    subAccountId: "QfDToN545k1TOpFZa5AQ",
+    contractorWebhook: "https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c",
+  },
+
+  // Feature flags
+  features: {
+    membershipTiers: false,  // Phase 1: disabled. Phase 2: enable when ready.
+    valuePricing: false,     // Phase 2: enable for per-job-type pricing
+    leadCredits: false,      // Enable when Stripe credit packs are set up
+  },
 };
-if (typeof module !== 'undefined') module.exports = SSP_CONFIG;
-if (typeof window !== 'undefined') window.SSP_CONFIG = SSP_CONFIG;

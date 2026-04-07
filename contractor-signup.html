@@ -176,7 +176,7 @@
 
     <!-- ZIP -->
     <div class="fg">
-      <label class="fl">Service area ZIP code <span class="req">*</span></label>
+      <label class="fl">ZIP code <span class="req">*</span></label>
       <input class="fi" type="text" id="c-zip" placeholder="77001" maxlength="5"/>
     </div>
 
@@ -236,16 +236,26 @@ let contractorData={};
 
 // ═══ SERVICE SEARCH INDEX ═══
 const SVC=[
-  {n:"AC Repair",c:"HVAC"},{n:"AC Installation",c:"HVAC"},{n:"Heating / Furnace",c:"HVAC"},{n:"HVAC Maintenance",c:"HVAC"},{n:"Duct Cleaning",c:"HVAC"},{n:"Thermostat Install",c:"HVAC"},{n:"Mini Split",c:"HVAC"},
-  {n:"Leak Repair",c:"Plumbing"},{n:"Drain Cleaning",c:"Plumbing"},{n:"Water Heater",c:"Plumbing"},{n:"Toilet Repair",c:"Plumbing"},{n:"Pipe Repair",c:"Plumbing"},{n:"Sewer Line",c:"Plumbing"},{n:"Sump Pump",c:"Plumbing"},
-  {n:"Outlet / Switch Repair",c:"Electrical"},{n:"Lighting Installation",c:"Electrical"},{n:"Ceiling Fan Install",c:"Electrical"},{n:"Panel Upgrade",c:"Electrical"},{n:"Wiring",c:"Electrical"},{n:"Generator Install",c:"Electrical"},{n:"EV Charger",c:"Electrical"},
-  {n:"Roof Leak Repair",c:"Roofing"},{n:"Roof Replacement",c:"Roofing"},{n:"Storm Damage",c:"Roofing"},{n:"Gutter Work",c:"Roofing"},
-  {n:"General Repairs",c:"Handyman"},{n:"Furniture Assembly",c:"Handyman"},{n:"Drywall Repair",c:"Handyman"},{n:"TV Mounting",c:"Handyman"},{n:"Pressure Washing",c:"Handyman"},{n:"Fence / Gate Repair",c:"Handyman"},
-  {n:"Refrigerator",c:"Appliance Repair"},{n:"Washer / Dryer",c:"Appliance Repair"},{n:"Dishwasher",c:"Appliance Repair"},{n:"Oven / Stove",c:"Appliance Repair"},
-  {n:"Kitchen Remodel",c:"Remodeling"},{n:"Bathroom Remodel",c:"Remodeling"},{n:"Flooring",c:"Remodeling"},{n:"Room Addition",c:"Remodeling"},{n:"Deck / Patio",c:"Remodeling"},
-  {n:"Interior Painting",c:"Painting"},{n:"Exterior Painting",c:"Painting"},{n:"Cabinet Painting",c:"Painting"},{n:"Deck Staining",c:"Painting"},
-  {n:"Pool Cleaning",c:"Pool & Spa"},{n:"Pool Equipment Repair",c:"Pool & Spa"},{n:"Pool Leak Detection",c:"Pool & Spa"},
-  {n:"Window Replacement",c:"Windows & Doors"},{n:"Door Installation",c:"Windows & Doors"},{n:"Window Repair",c:"Windows & Doors"},
+  // HVAC (14)
+  {n:"AC Repair",c:"HVAC"},{n:"AC Installation",c:"HVAC"},{n:"AC Tune-Up / Maintenance",c:"HVAC"},{n:"Heating / Furnace Repair",c:"HVAC"},{n:"Furnace Installation",c:"HVAC"},{n:"Heat Pump Repair",c:"HVAC"},{n:"Heat Pump Installation",c:"HVAC"},{n:"Duct Cleaning",c:"HVAC"},{n:"Duct Repair / Sealing",c:"HVAC"},{n:"Thermostat Install / Replace",c:"HVAC"},{n:"Mini Split Installation",c:"HVAC"},{n:"Indoor Air Quality",c:"HVAC"},{n:"Refrigerant Recharge",c:"HVAC"},{n:"Commercial HVAC",c:"HVAC"},
+  // Plumbing (16)
+  {n:"Leak Repair",c:"Plumbing"},{n:"Drain Cleaning",c:"Plumbing"},{n:"Water Heater Repair",c:"Plumbing"},{n:"Water Heater Installation",c:"Plumbing"},{n:"Tankless Water Heater",c:"Plumbing"},{n:"Toilet Repair / Replace",c:"Plumbing"},{n:"Faucet Repair / Replace",c:"Plumbing"},{n:"Pipe Repair / Repiping",c:"Plumbing"},{n:"Sewer Line Repair",c:"Plumbing"},{n:"Sewer Camera Inspection",c:"Plumbing"},{n:"Garbage Disposal",c:"Plumbing"},{n:"Sump Pump",c:"Plumbing"},{n:"Water Softener",c:"Plumbing"},{n:"Gas Line Repair",c:"Plumbing"},{n:"Backflow Prevention",c:"Plumbing"},{n:"Bathroom / Kitchen Plumbing",c:"Plumbing"},
+  // Electrical (14)
+  {n:"Outlet / Switch Repair",c:"Electrical"},{n:"Lighting Installation",c:"Electrical"},{n:"Recessed Lighting",c:"Electrical"},{n:"Ceiling Fan Install",c:"Electrical"},{n:"Panel Upgrade",c:"Electrical"},{n:"Circuit Breaker Repair",c:"Electrical"},{n:"Whole-Home Rewiring",c:"Electrical"},{n:"Wiring Repair",c:"Electrical"},{n:"Generator Install",c:"Electrical"},{n:"EV Charger Install",c:"Electrical"},{n:"Smoke / CO Detector Install",c:"Electrical"},{n:"Surge Protection",c:"Electrical"},{n:"Landscape / Outdoor Lighting",c:"Electrical"},{n:"Commercial Electrical",c:"Electrical"},
+  // Roofing (10)
+  {n:"Roof Leak Repair",c:"Roofing"},{n:"Roof Replacement",c:"Roofing"},{n:"Shingle Repair",c:"Roofing"},{n:"Flat Roof Repair",c:"Roofing"},{n:"Metal Roofing",c:"Roofing"},{n:"Storm Damage Repair",c:"Roofing"},{n:"Gutter Install / Repair",c:"Roofing"},{n:"Gutter Cleaning",c:"Roofing"},{n:"Roof Inspection",c:"Roofing"},{n:"Skylight Install / Repair",c:"Roofing"},
+  // Handyman (12)
+  {n:"General Repairs",c:"Handyman"},{n:"Furniture Assembly",c:"Handyman"},{n:"Drywall Repair / Patching",c:"Handyman"},{n:"TV Mounting",c:"Handyman"},{n:"Shelf / Curtain Rod Install",c:"Handyman"},{n:"Pressure Washing",c:"Handyman"},{n:"Fence / Gate Repair",c:"Handyman"},{n:"Caulking / Weatherstripping",c:"Handyman"},{n:"Door Repair / Adjustment",c:"Handyman"},{n:"Deck Repair",c:"Handyman"},{n:"Light Fixture Swap",c:"Handyman"},{n:"Tile / Grout Repair",c:"Handyman"},
+  // Appliance Repair (8)
+  {n:"Refrigerator / Freezer",c:"Appliance Repair"},{n:"Washer Repair",c:"Appliance Repair"},{n:"Dryer Repair",c:"Appliance Repair"},{n:"Dishwasher Repair",c:"Appliance Repair"},{n:"Oven / Stove / Range",c:"Appliance Repair"},{n:"Microwave Repair",c:"Appliance Repair"},{n:"Ice Maker Repair",c:"Appliance Repair"},{n:"Garbage Disposal Repair",c:"Appliance Repair"},
+  // Remodeling (10)
+  {n:"Kitchen Remodel",c:"Remodeling"},{n:"Bathroom Remodel",c:"Remodeling"},{n:"Flooring Installation",c:"Remodeling"},{n:"Tile Installation",c:"Remodeling"},{n:"Room Addition",c:"Remodeling"},{n:"Basement Finishing",c:"Remodeling"},{n:"Deck / Patio Build",c:"Remodeling"},{n:"Garage Conversion",c:"Remodeling"},{n:"Cabinet Install / Reface",c:"Remodeling"},{n:"Countertop Installation",c:"Remodeling"},
+  // Painting (8)
+  {n:"Interior Painting",c:"Painting"},{n:"Exterior Painting",c:"Painting"},{n:"Cabinet Painting",c:"Painting"},{n:"Deck / Fence Staining",c:"Painting"},{n:"Wallpaper Removal",c:"Painting"},{n:"Wallpaper Installation",c:"Painting"},{n:"Popcorn Ceiling Removal",c:"Painting"},{n:"Commercial Painting",c:"Painting"},
+  // Pool & Spa (8)
+  {n:"Pool Cleaning / Maintenance",c:"Pool & Spa"},{n:"Pool Equipment Repair",c:"Pool & Spa"},{n:"Pool Leak Detection",c:"Pool & Spa"},{n:"Pool Resurfacing",c:"Pool & Spa"},{n:"Pool Heater Repair",c:"Pool & Spa"},{n:"Spa / Hot Tub Service",c:"Pool & Spa"},{n:"Pool Light Repair",c:"Pool & Spa"},{n:"New Pool Construction",c:"Pool & Spa"},
+  // Windows & Doors (8)
+  {n:"Window Replacement",c:"Windows & Doors"},{n:"Window Repair",c:"Windows & Doors"},{n:"Door Installation",c:"Windows & Doors"},{n:"Door Repair",c:"Windows & Doors"},{n:"Sliding Door Repair",c:"Windows & Doors"},{n:"Storm Door Install",c:"Windows & Doors"},{n:"Screen Repair / Replace",c:"Windows & Doors"},{n:"Window Tinting",c:"Windows & Doors"},
 ];
 
 function svcSearch(val){
