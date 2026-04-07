@@ -2,1405 +2,562 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SelectServicePros — Licensed Home Service Pros in Houston</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SelectServicePros — Find Trusted Home Service Pros in Houston</title>
+<meta name="description" content="Connect with licensed, background-checked contractors in Houston. Get free quotes for HVAC, plumbing, electrical, roofing and more."/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --navy: #0c2340;
-  --navy-light: #1a3a5c;
-  --orange: #f05528;
-  --orange-hover: #d94a22;
-  --orange-light: #fff4f0;
-  --white: #ffffff;
-  --bg: #fafbfc;
-  --gray1: #f5f6f8;
-  --gray2: #e8eaed;
-  --gray3: #c4c8ce;
-  --gray4: #6b7280;
-  --gray5: #374151;
-  --text: #1a1a2e;
-  --text2: #4b5563;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
-  --radius: 14px;
-  --radius-sm: 10px;
+:root{
+  --navy:#0a1628;--navy2:#122240;--navy3:#1a3158;
+  --orange:#f05528;--orange2:#d94a20;--orange-light:rgba(240,85,40,.08);
+  --green:#1a8a4a;--green-light:#e6f9ed;
+  --bg:#f8f7f4;--white:#ffffff;
+  --text1:#111318;--text2:#3d3f44;--text3:#6b6e76;--text4:#9ca0a8;
+  --border:#e5e4e0;--border2:#d4d3cf;
+  --radius:12px;--radius-sm:8px;--radius-lg:16px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.1);
+  --font-display:'Fraunces',serif;
+  --font-body:'DM Sans',system-ui,sans-serif;
+  --max-w:1140px;
 }
-body {
-  font-family: 'DM Sans', -apple-system, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  -webkit-font-smoothing: antialiased;
-}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text1);-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
 
-/* ─── NAV ─── */
-.nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 32px;
-  background: var(--white);
-  border-bottom: 1px solid var(--gray2);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-.nav-logo {
-  font-size: 19px;
-  font-weight: 700;
-  color: var(--navy);
-  text-decoration: none;
-  letter-spacing: -0.3px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.nav-logo .logo-icon {
-  width: 28px; height: 28px;
-  background: var(--orange);
-  border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-}
-.nav-logo .logo-icon svg { width: 15px; height: 15px; }
-.nav-logo span { color: var(--orange); }
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.nav-links a {
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--gray4);
-  text-decoration: none;
-  padding: 7px 14px;
-  border-radius: 8px;
-  transition: all 0.15s;
-}
-.nav-links a:hover { color: var(--navy); background: var(--gray1); }
-.nav-links .nav-location {
-  color: var(--gray4);
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.nav-links .nav-location svg { width: 14px; height: 14px; }
-.nav-btn {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--white) !important;
-  background: var(--orange) !important;
-  padding: 8px 18px !important;
-  border-radius: 8px !important;
-  transition: background 0.15s !important;
-}
-.nav-btn:hover { background: var(--orange-hover) !important; }
-.nav-login {
-  color: var(--navy) !important;
-  font-weight: 600;
-  border: 1.5px solid var(--gray2);
-  border-radius: 8px !important;
-  padding: 7px 16px !important;
-}
-.nav-login:hover { border-color: var(--navy); background: transparent !important; }
+/* === NAV === */
+.nav{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-inner{max-width:var(--max-w);margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--font-body);font-size:20px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}
+.logo svg{flex-shrink:0}
+.logo-select,.logo-pros{color:var(--navy)}
+.logo-service{color:var(--orange)}
+.nav-links{display:flex;align-items:center;gap:8px}
+.nav-link{font-size:14px;font-weight:500;color:var(--text2);padding:8px 14px;border-radius:var(--radius-sm);transition:background .15s}
+.nav-link:hover{background:var(--orange-light)}
+.nav-cta{font-size:14px;font-weight:700;color:var(--white);background:var(--orange);padding:8px 18px;border-radius:var(--radius-sm);transition:all .2s}
+.nav-cta:hover{background:var(--orange2)}
+.mobile-menu-btn{display:none;background:none;border:none;cursor:pointer;padding:8px;color:var(--text2)}
+.mobile-menu{display:none;background:var(--white);border-bottom:1px solid var(--border);padding:0 16px}
+.mobile-menu a{display:block;padding:14px 0;font-size:15px;font-weight:500;color:var(--text2);border-bottom:1px solid var(--border)}
+.mobile-menu a:last-child{border:none}
+.mobile-menu-cta{color:var(--orange) !important;font-weight:700 !important}
+@media(max-width:600px){.mobile-menu-btn{display:flex;align-items:center}.mobile-menu.open{display:block}}
+.nav-loc{font-size:13px;color:var(--text3);border:1px solid var(--border);padding:5px 12px;border-radius:100px;display:flex;align-items:center;gap:5px}
 
-/* Mobile nav */
-.nav-hamburger {
-  display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-}
-.nav-hamburger svg { width: 24px; height: 24px; color: var(--navy); }
-@media (max-width: 768px) {
-  .nav { padding: 12px 18px; }
-  .nav-links { display: none; }
-  .nav-hamburger { display: block; }
-  .nav-links.open {
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--white);
-    border-bottom: 1px solid var(--gray2);
-    padding: 12px 18px;
-    gap: 4px;
-    box-shadow: var(--shadow-md);
-  }
-  .nav-links.open a { padding: 12px 14px; }
-}
-
-/* ─── HERO ─── */
-.hero {
-  background: linear-gradient(135deg, var(--navy) 0%, #163455 50%, var(--navy-light) 100%);
-  padding: 64px 32px 72px;
-  text-align: center;
-  color: var(--white);
-  position: relative;
-  overflow: hidden;
-}
-.hero::before {
-  content: '';
-  position: absolute;
-  top: -40%;
-  right: -20%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(240,85,40,0.08) 0%, transparent 70%);
-  border-radius: 50%;
-}
-.hero h1 {
-  font-size: 42px;
-  font-weight: 700;
-  line-height: 1.15;
-  max-width: 640px;
-  margin: 0 auto 12px;
-  letter-spacing: -0.5px;
-  position: relative;
-}
-.hero h1 em {
-  font-style: italic;
-  color: var(--orange);
-}
-.hero .hero-sub {
-  font-size: 16px;
-  color: rgba(255,255,255,0.6);
-  max-width: 480px;
-  margin: 0 auto 36px;
-  line-height: 1.6;
-}
+/* === HERO === */
+.hero{background:var(--white);padding:56px 24px 48px;text-align:center;border-bottom:1px solid var(--border)}
+.hero-inner{max-width:680px;margin:0 auto}
+.hero h1{font-family:var(--font-display);font-size:42px;font-weight:800;line-height:1.15;color:var(--text1);margin-bottom:14px;letter-spacing:-.5px}
+.hero h1 em{font-style:normal;color:var(--orange)}
+.hero-sub{font-size:17px;color:var(--text3);line-height:1.6;margin-bottom:32px}
 
 /* Search bar */
-.search-bar {
-  display: flex;
-  background: var(--white);
-  border-radius: 14px;
-  max-width: 560px;
-  margin: 0 auto;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.2);
-  overflow: visible;
-  position: relative;
-}
-.search-bar input {
-  flex: 1;
-  padding: 18px 20px;
-  border: none;
-  font-size: 15px;
-  font-family: inherit;
-  color: var(--text);
-  background: transparent;
-  outline: none;
-  min-width: 0;
-}
-.search-bar input::placeholder { color: var(--gray3); }
-.search-divider {
-  width: 1px;
-  background: var(--gray2);
-  margin: 12px 0;
-}
-.search-bar .search-btn {
-  padding: 12px 28px;
-  background: var(--orange);
-  color: var(--white);
-  border: none;
-  font-size: 15px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  border-radius: 0 14px 14px 0;
-  transition: background 0.15s;
-  white-space: nowrap;
-}
-.search-bar .search-btn:hover { background: var(--orange-hover); }
+.search-bar{display:flex;gap:0;background:var(--white);border:2px solid var(--border2);border-radius:var(--radius);max-width:580px;margin:0 auto;transition:border-color .2s;position:relative}
+.search-bar:focus-within{border-color:var(--orange)}
+.search-field{flex:1;display:flex;align-items:center;gap:10px;padding:0 16px}
+.search-field svg{flex-shrink:0;color:var(--text4)}
+.search-field select,.search-field input{border:none;outline:none;font-family:var(--font-body);font-size:15px;color:var(--text1);background:transparent;width:100%;padding:14px 0;-webkit-appearance:none;appearance:none}
+.suggestions-dropdown{display:none;position:absolute;top:100%;left:0;right:0;background:var(--white);border:2px solid var(--border2);border-top:none;border-radius:0 0 var(--radius) var(--radius);box-shadow:var(--shadow-md);z-index:50;max-height:320px;overflow-y:auto}
+.suggestions-dropdown.visible{display:block}
+.sug-group{padding:8px 0}
+.sug-group-label{font-size:11px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;padding:4px 16px 6px}
+.sug-item{padding:10px 16px;font-size:14px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .1s}
+.sug-item:hover{background:var(--orange-light)}
+.sug-item .sug-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
+.sug-item .sug-text{flex:1}
+.sug-item .sug-text strong{font-weight:600;color:var(--text1)}
+.sug-item .sug-text span{display:block;font-size:12px;color:var(--text4);margin-top:2px}
+.sug-item-freeform{border-top:1px solid var(--border);background:var(--bg)}
+.sug-item-freeform:hover{background:var(--orange-light)}
+.search-field select{cursor:pointer;color:var(--text3)}
+.search-field select:valid{color:var(--text1)}
+.search-divider{width:1px;background:var(--border);margin:10px 0}
+.search-btn{background:var(--orange);color:var(--white);border:none;font-family:var(--font-body);font-size:15px;font-weight:700;padding:0 28px;cursor:pointer;transition:background .2s;white-space:nowrap}
+.search-btn:hover{background:var(--orange2)}
 
-/* Suggestions dropdown */
-.suggestions {
-  display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: var(--white);
-  border-radius: 0 0 14px 14px;
-  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
-  z-index: 10;
-  overflow: hidden;
-  margin-top: 2px;
-}
-.suggestion-item {
-  padding: 14px 20px;
-  font-size: 14px;
-  cursor: pointer;
-  color: var(--text);
-  transition: background 0.1s;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.suggestion-item:hover { background: var(--gray1); }
-.suggestion-item .cat-icon {
-  width: 28px;
-  height: 28px;
-  background: var(--orange-light);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  flex-shrink: 0;
-}
+/* === CATEGORIES === */
+.categories{background:var(--white);padding:32px 24px 40px;border-bottom:1px solid var(--border)}
+.categories-inner{max-width:var(--max-w);margin:0 auto}
+.cat-grid{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.cat-item{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 20px;border-radius:var(--radius);cursor:pointer;transition:all .2s;min-width:100px;border:1px solid transparent}
+.cat-item:hover{background:var(--orange-light);border-color:rgba(240,85,40,.15)}
+.cat-item.active{background:var(--orange-light);border-color:var(--orange)}
+.cat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.cat-icon svg{width:24px;height:24px}
+.cat-label{font-size:13px;font-weight:600;color:var(--text2);text-align:center;line-height:1.3}
+.cat-item[data-cat="HVAC"] .cat-icon{background:#e8f4fd}.cat-item[data-cat="HVAC"] .cat-icon svg{color:#1a7fd4}
+.cat-item[data-cat="Plumbing"] .cat-icon{background:#e6f9ed}.cat-item[data-cat="Plumbing"] .cat-icon svg{color:#1a8a4a}
+.cat-item[data-cat="Electrical"] .cat-icon{background:#fef6e0}.cat-item[data-cat="Electrical"] .cat-icon svg{color:#c88a0a}
+.cat-item[data-cat="Roofing"] .cat-icon{background:#fce8e8}.cat-item[data-cat="Roofing"] .cat-icon svg{color:#c0392b}
+.cat-item[data-cat="Handyman"] .cat-icon{background:#fff0e6}.cat-item[data-cat="Handyman"] .cat-icon svg{color:#d4651a}
+.cat-item[data-cat="Appliance Repair"] .cat-icon{background:#ece6fb}.cat-item[data-cat="Appliance Repair"] .cat-icon svg{color:#6c3bbf}
+.cat-item[data-cat="Construction"] .cat-icon{background:#e6f0f0}.cat-item[data-cat="Construction"] .cat-icon svg{color:#1a7a7a}
+.cat-item[data-cat="Painting"] .cat-icon{background:#fce8f1}.cat-item[data-cat="Painting"] .cat-icon svg{color:#c0396b}
+.cat-item[data-cat="Pool & Spa"] .cat-icon{background:#e6eefb}.cat-item[data-cat="Pool & Spa"] .cat-icon svg{color:#2856a3}
+.cat-item[data-cat="Windows & Doors"] .cat-icon{background:#eae8e4}.cat-item[data-cat="Windows & Doors"] .cat-icon svg{color:#5a5550}
+.cat-item:hover .cat-icon,.cat-item.active .cat-icon{filter:brightness(.95)}
 
-/* Trust badges */
-.hero-badges {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-  margin-top: 28px;
-  font-size: 13px;
-  color: rgba(255,255,255,0.5);
-}
-.hero-badges span {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.hero-badges svg { width: 14px; height: 14px; color: rgba(255,255,255,0.4); }
+/* === INTAKE SECTION === */
+.intake-section{padding:56px 24px;max-width:var(--max-w);margin:0 auto;display:none}
+.intake-section.visible{display:block}
+.intake-grid{display:grid;grid-template-columns:1fr 400px;gap:48px;align-items:start}
+.intake-tag{font-size:13px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.intake-left h2{font-family:var(--font-display);font-size:34px;font-weight:800;line-height:1.2;color:var(--text1);margin-bottom:16px}
+.intake-left h2 em{font-style:normal;color:var(--orange)}
+.intake-desc{font-size:15px;color:var(--text3);line-height:1.7;margin-bottom:24px}
+.intake-bullets{display:flex;flex-direction:column;gap:12px;margin-bottom:32px}
+.intake-bullet{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text2)}
+.intake-bullet .dot{width:8px;height:8px;border-radius:50%;background:var(--orange);flex-shrink:0}
+.intake-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center}
+.stat-num{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--text1)}
+.stat-label{font-size:12px;color:var(--text3);margin-top:4px}
 
-@media (max-width: 600px) {
-  .hero { padding: 40px 18px 50px; }
-  .hero h1 { font-size: 28px; }
-  .hero .hero-sub { font-size: 14px; }
-  .search-bar { flex-direction: column; border-radius: 14px; }
-  .search-divider { width: 100%; height: 1px; margin: 0; }
-  .search-bar .search-btn { border-radius: 0 0 14px 14px; padding: 16px; }
-  .hero-badges { flex-direction: column; gap: 8px; }
-}
+/* === FORM CARD === */
+.form-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;box-shadow:var(--shadow-lg);position:sticky;top:80px}
+.form-title{font-size:20px;font-weight:700;color:var(--text1);margin-bottom:4px}
+.form-sub{font-size:13px;color:var(--text3);margin-bottom:16px}
+.smart-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-light);padding:4px 10px;border-radius:100px;font-size:11px;color:var(--green);font-weight:600;margin-bottom:14px}
+.smart-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green)}
+.prog-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text4);margin-bottom:6px}
+.prog-bar{height:3px;background:var(--border);border-radius:2px;margin-bottom:20px;overflow:hidden}
+.prog-fill{height:100%;background:var(--orange);border-radius:2px;transition:width .4s ease}
+.q-label{font-size:11px;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px}
+.q-text{font-size:17px;font-weight:600;color:var(--text1);line-height:1.4;margin-bottom:16px}
+.opts-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.opt{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-family:var(--font-body);font-size:14px;color:var(--text2);cursor:pointer;text-align:left;transition:all .15s}
+.opt:hover{border-color:var(--orange);background:var(--orange-light)}
+.opt.sel{border-color:var(--orange);background:var(--orange-light);color:var(--orange);font-weight:600}
+.btn{background:var(--orange);color:var(--white);border:none;font-family:var(--font-body);font-size:15px;font-weight:700;padding:13px 28px;border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;width:100%}
+.btn:hover{background:var(--orange2)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn-row{display:flex;gap:8px;align-items:center}
+.btn-row .btn{flex:1}
+.btn-back{background:transparent;border:1px solid var(--border);font-family:var(--font-body);font-size:14px;color:var(--text3);padding:12px 16px;border-radius:var(--radius-sm);cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-back:hover{border-color:var(--text3)}
+.btn-full{width:100%;background:var(--orange);color:var(--white);border:none;font-family:var(--font-body);font-size:15px;font-weight:700;padding:14px;border-radius:var(--radius-sm);cursor:pointer;transition:background .2s}
+.btn-full:hover{background:var(--orange2)}
+.q-input{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;font-family:var(--font-body);font-size:14px;color:var(--text1);outline:none;transition:border-color .2s;margin-bottom:10px}
+.q-input:focus{border-color:var(--orange)}
+.h-item{display:flex;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.h-q{color:var(--text4);font-weight:600;font-size:11px;text-transform:uppercase}
+.h-a{color:var(--text2)}
+.thinking{display:flex;align-items:center;gap:10px;padding:20px 0;font-size:14px;color:var(--text3)}
+.dots{display:flex;gap:4px}
+.dots span{width:6px;height:6px;border-radius:50%;background:var(--orange);animation:bounce .6s infinite alternate}
+.dots span:nth-child(2){animation-delay:.15s}
+.dots span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{to{opacity:.3;transform:translateY(-4px)}}
+.fade{animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.success-wrap{text-align:center;padding:16px 0}
+.s-icon{width:48px;height:48px;border-radius:50%;background:var(--green-light);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;margin:0 auto 14px}
+.s-title{font-size:20px;font-weight:700;margin-bottom:8px}
+.s-msg{font-size:14px;color:var(--text3);line-height:1.6;margin-bottom:20px}
+.summary-box{background:var(--bg);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px}
+.s-row{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)}
+.s-row:last-child{border:none}
+.s-row span:first-child{color:var(--text3)}
+.s-row span:last-child{font-weight:600;color:var(--text1)}
+.schedule-section{background:var(--bg);border-radius:var(--radius-sm);padding:16px;margin-bottom:14px}
+.schedule-label{font-size:13px;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:6px;margin-bottom:12px}
+.schedule-label svg{width:16px;height:16px;fill:none;stroke:var(--text3);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.schedule-slot-title{font-size:12px;color:var(--text3);font-weight:600;margin-bottom:6px}
+.schedule-row{display:flex;gap:8px;margin-bottom:8px}
+.schedule-input{flex:1;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font-body);font-size:13px;color:var(--text1);outline:none}
+.schedule-input:focus{border-color:var(--orange)}
+.schedule-divider{text-align:center;font-size:12px;color:var(--text4);padding:4px 0}
 
-/* ─── CATEGORY STRIP ─── */
-.cat-strip {
-  display: flex;
-  gap: 8px;
-  padding: 14px 32px;
-  overflow-x: auto;
-  background: var(--white);
-  border-bottom: 1px solid var(--gray2);
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.cat-strip::-webkit-scrollbar { display: none; }
-.cat-pill {
-  padding: 8px 18px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-  border: 1.5px solid var(--gray2);
-  background: var(--white);
-  color: var(--gray4);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.cat-pill:hover { border-color: var(--orange); color: var(--orange); }
-.cat-pill.active {
-  background: var(--navy);
-  color: var(--white);
-  border-color: var(--navy);
-}
-.cat-pill .pill-icon { font-size: 14px; }
+/* === POPULAR SERVICES === */
+.services-section{padding:56px 24px;max-width:var(--max-w);margin:0 auto}
+.section-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:24px}
+.section-title{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text1)}
+.section-link{font-size:14px;font-weight:600;color:var(--orange);border:1px solid var(--border);padding:6px 16px;border-radius:100px;transition:all .15s}
+.section-link:hover{border-color:var(--orange);background:var(--orange-light)}
+.services-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.service-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;cursor:pointer;transition:all .2s}
+.service-card:hover{border-color:var(--orange);box-shadow:var(--shadow-md)}
+.service-card h3{font-size:15px;font-weight:700;color:var(--text1);margin-bottom:6px}
+.service-meta{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:8px}
+.service-meta .star{color:var(--orange)}
 
-/* ─── INTAKE SECTION ─── */
-.intake-section {
-  max-width: 640px;
-  margin: 32px auto;
-  padding: 0 20px;
-}
-.intake-card {
-  background: var(--white);
-  border-radius: var(--radius);
-  border: 1px solid var(--gray2);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-}
-.intake-header {
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--gray2);
-}
-.intake-header h2 {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 4px;
-}
-.intake-header p {
-  font-size: 13px;
-  color: var(--gray4);
-}
-.progress-wrap { padding: 16px 24px 0; }
-.progress-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-.step-lbl {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--gray4);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.step-pct {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--orange);
-}
-.prog-bar {
-  background: var(--gray2);
-  border-radius: 4px;
-  height: 4px;
-  overflow: hidden;
-}
-#prog {
-  height: 100%;
-  background: var(--orange);
-  border-radius: 4px;
-  transition: width 0.35s;
-  width: 0%;
-}
+/* === HOW IT WORKS — with color === */
+.how-section{padding:64px 24px;background:var(--navy);border-top:1px solid var(--border)}
+.how-inner{max-width:var(--max-w);margin:0 auto;text-align:center}
+.how-inner .section-title{color:var(--white);margin-bottom:12px}
+.how-sub{font-size:15px;color:rgba(255,255,255,.55);margin-bottom:40px}
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.how-step{text-align:center;padding:28px 22px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius-lg);backdrop-filter:blur(4px)}
+.how-num{width:44px;height:44px;border-radius:50%;background:var(--orange);color:var(--white);font-family:var(--font-display);font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.how-step h3{font-size:16px;font-weight:700;color:var(--white);margin-bottom:8px}
+.how-step p{font-size:14px;color:rgba(255,255,255,.6);line-height:1.6}
 
-/* History */
-.intake-history { display: flex; flex-direction: column; }
-.hist-item {
-  padding: 12px 24px;
-  background: var(--gray1);
-  border-bottom: 1px solid var(--gray2);
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-}
-.hist-q { font-size: 13px; color: var(--gray4); font-weight: 500; }
-.hist-a { font-size: 13px; color: var(--navy); font-weight: 600; text-align: right; }
+/* === TRUST — with orange accent === */
+.trust-section{padding:64px 24px;background:var(--white);border-bottom:1px solid var(--border)}
+.trust-inner{max-width:var(--max-w);margin:0 auto;text-align:center}
+.trust-inner h2{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text1);margin-bottom:12px}
+.trust-sub{font-size:15px;color:var(--text3);margin-bottom:40px}
+.trust-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.trust-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px 22px;text-align:left;position:relative;overflow:hidden}
+.trust-item::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--orange)}
+.trust-icon{font-size:28px;margin-bottom:12px}
+.trust-item h3{font-size:16px;font-weight:700;color:var(--text1);margin-bottom:8px}
+.trust-item p{font-size:14px;color:var(--text3);line-height:1.6}
 
-/* Question area */
-.qa-area { padding: 24px; }
-.thinking {
-  display: none;
-  align-items: center;
-  gap: 10px;
-  color: var(--gray4);
-  font-size: 14px;
-  padding: 8px 0;
-}
-.dot-flashing { display: flex; gap: 4px; }
-.dot-flashing span {
-  width: 7px; height: 7px;
-  background: var(--gray3);
-  border-radius: 50%;
-  animation: dotf 1.2s infinite;
-}
-.dot-flashing span:nth-child(2) { animation-delay: 0.2s; }
-.dot-flashing span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes dotf { 0%,80%,100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+/* === CTA BANNER — vibrant === */
+.cta-banner{padding:56px 24px;max-width:var(--max-w);margin:0 auto}
+.cta-box{background:linear-gradient(135deg,var(--orange) 0%,var(--orange2) 100%);border-radius:var(--radius-lg);padding:48px;display:flex;justify-content:space-between;align-items:center;gap:32px;position:relative;overflow:hidden}
+.cta-box::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.08)}
+.cta-box::after{content:'';position:absolute;bottom:-60px;left:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.05)}
+.cta-box h2{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--white);margin-bottom:10px;position:relative}
+.cta-box p{font-size:15px;color:rgba(255,255,255,.82);line-height:1.6;position:relative}
+.cta-btn{background:var(--white);color:var(--orange);font-family:var(--font-body);font-size:15px;font-weight:700;padding:14px 32px;border-radius:var(--radius-sm);border:none;cursor:pointer;white-space:nowrap;transition:all .2s;position:relative}
+.cta-btn:hover{background:var(--navy);color:var(--white)}
 
-.q-text {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--navy);
-  line-height: 1.45;
-  margin-bottom: 16px;
-}
-.options-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 10px;
-  margin-bottom: 20px;
-}
-.option-btn {
-  padding: 12px 10px;
-  border: 1.5px solid var(--gray2);
-  border-radius: var(--radius-sm);
-  background: var(--white);
-  font-size: 14px;
-  font-weight: 500;
-  font-family: inherit;
-  color: var(--text);
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.15s;
-  line-height: 1.3;
-}
-.option-btn:hover { border-color: var(--orange); color: var(--orange); background: rgba(240,85,40,0.02); }
-.option-btn.selected { border-color: var(--navy); background: var(--navy); color: var(--white); }
+/* === FOOTER === */
+.footer{background:var(--navy);color:rgba(255,255,255,.5);padding:40px 24px 24px}
+.footer-inner{max-width:var(--max-w);margin:0 auto}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px;margin-bottom:32px}
+.footer-brand .logo{margin-bottom:12px}
+.footer-brand .logo .logo-select,.footer-brand .logo .logo-pros{color:var(--white)}
+.footer-brand p{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6}
+.footer-col h4{font-size:13px;font-weight:700;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.footer-col a{display:block;font-size:14px;color:rgba(255,255,255,.45);padding:4px 0;transition:color .15s}
+.footer-col a:hover{color:var(--orange)}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:20px;display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.35)}
 
-.text-input-wrap { display: flex; gap: 10px; margin-bottom: 20px; }
-.text-input-wrap input {
-  flex: 1;
-  padding: 12px 14px;
-  border: 1.5px solid var(--gray2);
-  border-radius: var(--radius-sm);
-  font-size: 15px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.15s;
+/* === RESPONSIVE === */
+@media(max-width:900px){
+  .intake-grid{grid-template-columns:1fr;gap:24px}
+  .intake-left{order:2}.form-card{position:static;order:1}
+  .services-grid{grid-template-columns:repeat(2,1fr)}
+  .how-grid{grid-template-columns:1fr;gap:16px}
+  .trust-grid{grid-template-columns:1fr}
+  .cta-box{flex-direction:column;text-align:center;padding:36px 24px}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:24px}
+  .nav-inner{padding:0 16px}.nav-loc{display:none}
 }
-.text-input-wrap input:focus { border-color: var(--orange); }
-.intake-actions { display: flex; gap: 10px; align-items: center; padding-top: 8px; }
-.btn-back {
-  background: none; border: none; color: var(--gray4);
-  font-size: 14px; font-weight: 500; font-family: inherit;
-  cursor: pointer; padding: 8px 0;
+@media(max-width:600px){
+  .nav-inner{height:56px}.logo{font-size:17px}.logo svg{width:24px;height:24px}
+  .nav-links .nav-link{display:none}.nav-cta{font-size:13px;padding:7px 14px}
+  .hero{padding:36px 16px 32px}.hero h1{font-size:28px;letter-spacing:-.3px}.hero-sub{font-size:15px;margin-bottom:24px}
+  .search-bar{flex-direction:column;border-radius:var(--radius);max-width:100%}
+  .search-field{padding:0 14px}.search-field input,.search-field select{font-size:14px;padding:12px 0}
+  .search-divider{width:100%;height:1px;margin:0}
+  .search-btn{padding:14px;border-radius:0 0 10px 10px !important;font-size:14px}
+  .suggestions-dropdown{border-radius:0 0 var(--radius) var(--radius)}
+  .categories{padding:20px 12px 24px}.cat-grid{gap:4px;justify-content:center}
+  .cat-item{min-width:70px;padding:10px 6px}.cat-icon{width:40px;height:40px;border-radius:10px}.cat-icon svg{width:20px;height:20px}.cat-label{font-size:11px}
+  .intake-section{padding:32px 16px}.intake-left h2{font-size:26px}.intake-desc{font-size:14px}
+  .intake-stats{grid-template-columns:repeat(3,1fr);gap:8px}.stat-card{padding:12px 8px}.stat-num{font-size:18px}.stat-label{font-size:10px}
+  .form-card{padding:20px 16px;border-radius:var(--radius)}.form-title{font-size:18px}.q-text{font-size:15px}
+  .opt{padding:10px 14px;font-size:13px}.btn{font-size:14px;padding:12px 20px}.btn-back{padding:10px 14px;font-size:13px}.q-input{padding:10px 12px;font-size:14px}
+  .services-section{padding:32px 16px}.section-title{font-size:22px}.services-grid{grid-template-columns:1fr;gap:8px}.service-card{padding:14px}
+  .how-section{padding:40px 16px}.how-grid{grid-template-columns:1fr;gap:12px}.how-step{padding:20px 16px}
+  .trust-section{padding:40px 16px}
+  .cta-banner{padding:24px 16px}.cta-box{padding:28px 20px;border-radius:var(--radius)}.cta-box h2{font-size:22px}.cta-box p{font-size:14px}.cta-btn{width:100%;text-align:center;padding:14px 24px}
+  .footer{padding:28px 16px 16px}.footer-grid{grid-template-columns:1fr;gap:20px}.footer-brand p{font-size:12px}.footer-bottom{flex-direction:column;gap:8px;text-align:center}
+  .schedule-row{flex-direction:column;gap:6px}.schedule-input{font-size:14px}
 }
-.btn-back:hover { color: var(--navy); }
-.btn-continue {
-  margin-left: auto;
-  padding: 12px 24px;
-  background: var(--orange);
-  color: var(--white);
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.15s;
+@media(max-width:380px){
+  .hero h1{font-size:24px}.cat-item{min-width:60px;padding:8px 4px}.cat-label{font-size:10px}
+  .intake-stats{grid-template-columns:1fr}.stat-card{text-align:left;display:flex;align-items:center;gap:12px}.stat-num{font-size:16px}
 }
-.btn-continue:hover { background: var(--orange-hover); }
-
-/* Contact form */
-.contact-form { display: flex; flex-direction: column; gap: 14px; }
-.contact-form .form-group { display: flex; flex-direction: column; gap: 4px; }
-.contact-form label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--gray4);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-.contact-form input {
-  padding: 12px 14px;
-  border: 1.5px solid var(--gray2);
-  border-radius: var(--radius-sm);
-  font-size: 15px;
-  font-family: inherit;
-  outline: none;
-}
-.contact-form input:focus { border-color: var(--orange); }
-.btn-submit {
-  padding: 16px;
-  background: var(--orange);
-  color: var(--white);
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: 16px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.15s;
-  margin-top: 4px;
-}
-.btn-submit:hover { background: var(--orange-hover); }
-
-/* Not available message */
-.not-available {
-  text-align: center;
-  padding: 32px 24px;
-}
-.not-available h3 {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 8px;
-}
-.not-available p {
-  font-size: 14px;
-  color: var(--gray4);
-  line-height: 1.6;
-  margin-bottom: 20px;
-}
-.not-available .btn-back-home {
-  display: inline-block;
-  padding: 10px 24px;
-  background: var(--gray1);
-  color: var(--navy);
-  border: 1.5px solid var(--gray2);
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  text-decoration: none;
-}
-.not-available .btn-back-home:hover { background: var(--gray2); }
-
-/* ─── SERVICES GRID ─── */
-.services-section {
-  max-width: 900px;
-  margin: 48px auto;
-  padding: 0 20px;
-}
-.section-header {
-  text-align: center;
-  margin-bottom: 28px;
-}
-.section-header h2 {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 6px;
-}
-.section-header p {
-  font-size: 14px;
-  color: var(--gray4);
-}
-.services-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 14px;
-}
-.service-card {
-  background: var(--white);
-  border: 1px solid var(--gray2);
-  border-radius: var(--radius);
-  padding: 22px 18px;
-  cursor: pointer;
-  transition: all 0.15s;
-  text-align: center;
-}
-.service-card:hover {
-  border-color: var(--orange);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
-}
-.service-card .card-icon {
-  font-size: 28px;
-  margin-bottom: 10px;
-}
-.service-card h3 {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--navy);
-  margin-bottom: 4px;
-}
-.service-card p {
-  font-size: 12px;
-  color: var(--gray4);
-}
-
-/* ─── HOW IT WORKS ─── */
-.how-section {
-  background: var(--white);
-  border-top: 1px solid var(--gray2);
-  border-bottom: 1px solid var(--gray2);
-  padding: 56px 32px;
-  text-align: center;
-}
-.how-section h2 {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 36px;
-}
-.how-grid {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  max-width: 800px;
-  margin: 0 auto;
-  flex-wrap: wrap;
-}
-.how-step {
-  flex: 1;
-  min-width: 200px;
-  max-width: 240px;
-}
-.how-num {
-  width: 40px;
-  height: 40px;
-  background: var(--orange);
-  color: var(--white);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0 auto 14px;
-}
-.how-step h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--navy);
-  margin-bottom: 6px;
-}
-.how-step p {
-  font-size: 13px;
-  color: var(--gray4);
-  line-height: 1.6;
-}
-
-/* ─── CTA ─── */
-.cta-section {
-  background: var(--navy);
-  padding: 56px 32px;
-  text-align: center;
-  color: var(--white);
-}
-.cta-section h2 {
-  font-size: 26px;
-  font-weight: 700;
-  margin-bottom: 10px;
-}
-.cta-section p {
-  font-size: 15px;
-  color: rgba(255,255,255,0.55);
-  margin-bottom: 24px;
-}
-.cta-btn {
-  display: inline-block;
-  padding: 14px 32px;
-  background: var(--orange);
-  color: var(--white);
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: 16px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.15s;
-}
-.cta-btn:hover { background: var(--orange-hover); }
-
-/* ─── FOOTER ─── */
-.footer {
-  background: var(--white);
-  border-top: 1px solid var(--gray2);
-  padding: 40px 32px;
-}
-.footer-inner {
-  max-width: 900px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: 32px;
-}
-.footer-brand .footer-logo {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 8px;
-}
-.footer-brand .footer-logo span { color: var(--orange); }
-.footer-brand p {
-  font-size: 12px;
-  color: var(--gray4);
-  line-height: 1.6;
-}
-.footer-col h4 {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--navy);
-  margin-bottom: 12px;
-}
-.footer-col a {
-  display: block;
-  font-size: 13px;
-  color: var(--gray4);
-  text-decoration: none;
-  padding: 3px 0;
-  transition: color 0.15s;
-}
-.footer-col a:hover { color: var(--orange); }
-.footer-bottom {
-  max-width: 900px;
-  margin: 24px auto 0;
-  padding-top: 16px;
-  border-top: 1px solid var(--gray2);
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: var(--gray3);
-}
-@media (max-width: 600px) {
-  .footer-inner { grid-template-columns: 1fr 1fr; gap: 24px; }
-  .footer-bottom { flex-direction: column; gap: 4px; }
-}
-
-/* ─── UTILITY ─── */
-.hidden { display: none !important; }
 </style>
 </head>
 <body>
 
-<!-- ═══ NAV ═══ -->
+<!-- NAV -->
 <nav class="nav">
-  <a href="/" class="nav-logo">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-    </div>
-    Select<span>Service</span>Pros
-  </a>
-  <div class="nav-links" id="nav-links">
-    <a href="#" class="nav-location" id="nav-location">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      <span id="nav-city">Houston, TX</span>
+  <div class="nav-inner">
+    <a href="/" class="logo">
+      <svg width="28" height="33" viewBox="0 0 48 56" fill="none">
+        <path d="M24 2C13 2 4 11 4 22c0 14 20 32 20 32s20-18 20-32C44 11 35 2 24 2z" fill="#f05528"/>
+        <circle cx="24" cy="20" r="12" fill="#fff"/>
+        <path d="M18 20l4.5 4.5 7.5-7.5" stroke="#f05528" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span><span class="logo-select">Select</span><span class="logo-service">Service</span><span class="logo-pros">Pros</span></span>
     </a>
-    <a href="#how-section">How It Works</a>
-    <a href="#services-section">Find Pros</a>
-    <a href="contractor-login.html" class="nav-login">Contractor Login</a>
-    <a href="contractor-signup.html" class="nav-btn">Join as a Pro</a>
+    <div class="nav-links">
+      <span class="nav-loc">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Houston, TX
+      </span>
+      <a href="#how-it-works" class="nav-link">How It Works</a>
+      <a href="#categories" class="nav-link">Find Pros</a>
+      <a href="contractor-signup.html" class="nav-cta">Join as a Pro</a>
+    </div>
+    <button class="mobile-menu-btn" onclick="document.querySelector('.mobile-menu').classList.toggle('open')" aria-label="Menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
   </div>
-  <button class="nav-hamburger" onclick="document.getElementById('nav-links').classList.toggle('open')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-  </button>
 </nav>
-
-<!-- ═══ HERO ═══ -->
-<section class="hero">
-  <h1>Connecting you with the<br/><em>people you can trust.</em></h1>
-  <p class="hero-sub">Get free quotes from licensed, background-checked home service pros in Houston — fast, easy, and zero obligation.</p>
-
-  <div class="search-bar">
-    <input type="text" id="hero-service" placeholder="What do you need help with?" autocomplete="off" oninput="showSuggestions(this.value)"/>
-    <div class="search-divider"></div>
-    <input type="text" id="hero-zip" placeholder="ZIP code" maxlength="5" style="max-width:120px;"/>
-    <button class="search-btn" onclick="handleSearch()">Get Quotes</button>
-    <div class="suggestions" id="suggestions"></div>
-  </div>
-
-  <div class="hero-badges">
-    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Licensed &amp; insured contractors only</span>
-    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> Get up to 3 competing quotes</span>
-    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> 100% free, no obligation</span>
-  </div>
-</section>
-
-<!-- ═══ CATEGORY STRIP ═══ -->
-<div class="cat-strip" id="cat-strip"></div>
-
-<!-- ═══ INTAKE FORM ═══ -->
-<div class="intake-section hidden" id="intake-section">
-  <div class="intake-card">
-    <div class="intake-header">
-      <h2 id="intake-title">Get matched with top pros near you</h2>
-      <p>Tell us about your issue and we'll connect you with licensed, background-checked contractors in your area — fast, free, and no obligation.</p>
-    </div>
-    <div class="progress-wrap">
-      <div class="progress-labels">
-        <span class="step-lbl" id="step-lbl">STEP 1 OF 5</span>
-        <span class="step-pct" id="step-pct">0%</span>
-      </div>
-      <div class="prog-bar"><div id="prog"></div></div>
-    </div>
-    <div class="intake-history" id="hist"></div>
-    <div class="qa-area">
-      <div class="thinking" id="thinking">
-        <div class="dot-flashing"><span></span><span></span><span></span></div>
-        Finding the right question…
-      </div>
-      <div id="q-area"></div>
-    </div>
-  </div>
+<div class="mobile-menu">
+  <a href="#categories" onclick="this.parentElement.classList.remove('open')">Find Pros</a>
+  <a href="#how-it-works" onclick="this.parentElement.classList.remove('open')">How It Works</a>
+  <a href="faq-homeowners.html">Homeowner FAQ</a>
+  <a href="faq-contractors.html">Contractor FAQ</a>
+  <a href="contractor-signup.html" class="mobile-menu-cta">Join as a Pro</a>
 </div>
 
-<!-- ═══ SERVICES GRID ═══ -->
-<section class="services-section" id="services-section">
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <h1>Connecting you with the <em>people you can trust.</em></h1>
+    <p class="hero-sub">Get free quotes from licensed, background-checked home service pros in Houston — fast, easy, and zero obligation.</p>
+    <div class="search-bar">
+      <div class="search-field" style="flex:2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="hero-service" placeholder="Describe your project or problem..." autocomplete="off" oninput="showSuggestions(this.value)" onfocus="showSuggestions(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();handleSearch();}"/>
+      </div>
+      <div class="search-divider"></div>
+      <div class="search-field">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <input type="text" id="hero-zip" placeholder="ZIP code" maxlength="5"/>
+        <button type="button" id="geo-btn" onclick="detectLocation()" title="Use my location" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M2 12h4"/><path d="M18 12h4"/></svg>
+        </button>
+      </div>
+      <button class="search-btn" style="border-radius:0 var(--radius) var(--radius) 0" onclick="handleSearch()">Get Quotes</button>
+      <div id="suggestions" class="suggestions-dropdown"></div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="categories" id="categories">
+  <div class="categories-inner">
+    <div class="cat-grid" id="cat-grid">
+      <div class="cat-item" data-cat="HVAC" onclick="selectCategory('HVAC')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg></div>
+        <span class="cat-label">HVAC</span>
+      </div>
+      <div class="cat-item" data-cat="Plumbing" onclick="selectCategory('Plumbing')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v4"/><path d="M14 2v4"/><path d="M8 6h8a1 1 0 0 1 1 1v3a5 5 0 0 1-10 0V7a1 1 0 0 1 1-1z"/><path d="M12 15v3"/><path d="M8 18h8"/><path d="M8 18v3"/><path d="M16 18v3"/></svg></div>
+        <span class="cat-label">Plumbing</span>
+      </div>
+      <div class="cat-item" data-cat="Electrical" onclick="selectCategory('Electrical')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+        <span class="cat-label">Electrical</span>
+      </div>
+      <div class="cat-item" data-cat="Roofing" onclick="selectCategory('Roofing')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12L12 3l10 9"/><path d="M5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10"/><path d="M2 12h20"/><path d="M9 21v-6h6v6"/></svg></div>
+        <span class="cat-label">Roofing</span>
+      </div>
+      <div class="cat-item" data-cat="Handyman" onclick="selectCategory('Handyman')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+        <span class="cat-label">Handyman</span>
+      </div>
+      <div class="cat-item" data-cat="Appliance Repair" onclick="selectCategory('Appliance Repair')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="14" r="4"/><path d="M12 10v1"/><path d="M8 6h8"/><line x1="12" y1="14" x2="14" y2="12"/></svg></div>
+        <span class="cat-label">Appliance Repair</span>
+      </div>
+      <div class="cat-item" data-cat="Construction" onclick="selectCategory('Construction')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20"/><path d="M5 20V8l7-5 7 5v12"/><path d="M9 20v-5h6v5"/><path d="M9 11h1"/><path d="M14 11h1"/><path d="M3 20h1"/><path d="M20 20h1"/></svg></div>
+        <span class="cat-label">Remodeling</span>
+      </div>
+      <div class="cat-item" data-cat="Painting" onclick="selectCategory('Painting')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/><path d="M12 11v4"/><path d="M10 15h4v5a2 2 0 0 1-4 0v-5z"/><circle cx="8" cy="6" r="1" fill="currentColor"/><circle cx="12" cy="6" r="1" fill="currentColor"/><circle cx="16" cy="6" r="1" fill="currentColor"/></svg></div>
+        <span class="cat-label">Painting</span>
+      </div>
+      <div class="cat-item" data-cat="Pool & Spa" onclick="selectCategory('Pool & Spa')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20"/><path d="M2 16c1.5-1 3-1.5 5 0s3.5 1 5 0 3.5-1 5 0 3.5 1 5 0"/><path d="M2 20c1.5-1 3-1.5 5 0s3.5 1 5 0 3.5-1 5 0 3.5 1 5 0"/><path d="M6 4v8"/><path d="M18 4v8"/><path d="M6 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2"/></svg></div>
+        <span class="cat-label">Pool & Spa</span>
+      </div>
+      <div class="cat-item" data-cat="Windows & Doors" onclick="selectCategory('Windows & Doors')">
+        <div class="cat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 12h18"/><path d="M12 3v9"/><circle cx="15" cy="16" r="0.5" fill="currentColor"/><path d="M3 21h18"/></svg></div>
+        <span class="cat-label">Windows & Doors</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTAKE SECTION -->
+<section class="intake-section" id="intake-section">
+  <div class="intake-grid">
+    <div class="intake-left">
+      <div class="intake-tag" id="intake-tag">HVAC Services — Houston</div>
+      <h2>Get <em>matched</em> with top Houston <span id="intake-service-name">HVAC</span> pros</h2>
+      <p class="intake-desc">Tell us about your issue and we'll connect you with licensed, background-checked contractors in your area — fast, free, and no obligation.</p>
+      <div class="intake-bullets">
+        <div class="intake-bullet"><span class="dot"></span>Licensed & insured contractors only</div>
+        <div class="intake-bullet"><span class="dot"></span>Get up to 3 quotes within 2 hours</div>
+        <div class="intake-bullet"><span class="dot"></span>100% free — no hidden fees ever</div>
+        <div class="intake-bullet"><span class="dot"></span>Background-checked professionals</div>
+      </div>
+      <div class="intake-stats">
+        <div class="stat-card"><div class="stat-num">2,400+</div><div class="stat-label">Houston homeowners served</div></div>
+        <div class="stat-card"><div class="stat-num">98%</div><div class="stat-label">Match satisfaction rate</div></div>
+        <div class="stat-card"><div class="stat-num">47 min</div><div class="stat-label">Average first response</div></div>
+      </div>
+    </div>
+    <div class="form-card">
+      <div class="form-title">Get Free Quotes</div>
+      <div class="form-sub">Takes about 90 seconds · No spam, ever</div>
+      <div class="smart-badge">Smart Intake</div>
+      <div class="prog-row"><span id="step-lbl">Question 1 of 4</span><span id="step-pct">20%</span></div>
+      <div class="prog-bar"><div class="prog-fill" id="prog" style="width:20%"></div></div>
+      <div id="hist"></div>
+      <div id="qa"></div>
+    </div>
+  </div>
+</section>
+
+<!-- POPULAR SERVICES -->
+<section class="services-section">
   <div class="section-header">
-    <h2>Most in-demand home services</h2>
-    <p>Select a category to get started</p>
+    <h2 class="section-title">Most in-demand home services</h2>
+    <a href="#categories" class="section-link">View all</a>
   </div>
-  <div class="services-grid" id="services-grid"></div>
-</section>
-
-<!-- ═══ HOW IT WORKS ═══ -->
-<section class="how-section" id="how-section">
-  <h2>How it works</h2>
-  <div class="how-grid">
-    <div class="how-step">
-      <div class="how-num">1</div>
-      <h3>Tell us what you need</h3>
-      <p>Answer a few quick questions about your project. Our smart intake learns exactly what kind of pro you need.</p>
-    </div>
-    <div class="how-step">
-      <div class="how-num">2</div>
-      <h3>Get matched instantly</h3>
-      <p>We'll connect you with up to 3 licensed, background-checked professionals in your area within minutes.</p>
-    </div>
-    <div class="how-step">
-      <div class="how-num">3</div>
-      <h3>Compare and hire</h3>
-      <p>Review quotes, check reviews, and pick the pro that fits your budget and timeline. It's 100% free.</p>
-    </div>
+  <div class="services-grid">
+    <div class="service-card" onclick="selectCategory('HVAC')"><h3>AC Repair & Installation</h3><div class="service-meta"><span class="star">★ 4.8</span> · 1,240 homeowners interested</div></div>
+    <div class="service-card" onclick="selectCategory('Plumbing')"><h3>Plumbing Repair</h3><div class="service-meta"><span class="star">★ 4.7</span> · 980 homeowners interested</div></div>
+    <div class="service-card" onclick="selectCategory('Electrical')"><h3>Electrical Services</h3><div class="service-meta"><span class="star">★ 4.9</span> · 870 homeowners interested</div></div>
+    <div class="service-card" onclick="selectCategory('Handyman')"><h3>Handyman Service</h3><div class="service-meta"><span class="star">★ 4.6</span> · 1,170 homeowners interested</div></div>
+    <div class="service-card" onclick="selectCategory('Roofing')"><h3>Roofing</h3><div class="service-meta"><span class="star">★ 4.7</span> · 720 homeowners interested</div></div>
+    <div class="service-card" onclick="selectCategory('Construction')"><h3>Remodeling</h3><div class="service-meta"><span class="star">★ 4.8</span> · 650 homeowners interested</div></div>
+    <div class="service-card" onclick="selectCategory('Appliance Repair')"><h3>Appliance Repair</h3><div class="service-meta"><span class="star">★ 4.5</span> · 540 homeowners interested</div></div>
+    <div class="service-card" onclick="selectCategory('Painting')"><h3>Interior & Exterior Painting</h3><div class="service-meta"><span class="star">★ 4.8</span> · 490 homeowners interested</div></div>
   </div>
 </section>
 
-<!-- ═══ CTA ═══ -->
-<section class="cta-section">
-  <h2>Are you a service professional?</h2>
-  <p>Join our network and receive qualified leads from homeowners in your area.<br/>Three membership tiers to fit your business.</p>
-  <a href="contractor-signup.html" class="cta-btn">Join The Network →</a>
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how-it-works">
+  <div class="how-inner">
+    <h2 class="section-title">How it works</h2>
+    <p class="how-sub">From request to quote in minutes — here's the process.</p>
+    <div class="how-grid">
+      <div class="how-step"><div class="how-num">1</div><h3>Tell us what you need</h3><p>Answer a few quick questions about your project. Our smart intake learns exactly what kind of pro you need.</p></div>
+      <div class="how-step"><div class="how-num">2</div><h3>Get matched instantly</h3><p>We'll connect you with up to 3 licensed, background-checked professionals in your area within minutes.</p></div>
+      <div class="how-step"><div class="how-num">3</div><h3>Compare and hire</h3><p>Review quotes, check reviews, and pick the pro that fits your budget and timeline. It's 100% free.</p></div>
+    </div>
+  </div>
 </section>
 
-<!-- ═══ FOOTER ═══ -->
+<!-- TRUST -->
+<section class="trust-section">
+  <div class="trust-inner">
+    <h2>Built different from other platforms</h2>
+    <p class="trust-sub">No middlemen, no commissions, no games. Just qualified pros ready to work.</p>
+    <div class="trust-grid">
+      <div class="trust-item"><div class="trust-icon">🎯</div><h3>Qualified leads only</h3><p>Homeowners answer detailed intake questions before you see the request — no tire kickers, no spam.</p></div>
+      <div class="trust-item"><div class="trust-icon">🛡️</div><h3>Licensed & verified</h3><p>Every contractor is TDLR license-verified and background-checked before joining the network.</p></div>
+      <div class="trust-item"><div class="trust-icon">⚡</div><h3>Fast response times</h3><p>Average first response in 47 minutes. Your pros are local, active, and ready to take on work.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="cta-banner">
+  <div class="cta-box">
+    <div>
+      <h2>Are you a service professional?</h2>
+      <p>Join our network and receive qualified leads from homeowners in your area. Three membership tiers to fit your business.</p>
+    </div>
+    <a href="contractor-signup.html" class="cta-btn">Join The Network →</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
 <footer class="footer">
   <div class="footer-inner">
-    <div class="footer-brand">
-      <div class="footer-logo">Select<span>Service</span>Pros</div>
-      <p>Connecting Houston homeowners with licensed, background-checked service professionals since 2025.</p>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">
+          <svg width="24" height="28" viewBox="0 0 48 56" fill="none"><path d="M24 2C13 2 4 11 4 22c0 14 20 32 20 32s20-18 20-32C44 11 35 2 24 2z" fill="#f05528"/><circle cx="24" cy="20" r="12" fill="#fff"/><path d="M18 20l4.5 4.5 7.5-7.5" stroke="#f05528" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span><span class="logo-select">Select</span><span class="logo-service">Service</span><span class="logo-pros">Pros</span></span>
+        </div>
+        <p>Connecting Houston homeowners with licensed, background-checked service professionals since 2025.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Homeowners</h4>
+        <a href="#categories">Find pros</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="faq-homeowners.html">FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h4>For Pros</h4>
+        <a href="contractor-signup.html">Join the network</a>
+        <a href="faq-contractors.html">Contractor FAQ</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="/cdn-cgi/l/email-protection#c5acaba3aa85b6a0a9a0a6b1b6a0b7b3aca6a0b5b7aab6eba6aaa8">Contact us</a>
+        <a href="#">Terms of use</a>
+        <a href="#">Privacy policy</a>
+      </div>
     </div>
-    <div class="footer-col">
-      <h4>Homeowners</h4>
-      <a href="#">Find pros</a>
-      <a href="#how-section">How it works</a>
-      <a href="#">Browse categories</a>
+    <div class="footer-bottom">
+      <span>© 2025 SelectServicePros.com. All rights reserved.</span>
+      <span>Houston, TX</span>
     </div>
-    <div class="footer-col">
-      <h4>For Pros</h4>
-      <a href="contractor-signup.html">Join the network</a>
-      <a href="contractor-login.html">Contractor login</a>
-    </div>
-    <div class="footer-col">
-      <h4>Company</h4>
-      <a href="#">Contact us</a>
-      <a href="#">Terms of use</a>
-      <a href="#">Privacy policy</a>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <span>&copy; 2025 SelectServicePros.com. All rights reserved.</span>
-    <span>Houston, TX</span>
   </div>
 </footer>
 
-<!-- ═══ CONFIG ═══ -->
-<script src="ssp-config.js"></script>
-<script>
-// ─── AI SEARCH: Expanded keyword mapping ───
-const SERVICE_KEYWORDS = {
-  'HVAC': ['ac leak','ac leaking','ac is leaking','ac not','ac repair','ac unit','ac broke','ac broken','ac stopped','a/c','air conditioning','hvac','hvac repair','heating system','furnace','heat pump','duct','ductwork','cooling system','thermostat','air conditioner','central air','mini split','compressor','condenser','evaporator','refrigerant','freon','blower','ventilation','air handler','air filter','coil','condensation','not cooling','no cold air','warm air','frozen coil','ice on','water heater','hot water heater','hot water','tankless','boiler','radiator','ac'],
-  'Plumbing': ['plumb','plumber','pipe','drain','leak','leaking','leaky','toilet','faucet','sink','sewer','clog','clogged','water line','main line','garbage disposal','sump pump','backflow','water pressure','running toilet','dripping','burst pipe','frozen pipe','p-trap','shutoff valve','hose bib','bathtub','shower head','bidet'],
-  'Electrical': ['electric','electrical','electrician','wiring','outlet','breaker','panel','circuit','light','switch','generator','ceiling fan','dimmer','gfci','arc fault','knob and tube','rewire','power outage','flickering','buzzing','sparking','surge protector','ev charger','recessed light','chandelier','sconce','landscape lighting'],
-  'Roofing': ['roof','roofing','shingle','gutter','skylight','leak','flashing','soffit','fascia','ridge','valley','dormer','chimney','ice dam','moss','slate','tile roof','metal roof','flat roof','tar','membrane','downspout','eave'],
-  'Handyman': ['handyman','fix','odd jobs','general repair','mount tv','hang shelves','drywall','patch','caulk','weather strip','door adjustment','screen repair','furniture assembly','baby proof','grab bar','towel rack','curtain rod','picture hanging'],
-  'Appliance Repair': ['appliance','washer','washer leaking','washer repair','washing machine','dryer','dryer repair','dryer not heating','dryer not drying','refrigerator','refrigerator repair','refrigerator not cooling','fridge','fridge not cooling','fridge not working','fridge repair','oven','oven repair','oven not heating','stove','range','dishwasher','dishwasher repair','dishwasher not draining','microwave','ice maker','disposal','freezer','freezer not freezing','wine cooler','range hood','cooktop','warming drawer','trash compactor','laundry machine'],
-  'Construction': ['remodel','renovation','addition','basement','kitchen remodel','bathroom remodel','construction','build','contractor','general contractor','framing','foundation','structural','load bearing','permit','blueprint','extension','adu','garage conversion','deck','patio','pergola','fence','retaining wall'],
-  'Painting': ['paint','painting','painter','stain','interior paint','exterior paint','primer','cabinet paint','trim','accent wall','wallpaper','texture','popcorn ceiling','epoxy','garage floor'],
-  'Pool & Spa': ['pool','spa','hot tub','jacuzzi','pool pump','pool filter','pool heater','pool cleaning','pool repair','pool resurfacing','pool deck','chlorine','salt water','pool light'],
-  'Windows & Doors': ['window','door','glass','siding','pane','double pane','storm door','sliding door','french door','patio door','screen door','window seal','weatherstripping','vinyl siding','hardie board','trim','shutter']
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// === CONFIG ===
+const GHL="https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c";
+const MAX_QUESTIONS=4;
+let answers=[],questionCount=0,questionHistory=[],selectedCategory="",freeFormInput="";
+
+// === SEARCH INTELLIGENCE ===
+const serviceKeywords={
+  "HVAC":["hvac","ac","air conditioning","air conditioner","heating","furnace","heat pump","thermostat","duct","ductwork","ventilation","cooling","refrigerant","compressor","blower","central air","mini split","condenser","evaporator","freon","a/c","warm air","cold air","not cooling","not heating","temperature","humidity","tune up","tune-up","tuneup","maintenance","service","annual service","seasonal","checkup","check up","inspection","filter","air filter","preventive","preventative","clean coils","coil cleaning"],
+  "Plumbing":["plumbing","plumber","pipe","pipes","leak","leaking","leaky","drain","clogged","toilet","faucet","water heater","sewer","septic","garbage disposal","water pressure","running toilet","dripping","flooding","burst pipe","water line","sump pump","backflow","shower","bathtub","sink"],
+  "Electrical":["electrical","electrician","outlet","switch","wiring","wire","breaker","panel","circuit","lighting","light","ceiling fan","generator","surge protector","dimmer","gfci","rewire","power outage","short circuit","spark","buzzing","flickering","voltage"],
+  "Roofing":["roof","roofing","roofer","shingle","shingles","gutter","gutters","leak roof","storm damage","hail damage","flat roof","metal roof","tile roof","flashing","soffit","fascia","skylight","chimney","downspout"],
+  "Handyman":["handyman","handy man","small repair","fix","broken","shelf","shelves","mount","mounting","tv mount","drywall","patch","caulk","weatherstrip","door","squeaky","stuck","loose","assemble","assembly","furniture","odd jobs","honey do"],
+  "Appliance Repair":["appliance","refrigerator","fridge","washer","dryer","dishwasher","oven","stove","range","microwave","ice maker","freezer","washing machine","clothes dryer","garbage disposal","trash compactor"],
+  "Construction":["remodel","remodeling","renovation","renovate","kitchen remodel","bathroom remodel","addition","room addition","flooring","tile","hardwood","basement","deck","patio","build","construction","contractor","demolition","framing","drywall install"],
+  "Pool & Spa":["pool","swimming pool","spa","hot tub","jacuzzi","pool pump","pool filter","pool heater","pool cleaning","green pool","pool leak","pool light","pool tile","resurfacing","gunite","vinyl pool","above ground pool"],
+  "Windows & Doors":["window","windows","door","doors","glass","screen","screen door","storm door","patio door","sliding door","french door","window replacement","broken window","foggy window","draft","window seal","weatherization"],
+  "Painting":["paint","painting","painter","interior paint","exterior paint","cabinet paint","stain","staining","deck stain","fence stain","wallpaper","primer","touch up","repaint","color change","accent wall","trim paint"]
+};
+const popularSearches=[
+  {text:"AC not cooling",category:"HVAC",icon:"❄"},{text:"HVAC tune-up / maintenance",category:"HVAC",icon:"🔧"},
+  {text:"Leaky faucet or pipe",category:"Plumbing",icon:"🔧"},{text:"Clogged drain",category:"Plumbing",icon:"🔧"},
+  {text:"Outlet not working",category:"Electrical",icon:"⚡"},{text:"Roof leak or damage",category:"Roofing",icon:"🏠"},
+  {text:"Furniture assembly",category:"Handyman",icon:"🔨"},{text:"Refrigerator not cooling",category:"Appliance Repair",icon:"🔌"},
+  {text:"Kitchen remodel",category:"Construction",icon:"🏗"},{text:"Interior painting",category:"Painting",icon:"🎨"},
+  {text:"Pool cleaning",category:"Pool & Spa",icon:"🏊"},{text:"Window replacement",category:"Windows & Doors",icon:"🪟"}
+];
+function matchCategory(input){const lower=input.toLowerCase();let bestMatch=null,bestScore=0;for(const[cat,keywords]of Object.entries(serviceKeywords)){let score=0;keywords.forEach(kw=>{if(lower.includes(kw))score+=kw.length});if(score>bestScore){bestScore=score;bestMatch=cat}}return bestMatch}
+function showSuggestions(val){const dd=document.getElementById("suggestions");if(!val||val.length<1){let html='<div class="sug-group"><div class="sug-group-label">Popular searches</div>';popularSearches.forEach(s=>{html+='<div class="sug-item" onclick="pickSuggestion(\''+s.text+'\',\''+s.category+'\')"><div class="sug-icon" style="background:var(--bg);">'+s.icon+'</div><div class="sug-text"><strong>'+s.text+'</strong><span>'+s.category+'</span></div></div>'});html+='</div>';dd.innerHTML=html;dd.classList.add("visible");return}const lower=val.toLowerCase();const matches=popularSearches.filter(s=>s.text.toLowerCase().includes(lower)||s.category.toLowerCase().includes(lower));const catMatch=matchCategory(val);let html='';if(matches.length>0){html+='<div class="sug-group"><div class="sug-group-label">Suggested services</div>';matches.slice(0,5).forEach(s=>{html+='<div class="sug-item" onclick="pickSuggestion(\''+s.text+'\',\''+s.category+'\')"><div class="sug-icon" style="background:var(--bg);">'+s.icon+'</div><div class="sug-text"><strong>'+s.text+'</strong><span>'+s.category+'</span></div></div>'});html+='</div>'}html+='<div class="sug-item sug-item-freeform" onclick="handleFreeFormSearch()"><div class="sug-icon" style="background:var(--orange-light);color:var(--orange);">→</div><div class="sug-text"><strong>Search for "'+val.replace(/"/g,'&quot;')+'"</strong><span>'+(catMatch?'Looks like '+catMatch+' — we\'ll match you with the right pro':'Tell us more and we\'ll find the right pro')+'</span></div></div>';dd.innerHTML=html;dd.classList.add("visible")}
+function pickSuggestion(text,cat){document.getElementById("hero-service").value=text;document.getElementById("suggestions").classList.remove("visible");freeFormInput=text;selectCategory(cat)}
+function handleFreeFormSearch(){const val=document.getElementById("hero-service").value.trim();if(!val)return;document.getElementById("suggestions").classList.remove("visible");freeFormInput=val;const cat=matchCategory(val);if(cat){selectCategory(cat);answers=[{question:"What do you need help with?",answer:val}];questionCount=1;questionHistory=[{questionData:{question:"What do you need help with?",type:"text"},selectedAnswer:val}];rebuildHist();showThinking("Understanding your request...");getNextQuestion().then(nextQ=>{if(nextQ&&!nextQ.complete)setTimeout(()=>renderQuestion(nextQ),300);else setTimeout(renderContact,400)}).catch(()=>setTimeout(renderContact,400))}else{selectCategory("Handyman")}}
+document.addEventListener("click",e=>{const dd=document.getElementById("suggestions");const input=document.getElementById("hero-service");if(dd&&!dd.contains(e.target)&&e.target!==input)dd.classList.remove("visible")});
+
+function detectLocation(){const btn=document.getElementById("geo-btn");const zipInput=document.getElementById("hero-zip");btn.style.opacity="0.5";if(!navigator.geolocation){zipInput.placeholder="Not supported";btn.style.opacity="1";return}navigator.geolocation.getCurrentPosition(async pos=>{try{const r=await fetch("https://api.bigdatacloud.net/data/reverse-geocode-client?latitude="+pos.coords.latitude+"&longitude="+pos.coords.longitude+"&localityLanguage=en");const d=await r.json();if(d.postcode){zipInput.value=d.postcode;zipInput.style.fontWeight="600"}else{zipInput.placeholder="Could not detect"}}catch(e){zipInput.placeholder="Could not detect"}btn.style.opacity="1"},err=>{zipInput.placeholder="Location denied";btn.style.opacity="1"},{timeout:5000})}
+window.addEventListener("load",()=>setTimeout(detectLocation,1000));
+
+const firstQuestions={
+  "HVAC":{question:"What type of HVAC service do you need?",type:"options",options:["AC not cooling","No heat / heating issue","Strange noise or smell","Full system replacement","New installation","Maintenance / tune-up","Other"]},
+  "Plumbing":{question:"What plumbing issue are you experiencing?",type:"options",options:["Leaky faucet or pipe","Clogged drain","Water heater issue","Toilet repair/replacement","Sewer line problem","New installation","Other"]},
+  "Electrical":{question:"What electrical work do you need?",type:"options",options:["Outlet or switch repair","Panel upgrade","Lighting installation","Wiring issue","Ceiling fan install","Whole-home rewire","Other"]},
+  "Roofing":{question:"What roofing service do you need?",type:"options",options:["Roof leak repair","Full roof replacement","Storm damage repair","Gutter work","Inspection","New construction","Other"]},
+  "Handyman":{question:"What do you need help with?",type:"options",options:["Minor repairs","Furniture assembly","Drywall repair","Door/window fix","Deck/fence repair","General maintenance","Other"]},
+  "Appliance Repair":{question:"Which appliance needs repair?",type:"options",options:["Refrigerator","Washer/Dryer","Dishwasher","Oven/Range","Microwave","Other"]},
+  "Construction":{question:"What type of remodeling project?",type:"options",options:["Kitchen remodel","Bathroom remodel","Room addition","Flooring","Basement finishing","Full renovation","Other"]},
+  "Pool & Spa":{question:"What pool/spa service do you need?",type:"options",options:["Regular maintenance","Equipment repair","Leak detection","Resurfacing","New pool build","Spa/hot tub service","Other"]},
+  "Windows & Doors":{question:"What do you need?",type:"options",options:["Window replacement","Door installation","Window repair","Storm windows","Sliding door repair","Screen repair","Other"]},
+  "Painting":{question:"What painting work do you need?",type:"options",options:["Interior painting","Exterior painting","Cabinet painting","Deck/fence staining","Touch-ups","Full repaint","Other"]}
 };
 
-const CATEGORY_ICONS = {
-  'HVAC': '❄️', 'Plumbing': '🔧', 'Electrical': '⚡', 'Roofing': '🏠',
-  'Handyman': '🔨', 'Appliance Repair': '🔌', 'Construction': '🏗️',
-  'Painting': '🎨', 'Pool & Spa': '🏊', 'Windows & Doors': '🪟'
-};
+function selectCategory(cat){selectedCategory=cat;document.querySelectorAll('.cat-item').forEach((el,i)=>{const cats=["HVAC","Plumbing","Electrical","Roofing","Handyman","Appliance Repair","Construction","Painting","Pool & Spa","Windows & Doors"];el.classList.toggle('active',cats[i]===cat)});document.getElementById('hero-service').value=cat;document.getElementById('intake-tag').textContent=cat+" Services — Houston";document.getElementById('intake-service-name').textContent=cat;const section=document.getElementById('intake-section');section.classList.add('visible');answers=[];questionCount=0;questionHistory=[];document.getElementById('hist').innerHTML='';const q=firstQuestions[cat]||firstQuestions["HVAC"];startIntakeWithQuestion(q);setTimeout(()=>{if(window.innerWidth<=600){const formCard=document.querySelector('.form-card');if(formCard)formCard.scrollIntoView({behavior:'smooth',block:'start'})}else{section.scrollIntoView({behavior:'smooth',block:'start'})}},100)}
+function handleSearch(){const val=document.getElementById('hero-service').value.trim();const zip=document.getElementById('hero-zip').value;if(!val){document.getElementById('hero-service').focus();return}document.getElementById("suggestions").classList.remove("visible");freeFormInput=val;const cat=matchCategory(val);if(cat){selectCategory(cat);if(val.length>3&&!Object.keys(firstQuestions).includes(val)){answers=[{question:"What do you need help with?",answer:val}];questionCount=1;questionHistory=[{questionData:{question:"What do you need help with?",type:"text"},selectedAnswer:val}];rebuildHist();showThinking("Understanding your request...");getNextQuestion().then(nextQ=>{if(nextQ&&!nextQ.complete)setTimeout(()=>renderQuestion(nextQ),300);else setTimeout(renderContact,400)}).catch(()=>setTimeout(renderContact,400))}}else{selectCategory("Handyman")}}
 
-// ─── STATE ───
-let selectedCategory = null;
-let qaHistory = [];
-let stepNum = 0;
-let currentQuestion = null;
-const totalSteps = 5;  // HARD CAP
-let detectedZip = '';
-
-// ─── INIT ───
-document.addEventListener('DOMContentLoaded', () => {
-  renderCategoryStrip();
-  renderServicesGrid();
-  detectLocation();
-});
-
-// ─── GEOLOCATION — uses BigDataCloud free API ───
-async function detectLocation() {
-  if (!navigator.geolocation) return;
-  navigator.geolocation.getCurrentPosition(async (pos) => {
-    try {
-      const { latitude, longitude } = pos.coords;
-      const res = await fetch(
-        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-      );
-      const data = await res.json();
-      if (data.postcode) {
-        detectedZip = data.postcode;
-        document.getElementById('hero-zip').value = detectedZip;
-      }
-      if (data.city) {
-        const region = data.principalSubdivisionCode
-          ? data.principalSubdivisionCode.replace('US-', '')
-          : '';
-        document.getElementById('nav-city').textContent = `${data.city}${region ? ', ' + region : ''}`;
-      }
-    } catch (e) {
-      console.log('Geolocation reverse geocode failed:', e);
-    }
-  }, () => {
-    // User denied or error — keep defaults
-  }, { enableHighAccuracy: false, timeout: 5000 });
-}
-
-// ─── CONFIG HELPERS ───
-function getEnabledCategories() {
-  if (typeof SSP_CONFIG !== 'undefined' && SSP_CONFIG.categories) {
-    return SSP_CONFIG.categories.filter(c => c.enabled);
-  }
-  // Default fallback
-  return [{ id: 'HVAC', label: 'HVAC', displayName: 'AC Repair & Installation', enabled: true }];
-}
-
-function getAllCategories() {
-  if (typeof SSP_CONFIG !== 'undefined' && SSP_CONFIG.categories) {
-    return SSP_CONFIG.categories;
-  }
-  return [{ id: 'HVAC', label: 'HVAC', displayName: 'AC Repair & Installation', enabled: true }];
-}
-
-// ─── RENDER CATEGORY STRIP ───
-function renderCategoryStrip() {
-  const strip = document.getElementById('cat-strip');
-  const enabled = getEnabledCategories();
-  strip.innerHTML = enabled.map(cat => `
-    <button class="cat-pill" onclick="selectCategory('${cat.id}')">
-      <span class="pill-icon">${CATEGORY_ICONS[cat.id] || '🔧'}</span>
-      ${cat.displayName || cat.label}
-    </button>
-  `).join('');
-}
-
-// ─── RENDER SERVICES GRID ───
-function renderServicesGrid() {
-  const grid = document.getElementById('services-grid');
-  const enabled = getEnabledCategories();
-  grid.innerHTML = enabled.map(cat => `
-    <div class="service-card" onclick="selectCategory('${cat.id}')">
-      <div class="card-icon">${CATEGORY_ICONS[cat.id] || '🔧'}</div>
-      <h3>${cat.displayName || cat.label}</h3>
-      <p>Licensed pros near you</p>
-    </div>
-  `).join('');
-}
-
-// ─── AI SEARCH: Match free-form text to category ───
-function matchCategory(text) {
-  const lower = text.toLowerCase();
-  let bestMatch = null;
-  let bestScore = 0;
-
-  for (const [cat, keywords] of Object.entries(SERVICE_KEYWORDS)) {
-    let score = 0;
-    for (const kw of keywords) {
-      if (lower.includes(kw)) {
-        // Longer keyword matches are worth more
-        score += kw.length;
-      }
-    }
-    if (score > bestScore) {
-      bestScore = score;
-      bestMatch = cat;
-    }
-  }
-
-  return bestMatch;
-}
-
-function showSuggestions(text) {
-  const box = document.getElementById('suggestions');
-  if (!text || text.length < 2) { box.style.display = 'none'; return; }
-
-  const enabledCats = getEnabledCategories();
-  const allCats = getAllCategories();
-
-  // First try to match enabled categories
-  const enabledMatches = enabledCats.filter(cat =>
-    cat.label.toLowerCase().includes(text.toLowerCase()) ||
-    (cat.displayName || '').toLowerCase().includes(text.toLowerCase()) ||
-    SERVICE_KEYWORDS[cat.id]?.some(kw => kw.includes(text.toLowerCase()) || text.toLowerCase().includes(kw))
-  );
-
-  // Also check disabled categories for "not available" messaging
-  const disabledMatches = allCats.filter(cat =>
-    !cat.enabled && (
-      cat.label.toLowerCase().includes(text.toLowerCase()) ||
-      (cat.displayName || '').toLowerCase().includes(text.toLowerCase()) ||
-      SERVICE_KEYWORDS[cat.id]?.some(kw => kw.includes(text.toLowerCase()) || text.toLowerCase().includes(kw))
-    )
-  );
-
-  if (enabledMatches.length === 0 && disabledMatches.length === 0) {
-    box.style.display = 'none';
-    return;
-  }
-
-  let html = '';
-
-  // Show enabled matches first
-  html += enabledMatches.slice(0, 4).map(cat => `
-    <div class="suggestion-item" onclick="pickSuggestion('${cat.id}', '${(cat.displayName || cat.label).replace(/'/g, "\\'")}')">
-      <div class="cat-icon">${CATEGORY_ICONS[cat.id] || '🔧'}</div>
-      <div>
-        <strong>${cat.displayName || cat.label}</strong>
-      </div>
-    </div>
-  `).join('');
-
-  // Show disabled matches with "not available" label
-  html += disabledMatches.slice(0, 2).map(cat => `
-    <div class="suggestion-item" style="opacity:0.5;cursor:default;">
-      <div class="cat-icon">${CATEGORY_ICONS[cat.id] || '🔧'}</div>
-      <div>
-        <strong>${cat.displayName || cat.label}</strong>
-        <div style="font-size:11px;color:var(--gray3);">Not available in your area yet</div>
-      </div>
-    </div>
-  `).join('');
-
-  box.innerHTML = html;
-  box.style.display = 'block';
-}
-
-function pickSuggestion(catId, label) {
-  document.getElementById('hero-service').value = label;
-  document.getElementById('suggestions').style.display = 'none';
-  selectCategory(catId);
-}
-
-// ─── SEARCH HANDLER ───
-function handleSearch() {
-  const text = document.getElementById('hero-service').value.trim();
-  if (!text) {
-    document.getElementById('hero-service').focus();
-    return;
-  }
-
-  const matchedCat = matchCategory(text);
-
-  if (matchedCat) {
-    // Check if this category is enabled
-    const enabled = getEnabledCategories();
-    const isEnabled = enabled.some(c => c.id === matchedCat);
-
-    if (isEnabled) {
-      selectCategory(matchedCat);
-    } else {
-      // Category exists but not enabled — show "not available"
-      showNotAvailable(matchedCat);
-    }
-  } else {
-    // No match found — try the first enabled category with a general intake
-    const enabled = getEnabledCategories();
-    if (enabled.length > 0) {
-      selectCategory(enabled[0].id);
-    } else {
-      showNotAvailable(null);
-    }
-  }
-
-  document.getElementById('suggestions').style.display = 'none';
-}
-
-function showNotAvailable(catId) {
-  const intake = document.getElementById('intake-section');
-  intake.classList.remove('hidden');
-
-  const catName = catId || 'This service';
-  const allCats = getAllCategories();
-  const cat = allCats.find(c => c.id === catId);
-  const displayName = cat ? (cat.displayName || cat.label) : catName;
-
-  document.getElementById('q-area').innerHTML = `
-    <div class="not-available">
-      <h3>${displayName} is not available in your area yet</h3>
-      <p>We're expanding our network of licensed ${displayName.toLowerCase()} professionals. Leave your info and we'll notify you when this service becomes available.</p>
-      <button class="btn-back-home" onclick="resetIntake()">← Browse available services</button>
-    </div>
-  `;
-
-  document.querySelector('.progress-wrap').style.display = 'none';
-  document.getElementById('intake-title').textContent = 'Service Not Available';
-
-  // Scroll to intake
-  intake.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-// ─── SELECT CATEGORY & START INTAKE ───
-function selectCategory(catId) {
-  selectedCategory = catId;
-  qaHistory = [];
-  stepNum = 0;
-
-  // Highlight pill
-  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
-  const pills = document.querySelectorAll('.cat-pill');
-  pills.forEach(p => {
-    if (p.textContent.trim().includes(catId) || p.onclick?.toString().includes(catId)) {
-      p.classList.add('active');
-    }
-  });
-
-  // Show intake
-  const intake = document.getElementById('intake-section');
-  intake.classList.remove('hidden');
-  document.querySelector('.progress-wrap').style.display = '';
-
-  const enabled = getEnabledCategories();
-  const cat = enabled.find(c => c.id === catId);
-  document.getElementById('intake-title').textContent =
-    `Get matched with top ${cat ? (cat.displayName || cat.label) : catId} pros near you`;
-
-  setProg(0);
-  document.getElementById('hist').innerHTML = '';
-
-  // Scroll to intake
-  intake.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-  getNextQuestion();
-}
-
-function resetIntake() {
-  document.getElementById('intake-section').classList.add('hidden');
-  selectedCategory = null;
-  qaHistory = [];
-  stepNum = 0;
-  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
-}
-
-// ─── PROGRESS ───
-function setProg(pct) {
-  document.getElementById('prog').style.width = pct + '%';
-  document.getElementById('step-pct').textContent = pct + '%';
-  const stepDisplay = Math.min(stepNum + 1, totalSteps);
-  document.getElementById('step-lbl').textContent = `STEP ${stepDisplay} OF ${totalSteps}`;
-}
-
-function rebuildHist() {
-  const hist = document.getElementById('hist');
-  hist.innerHTML = qaHistory.map(qa => `
-    <div class="hist-item">
-      <span class="hist-q">${qa.question}</span>
-      <span class="hist-a">${qa.answer}</span>
-    </div>
-  `).join('');
-}
-
-function showThinking(show) {
-  document.getElementById('thinking').style.display = show ? 'flex' : 'none';
-  document.getElementById('q-area').style.display = show ? 'none' : 'block';
-}
-
-// ─── RENDER QUESTION ───
-function renderQuestion(q) {
-  currentQuestion = q;
-  const area = document.getElementById('q-area');
-
-  if (q.type === 'contact') {
-    renderContact();
-    return;
-  }
-
-  let html = `<div class="q-text">${q.question}</div>`;
-
-  if (q.type === 'options' && q.options) {
-    html += `<div class="options-grid">`;
-    html += q.options.map(opt => `
-      <button class="option-btn" onclick="submitAnswer('${opt.replace(/'/g, "\\'")}', this)">${opt}</button>
-    `).join('');
-    html += `</div>`;
-    html += `<div class="intake-actions"><button class="btn-back" onclick="goBack()">← Back</button></div>`;
-  } else {
-    html += `
-      <div class="text-input-wrap">
-        <input type="text" id="text-answer" placeholder="${q.placeholder || 'Type your answer…'}" onkeydown="if(event.key==='Enter')submitAnswer(document.getElementById('text-answer').value)"/>
-      </div>
-      <div class="intake-actions">
-        <button class="btn-back" onclick="goBack()">← Back</button>
-        <button class="btn-continue" onclick="submitAnswer(document.getElementById('text-answer').value)">Continue →</button>
-      </div>
-    `;
-  }
-
-  area.innerHTML = html;
-  showThinking(false);
-}
-
-function renderContact() {
-  setProg(100);
-  document.getElementById('step-lbl').textContent = 'FINAL STEP';
-  document.getElementById('step-pct').textContent = '100%';
-
-  const area = document.getElementById('q-area');
-  area.innerHTML = `
-    <div class="q-text">Great! Last step — how should the pros reach you?</div>
-    <div class="contact-form">
-      <div class="form-group">
-        <label>Full Name</label>
-        <input type="text" id="c-name" placeholder="Your name" autocomplete="name"/>
-      </div>
-      <div class="form-group">
-        <label>Phone Number</label>
-        <input type="tel" id="c-phone" placeholder="(555) 123-4567" autocomplete="tel"/>
-      </div>
-      <div class="form-group">
-        <label>Email Address</label>
-        <input type="email" id="c-email" placeholder="you@email.com" autocomplete="email"/>
-      </div>
-      <div class="form-group">
-        <label>ZIP Code</label>
-        <input type="text" id="c-zip" placeholder="77001" maxlength="5" value="${detectedZip || document.getElementById('hero-zip').value || ''}" autocomplete="postal-code"/>
-      </div>
-      <button class="btn-submit" onclick="submitLead()">Get My Free Quotes →</button>
-    </div>
-  `;
-  showThinking(false);
-}
-
-// ─── NAVIGATION ───
-function goBack() {
-  if (qaHistory.length === 0) { resetIntake(); return; }
-  qaHistory.pop();
-  stepNum = Math.max(0, stepNum - 1);
-  setProg(Math.round((stepNum / totalSteps) * 100));
-  rebuildHist();
-  getNextQuestion();
-}
-
-function submitAnswer(answer, btnEl) {
-  if (!answer || !answer.trim()) return;
-
-  if (btnEl) {
-    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-    btnEl.classList.add('selected');
-    setTimeout(() => { proceedWithAnswer(answer.trim()); }, 200);
-  } else {
-    proceedWithAnswer(answer.trim());
-  }
-}
-
-function proceedWithAnswer(answer) {
-  qaHistory.push({ question: currentQuestion.question, answer });
-  stepNum++;
-
-  // HARD CAP: if we've hit the max, go to contact
-  if (stepNum >= totalSteps) {
-    renderContact();
-    return;
-  }
-
-  const pct = Math.min(Math.round((stepNum / totalSteps) * 100), 90);
-  setProg(pct);
-  rebuildHist();
-  getNextQuestion();
-}
-
-// ─── AI QUESTION FETCHER (with hard cap) ───
-async function getNextQuestion() {
-  // HARD CAP enforced on frontend too
-  if (stepNum >= totalSteps) {
-    renderContact();
-    return;
-  }
-
-  showThinking(true);
-  try {
-    const res = await fetch('/api/next-question', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        category: selectedCategory,
-        history: qaHistory,
-        stepNum
-      })
-    });
-    if (!res.ok) throw new Error('API error');
-    const q = await res.json();
-    renderQuestion(q);
-  } catch (e) {
-    // Fallback question
-    const fallbacks = [
-      { type: 'options', question: 'What type of service do you need?', options: ['Repair', 'Installation', 'Maintenance', 'Inspection'] },
-      { type: 'options', question: 'How urgent is this?', options: ['Emergency', 'Within a few days', 'This week', 'Planning ahead'] },
-      { type: 'options', question: 'What type of property?', options: ['House', 'Apartment/condo', 'Townhouse', 'Commercial'] },
-      { type: 'text', question: 'Can you describe the issue?', placeholder: 'Tell us more...' },
-      { type: 'options', question: 'What is your budget range?', options: ['Under $500', '$500–$2,000', '$2,000–$5,000', '$5,000+'] },
-    ];
-    if (stepNum < fallbacks.length) {
-      renderQuestion(fallbacks[stepNum]);
-    } else {
-      renderContact();
-    }
-  }
-}
-
-// ─── SUBMIT LEAD ───
-async function submitLead() {
-  const name = document.getElementById('c-name').value.trim();
-  const phone = document.getElementById('c-phone').value.trim();
-  const email = document.getElementById('c-email').value.trim();
-  const zip = document.getElementById('c-zip').value.trim();
-
-  if (!name || !phone) {
-    alert('Please enter your name and phone number.');
-    return;
-  }
-
-  const btn = document.querySelector('.btn-submit');
-  btn.textContent = 'Submitting…';
-  btn.disabled = true;
-
-  const leadData = {
-    name,
-    phone,
-    email,
-    zip,
-    category: selectedCategory,
-    answers: qaHistory,
-    source: 'selectservicepros.com',
-    timestamp: new Date().toISOString()
-  };
-
-  try {
-    const res = await fetch('https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(leadData)
-    });
-
-    if (res.ok) {
-      document.getElementById('q-area').innerHTML = `
-        <div class="not-available">
-          <h3 style="color:var(--green);">You're all set!</h3>
-          <p>We've received your request and are matching you with licensed ${selectedCategory || ''} professionals in your area. Expect to hear from up to 3 pros shortly.</p>
-          <button class="btn-back-home" onclick="resetIntake()">← Submit another request</button>
-        </div>
-      `;
-    } else {
-      throw new Error('Webhook error');
-    }
-  } catch (e) {
-    btn.textContent = 'Get My Free Quotes →';
-    btn.disabled = false;
-    alert('Something went wrong. Please try again.');
-  }
-}
-
-// Close suggestions on click outside
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.search-bar')) {
-    document.getElementById('suggestions').style.display = 'none';
-  }
-});
-</script>
-</body>
-</html>
+function setProg(pct,lbl){document.getElementById("prog").style.width=pct+"%";document.getElementById("step-pct").textContent=pct+"%";document.getElementById("step-lbl").textContent=lbl}
+function rebuildHist(){const w=document.getElementById("hist");w.innerHTML="";answers.forEach(a=>{const d=document.createElement("div");d.className="h-item fade";d.innerHTML='<span class="h-q">Q</span><span class="h-a">'+a.answer+'</span>';w.appendChild(d)})}
+function showThinking(msg){document.getElementById("qa").innerHTML='<div class="thinking fade"><div class="dots"><span></span><span></span><span></span></div><span>'+(msg||"Analyzing…")+'</span></div>'}
+function renderQuestion(data,skipStack){questionCount++;const pct=Math.round((questionCount/(MAX_QUESTIONS+1))*100);setProg(pct,"Question "+questionCount+" of "+MAX_QUESTIONS);if(!skipStack)questionHistory.push({questionData:data,selectedAnswer:null});let sel=null;const qa=document.getElementById("qa");const colClass=(data.options&&data.options.length<=3)?"opts-grid col1":"opts-grid";const showBack=questionCount>1;let html='<div class="fade"><span class="q-label">Question '+questionCount+'</span><div class="q-text">'+data.question+'</div>';if(data.type==="options"&&data.options&&data.options.length>0){html+='<div class="'+colClass+'" id="og">';data.options.forEach(o=>{html+='<button class="opt" data-v="'+o+'">'+o+'</button>'});html+='</div><div class="btn-row">';if(showBack)html+='<button class="btn-back" id="bk">← Back</button>';html+='<button class="btn" id="bn" disabled>Continue →</button></div>'}else{html+='<input class="q-input" id="ti" type="text" placeholder="Type your answer…"/><div class="btn-row">';if(showBack)html+='<button class="btn-back" id="bk">← Back</button>';html+='<button class="btn" id="bn">Continue →</button></div>'}html+='</div>';qa.innerHTML=html;if(showBack)document.getElementById("bk").addEventListener("click",goBack);if(data.type==="options"){document.querySelectorAll(".opt").forEach(b=>{b.addEventListener("click",()=>{document.querySelectorAll(".opt").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");sel=b.dataset.v;let otherInput=document.getElementById("other-input");if(sel==="Other"){if(!otherInput){otherInput=document.createElement("input");otherInput.className="q-input";otherInput.id="other-input";otherInput.type="text";otherInput.placeholder="Please describe what you need…";otherInput.style.marginTop="8px";document.getElementById("og").after(otherInput);otherInput.focus()}document.getElementById("bn").disabled=false}else{if(otherInput)otherInput.remove();document.getElementById("bn").disabled=false}})});document.getElementById("bn").addEventListener("click",()=>{if(sel==="Other"){const otherVal=document.getElementById("other-input")?.value.trim();if(otherVal)submitAnswer(data.question,"Other: "+otherVal);else{document.getElementById("other-input")?.focus();return}}else if(sel){submitAnswer(data.question,sel)}})}else{const ti=document.getElementById("ti");ti.focus();ti.addEventListener("keydown",e=>{if(e.key==="Enter"){const v=ti.value.trim();if(v)submitAnswer(data.question,v)}});document.getElementById("bn").addEventListener("click",()=>{const v=document.getElementById("ti").value.trim();if(v)submitAnswer(data.question,v)})}}
+function goBack(){if(questionHistory.length<=1)return;questionHistory.pop();answers.pop();questionCount-=2;const prev=questionHistory.pop();rebuildHist();renderQuestion(prev.questionData)}
+async function submitAnswer(question,answer){answers.push({question,answer});rebuildHist();if(questionCount>=MAX_QUESTIONS){showThinking("Reviewing your details…");setTimeout(renderContact,900);return}showThinking("Preparing next question…");try{const nextQ=await getNextQuestion();if(!nextQ||nextQ.complete){setTimeout(renderContact,400)}else{setTimeout(()=>renderQuestion(nextQ),300)}}catch(err){console.error("AI error:",err);setTimeout(renderContact,400)}}
+async function getNextQuestion(){try{const r=await fetch("/api/next-question",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({answers,questionCount,maxQuestions:MAX_QUESTIONS,category:selectedCategory})});if(!r.ok)throw new Error("API returned "+r.status);const text=await r.text();const clean=text.replace(/```json|```/g,"").trim();return JSON.parse(clean)}catch(err){console.error("AI question error:",err);return{question:"What is your budget range for this project?",type:"options",options:["Under $500","$500-$2,000","$2,000-$5,000","$5,000+","Not sure yet","Other"]}}}
+function startIntakeWithQuestion(q){setProg(5,"Starting…");renderQuestion(q)}
+function getTodayStr(){return new Date().toISOString().split('T')[0]}
+function renderContact(){setProg(90,"Last step");document.getElementById("step-lbl").textContent="Almost done";const today=getTodayStr();const showBack=answers.length>0;document.getElementById("qa").innerHTML='<div class="fade"><div class="q-text">Where should we send your quotes?</div><input class="q-input" id="n" type="text" placeholder="Your full name"/><input class="q-input" id="p" type="tel" placeholder="Phone number"/><input class="q-input" id="e" type="email" placeholder="Email address"/><input class="q-input" id="z" type="text" placeholder="ZIP code" maxlength="5" value="'+(document.getElementById('hero-zip').value||'')+'"/><div class="schedule-section"><div class="schedule-label"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>When works for you? (pick 2 options)</div><div class="schedule-slot"><div class="schedule-slot-title">1st Preference</div><div class="schedule-row"><input class="schedule-input" id="d1" type="date" min="'+today+'"/><select class="schedule-input" id="t1"><option value="">Select time</option><option>8:00 AM – 10:00 AM</option><option>10:00 AM – 12:00 PM</option><option>12:00 PM – 2:00 PM</option><option>2:00 PM – 4:00 PM</option><option>4:00 PM – 6:00 PM</option><option>Evening (after 6 PM)</option></select></div></div><div class="schedule-divider">or</div><div class="schedule-slot"><div class="schedule-slot-title">2nd Preference</div><div class="schedule-row"><input class="schedule-input" id="d2" type="date" min="'+today+'"/><select class="schedule-input" id="t2"><option value="">Select time</option><option>8:00 AM – 10:00 AM</option><option>10:00 AM – 12:00 PM</option><option>12:00 PM – 2:00 PM</option><option>2:00 PM – 4:00 PM</option><option>4:00 PM – 6:00 PM</option><option>Evening (after 6 PM)</option></select></div></div></div>'+(showBack?'<div class="btn-row"><button class="btn-back" onclick="goBackFromContact()">← Back</button><button class="btn" onclick="submitLead()">Get My Free Quotes →</button></div>':'<button class="btn-full" onclick="submitLead()">Get My Free Quotes →</button>')+'</div>';setTimeout(()=>{const x=document.getElementById("n");if(x)x.focus()},50)}
+function goBackFromContact(){if(questionHistory.length===0)return;answers.pop();questionCount-=2;const prev=questionHistory.pop();rebuildHist();renderQuestion(prev.questionData)}
+function submitLead(){const name=document.getElementById("n").value.trim();const phone=document.getElementById("p").value.trim();const email=document.getElementById("e").value.trim();const zip=document.getElementById("z").value.trim();const date1=document.getElementById("d1").value;const time1=document.getElementById("t1").value;const date2=document.getElementById("d2").value;const time2=document.getElementById("t2").value;if(!name||!phone||!email){alert("Please fill in your name, phone, and email.");return}setProg(100,"Complete ✓");let score=50;answers.forEach(a=>{const v=(a.answer||"").toLowerCase();if(v.includes("emergency")||v.includes("now")||v.includes("immediately"))score+=20;else if(v.includes("24")||v.includes("today")||v.includes("urgent"))score+=12;if(v.includes("replace")||v.includes("new install"))score+=15;else if(v.includes("repair"))score+=8});score=Math.min(score,100);const answersObj={};answers.forEach((a,i)=>{answersObj["q"+(i+1)]=a.answer});const service=selectedCategory||answers[0]?.answer||"General";const urgency=answers.find(a=>a.answer.toLowerCase().match(/emergency|urgent|now|24|today/))?.answer||answers[1]?.answer||"";const preferred_date_1=date1?(date1+" "+time1).trim():"";const preferred_date_2=date2?(date2+" "+time2).trim():"";fetch(GHL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,phone,email,zip,service,urgency,score,preferred_date_1,preferred_date_2,source:"SelectServicePros.com",category:selectedCategory,lead_id:"SSP-"+Date.now(),answers:JSON.stringify(answersObj),full_conversation:answers.map(a=>"Q: "+a.question+" | A: "+a.answer).join(" || ")})}).catch(e=>console.error(e));document.getElementById("hist").innerHTML="";document.getElementById("qa").innerHTML='<div class="success-wrap fade"><div class="s-icon">✓</div><div class="s-title">You are all set, '+name.split(" ")[0]+'!</div><p class="s-msg">Your request has been received. Licensed Houston '+selectedCategory+' contractors in your area will be in touch shortly with free quotes.</p><div class="summary-box"><div class="s-row"><span>Service</span><span>'+service+'</span></div><div class="s-row"><span>1st Availability</span><span>'+(preferred_date_1||"—")+'</span></div><div class="s-row"><span>2nd Availability</span><span>'+(preferred_date_2||"—")+'</span></div><div class="s-row"><span>Contact</span><span>'+phone+'</span></div><div class="s-row"><span>ZIP</span><span>'+(zip||"—")+'</span></div></div><p style="font-size:12px;color:var(--text3);line-height:1.7;">A confirmation has been sent to <strong style="color:var(--text2)">'+
