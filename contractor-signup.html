@@ -251,9 +251,27 @@ function renderPlans(){
 function selPlan(id){document.querySelectorAll('.plan').forEach(el=>el.classList.remove('selected'));const c=document.getElementById('pl-'+id);if(c)c.classList.add('selected')}
 
 function advanceToProfile(planName){
-  // Save selected plan
   sessionStorage.setItem('ssp_plan',planName);
-  // Short delay so Stripe link opens first
+  // Send plan selection to GHL to update the contact
+  const saved=sessionStorage.getItem('ssp_contractor');
+  if(saved){
+    const d=JSON.parse(saved);
+    fetch(GHL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      name:d.fn+' '+d.ln,
+      firstName:d.fn,
+      lastName:d.ln,
+      phone:d.ph,
+      email:d.em,
+      zip:d.zip,
+      companyName:d.biz,
+      source:'SelectServicePros.com — Plan Selected',
+      type:'contractor',
+      contractor_services:d.svcs,
+      contractor_service_categories:d.cats,
+      contractor_membership_tier:planName,
+      lead_id:'SSP-PLAN-'+Date.now()
+    })}).catch(e=>console.error(e));
+  }
   setTimeout(()=>{showProfile(planName)},600);
 }
 
