@@ -9,7 +9,9 @@
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700;800&display=swap" rel="stylesheet"/>
-<script src="/ssp-config.js"></script>
+<script src="/ssp-config.js">
+function fmtPhone(el){var v=el.value.replace(/\D/g,"");if(v.length>10)v=v.substring(0,10);if(v.length>=7)el.value="("+v.substring(0,3)+") "+v.substring(3,6)+"-"+v.substring(6);else if(v.length>=4)el.value="("+v.substring(0,3)+") "+v.substring(3);else if(v.length>0)el.value="("+v;else el.value=""}
+</script>
 <style>
 :root{--navy:#0a1628;--orange:#f05528;--orange2:#d94a20;--orange-light:rgba(240,85,40,.08);--green:#1a8a4a;--green-light:#e6f9ed;--bg:#f8f7f4;--white:#ffffff;--text1:#111318;--text2:#3d3f44;--text3:#6b6e76;--text4:#9ca0a8;--border:#e5e4e0;--border2:#d4d3cf;--radius:12px;--radius-sm:8px;--radius-lg:16px;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shadow-md:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 12px 40px rgba(0,0,0,.1);--font-display:'Fraunces',serif;--font-body:'DM Sans',system-ui,sans-serif;--max-w:1140px}
 *{margin:0;padding:0;box-sizing:border-box}body{font-family:var(--font-body);background:var(--bg);color:var(--text1);-webkit-font-smoothing:antialiased}a{text-decoration:none;color:inherit}
@@ -100,7 +102,7 @@
     <div class="fg"><label class="fl">ZIP code <span class="req">*</span></label><input class="fi" type="text" id="c-zip" placeholder="77001" maxlength="5"/></div>
     <div class="fg fi-row"><div><label class="fl">First name <span class="req">*</span></label><input class="fi" type="text" id="c-fname" placeholder="First name"/></div><div><label class="fl">Last name <span class="req">*</span></label><input class="fi" type="text" id="c-lname" placeholder="Last name"/></div></div>
     <div class="fg"><label class="fl">Business name <span class="req">*</span></label><input class="fi" type="text" id="c-biz" placeholder="Your company or DBA name"/></div>
-    <div class="fg fi-row"><div><label class="fl">Mobile phone <span class="req">*</span></label><input class="fi" type="tel" id="c-phone" placeholder="(555) 123-4567"/></div><div><label class="fl">Email <span class="req">*</span></label><input class="fi" type="email" id="c-email" placeholder="you@company.com"/></div></div>
+    <div class="fg fi-row"><div><label class="fl">Mobile phone <span class="req">*</span></label><input class="fi" type="tel" id="c-phone" placeholder="(555) 123-4567" oninput="fmtPhone(this)"/></div><div><label class="fl">Email <span class="req">*</span></label><input class="fi" type="email" id="c-email" placeholder="you@company.com"/></div></div>
     <button type="button" class="btn-submit" onclick="submitForm()">Continue — Choose a Plan →</button>
     <p class="form-note">By continuing, you agree to receive communications from Select Service Pros.</p>
   </div>
@@ -147,7 +149,9 @@
 
 <footer class="footer"><div class="footer-inner"><p>© 2025 SelectServicePros.com · <a href="/">Home</a> · <a href="/cdn-cgi/l/email-protection#46353336362934320635232a232532352334302f2523363429356825292b">Contact</a> · <a href="#">Terms</a> · <a href="#">Privacy</a></p></div></footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js">
+function fmtPhone(el){var v=el.value.replace(/\D/g,"");if(v.length>10)v=v.substring(0,10);if(v.length>=7)el.value="("+v.substring(0,3)+") "+v.substring(3,6)+"-"+v.substring(6);else if(v.length>=4)el.value="("+v.substring(0,3)+") "+v.substring(3);else if(v.length>0)el.value="("+v;else el.value=""}
+</script><script>
 // ═══ CONFIG FALLBACK ═══
 if(typeof SSP_CONFIG==='undefined'){var SSP_CONFIG={plans:[
 {id:"basic",name:"Basic",monthlyPrice:99,leadPrice:35,leadWindowMinutes:30,badge:"",stripeLink:"https://buy.stripe.com/6oU5kE5KV3yyd3kd4t0Fi06",features:["Lead alerts via email","Public contractor profile","Up to 3 leads matched per job","30-min lead access window"]},
