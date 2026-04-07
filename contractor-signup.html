@@ -4,403 +4,281 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Join the Network — Select Service Pros</title>
-<meta name="description" content="Join Houston's fastest-growing home services network. Qualified leads, three membership tiers, cancel anytime."/>
+<meta name="description" content="Join Houston's fastest-growing home services network. Three membership tiers, qualified leads, cancel anytime."/>
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@600;700;800&display=swap" rel="stylesheet"/>
 <script src="/ssp-config.js"></script>
 <style>
-:root{--navy:#0a1628;--navy2:#122240;--navy3:#1a3158;--orange:#f05528;--orange2:#d94a20;--orange-light:rgba(240,85,40,.08);--green:#1a8a4a;--green-light:#e6f9ed;--bg:#f8f7f4;--white:#ffffff;--text1:#111318;--text2:#3d3f44;--text3:#6b6e76;--text4:#9ca0a8;--border:#e5e4e0;--border2:#d4d3cf;--radius:12px;--radius-sm:8px;--radius-lg:16px;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shadow-md:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 12px 40px rgba(0,0,0,.1);--font-display:'Fraunces',serif;--font-body:'DM Sans',system-ui,sans-serif;--max-w:1140px}
+:root{--navy:#0a1628;--orange:#f05528;--orange2:#d94a20;--orange-light:rgba(240,85,40,.08);--green:#1a8a4a;--green-light:#e6f9ed;--bg:#f8f7f4;--white:#ffffff;--text1:#111318;--text2:#3d3f44;--text3:#6b6e76;--text4:#9ca0a8;--border:#e5e4e0;--border2:#d4d3cf;--radius:12px;--radius-sm:8px;--radius-lg:16px;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--shadow-md:0 4px 12px rgba(0,0,0,.08);--shadow-lg:0 12px 40px rgba(0,0,0,.1);--font-display:'Fraunces',serif;--font-body:'DM Sans',system-ui,sans-serif;--max-w:1140px}
 *{margin:0;padding:0;box-sizing:border-box}body{font-family:var(--font-body);background:var(--bg);color:var(--text1);-webkit-font-smoothing:antialiased}a{text-decoration:none;color:inherit}
-
-/* NAV */
 .nav{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}.nav-inner{max-width:var(--max-w);margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}.logo{font-family:var(--font-body);font-size:20px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}.logo svg{flex-shrink:0}.logo-select,.logo-pros{color:var(--navy)}.logo-service{color:var(--orange)}.nav-links{display:flex;align-items:center;gap:8px}.nav-link{font-size:14px;font-weight:500;color:var(--text2);padding:8px 14px;border-radius:var(--radius-sm);transition:background .15s}.nav-link:hover{background:var(--orange-light)}.nav-cta{font-size:14px;font-weight:700;color:var(--white);background:var(--orange);padding:8px 18px;border-radius:var(--radius-sm);transition:all .2s}.nav-cta:hover{background:var(--orange2)}
-
-/* HERO */
 .hero{background:var(--white);padding:56px 24px 48px;text-align:center;border-bottom:1px solid var(--border)}.hero-inner{max-width:680px;margin:0 auto}.hero-tag{display:inline-flex;align-items:center;gap:6px;background:var(--orange-light);border:1px solid rgba(240,85,40,.2);color:var(--orange);font-size:12px;font-weight:700;padding:5px 14px;border-radius:100px;letter-spacing:.4px;margin-bottom:18px;text-transform:uppercase}.hero h1{font-family:var(--font-display);font-size:42px;font-weight:800;line-height:1.15;color:var(--text1);margin-bottom:14px;letter-spacing:-.5px}.hero h1 em{font-style:normal;color:var(--orange)}.hero-sub{font-size:17px;color:var(--text3);line-height:1.6}
 
 /* STEPPER */
-.stepper{max-width:500px;margin:0 auto;padding:32px 24px 0;display:flex;align-items:center;justify-content:center;gap:0}
-.step-item{display:flex;align-items:center;gap:8px}
-.step-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid var(--border);color:var(--text4);background:var(--white);transition:all .3s}
-.step-item.active .step-num{background:var(--orange);border-color:var(--orange);color:var(--white)}
-.step-item.done .step-num{background:var(--green);border-color:var(--green);color:var(--white)}
-.step-label{font-size:13px;font-weight:600;color:var(--text4);transition:color .3s}
-.step-item.active .step-label{color:var(--text1)}
-.step-item.done .step-label{color:var(--green)}
-.step-line{width:40px;height:2px;background:var(--border);margin:0 12px;transition:background .3s}
-.step-line.done{background:var(--green)}
+.stepper{max-width:420px;margin:0 auto;padding:32px 24px 0;display:flex;align-items:center;justify-content:center;gap:0}
+.si{display:flex;align-items:center;gap:8px}
+.sn{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid var(--border);color:var(--text4);background:var(--white);transition:all .3s}
+.si.active .sn{background:var(--orange);border-color:var(--orange);color:var(--white)}
+.si.done .sn{background:var(--green);border-color:var(--green);color:var(--white)}
+.sl{font-size:13px;font-weight:600;color:var(--text4);transition:color .3s}.si.active .sl{color:var(--text1)}.si.done .sl{color:var(--green)}
+.sline{width:48px;height:2px;background:var(--border);margin:0 12px;transition:background .3s}.sline.done{background:var(--green)}
 
-/* FORM SECTION */
+/* FORM */
 .form-section{padding:40px 24px 56px;max-width:600px;margin:0 auto}
 .form-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;box-shadow:var(--shadow-lg)}
 .form-title{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--text1);margin-bottom:6px}
 .form-sub{font-size:14px;color:var(--text3);margin-bottom:24px}
-
-/* FIELDS */
-.fg{margin-bottom:18px}
-.fl{font-size:13px;font-weight:600;color:var(--text1);margin-bottom:6px;display:block}.fl .req{color:var(--orange)}
+.fg{margin-bottom:18px}.fl{font-size:13px;font-weight:600;color:var(--text1);margin-bottom:6px;display:block}.fl .req{color:var(--orange)}
 .fi{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;font-family:var(--font-body);font-size:14px;color:var(--text1);outline:none;transition:border-color .2s;background:var(--white)}.fi:focus{border-color:var(--orange)}.fi::placeholder{color:var(--text4)}
-.fi-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:500px){.fi-row{grid-template-columns:1fr}}
-
-/* SERVICE SEARCH */
-.svc-search-wrap{position:relative}
-.svc-search-input{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px 11px 38px;font-family:var(--font-body);font-size:14px;color:var(--text1);outline:none;transition:border-color .2s;background:var(--white)}
-.svc-search-input:focus{border-color:var(--orange)}
-.svc-search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text4);pointer-events:none}
-.svc-dd{display:none;position:absolute;top:100%;left:0;right:0;background:var(--white);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);box-shadow:var(--shadow-md);z-index:50;max-height:240px;overflow-y:auto}
-.svc-dd.visible{display:block}
-.svc-dd-item{padding:10px 14px;font-size:14px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .1s}
-.svc-dd-item:hover{background:var(--orange-light)}
-.svc-dd-cat{font-size:11px;color:var(--text4);padding:2px 8px;background:var(--bg);border-radius:100px;margin-left:auto}
-
-/* SELECTED SERVICES */
-.svc-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.svc-tag{display:inline-flex;align-items:center;gap:6px;background:var(--orange-light);border:1px solid rgba(240,85,40,.2);color:var(--orange);font-size:13px;font-weight:600;padding:6px 12px;border-radius:100px}
-.svc-tag-x{cursor:pointer;font-size:16px;line-height:1;opacity:.7;transition:opacity .15s}
-.svc-tag-x:hover{opacity:1}
-
-/* PILLS (for service category quick-pick) */
+.fi-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:500px){.fi-row{grid-template-columns:1fr}}
 .cat-pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-.cpill{background:var(--bg);border:1px solid var(--border);border-radius:100px;padding:8px 16px;font-family:var(--font-body);font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s}
-.cpill:hover{border-color:var(--orange);background:var(--orange-light)}
-.cpill.sel{border-color:var(--orange);background:var(--orange-light);color:var(--orange);font-weight:600}
-
-/* SUBMIT */
-.btn-submit{width:100%;background:var(--orange);color:var(--white);border:none;font-family:var(--font-body);font-size:16px;font-weight:700;padding:14px;border-radius:var(--radius-sm);cursor:pointer;transition:background .2s;margin-top:8px}.btn-submit:hover{background:var(--orange2)}.btn-submit:disabled{opacity:.5;cursor:default}
+.cpill{background:var(--bg);border:1px solid var(--border);border-radius:100px;padding:8px 16px;font-family:var(--font-body);font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s}.cpill:hover{border-color:var(--orange);background:var(--orange-light)}.cpill.sel{border-color:var(--orange);background:var(--orange-light);color:var(--orange);font-weight:600}
+.svc-wrap{position:relative}.svc-si{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px 11px 38px;font-family:var(--font-body);font-size:14px;color:var(--text1);outline:none;transition:border-color .2s;background:var(--white)}.svc-si:focus{border-color:var(--orange)}.svc-si-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text4);pointer-events:none}
+.svc-dd{display:none;position:absolute;top:100%;left:0;right:0;background:var(--white);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);box-shadow:var(--shadow-md);z-index:50;max-height:240px;overflow-y:auto}.svc-dd.visible{display:block}
+.svc-dd-item{padding:10px 14px;font-size:14px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .1s}.svc-dd-item:hover{background:var(--orange-light)}.svc-dd-cat{font-size:11px;color:var(--text4);padding:2px 8px;background:var(--bg);border-radius:100px;margin-left:auto}
+.svc-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.svc-tag{display:inline-flex;align-items:center;gap:6px;background:var(--orange-light);border:1px solid rgba(240,85,40,.2);color:var(--orange);font-size:13px;font-weight:600;padding:6px 12px;border-radius:100px}.svc-tag-x{cursor:pointer;font-size:16px;line-height:1;opacity:.7}.svc-tag-x:hover{opacity:1}
+.btn-submit{width:100%;background:var(--orange);color:var(--white);border:none;font-family:var(--font-body);font-size:16px;font-weight:700;padding:14px;border-radius:var(--radius-sm);cursor:pointer;transition:background .2s;margin-top:8px}.btn-submit:hover{background:var(--orange2)}
 .form-note{font-size:11px;color:var(--text4);text-align:center;margin-top:10px}
 
-/* ═══ STEP 2: PLANS ═══ */
-.plans-section{padding:40px 24px 56px;max-width:1060px;margin:0 auto;display:none}
-.plans-section.visible{display:block}
-.plans-label{text-align:center;font-size:13px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.6px;margin-bottom:24px}
-.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
-@media(max-width:860px){.plans-grid{grid-template-columns:1fr;max-width:460px;margin:0 auto 16px}}
-.plan{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:all .2s;position:relative}
-.plan:hover{border-color:var(--border2);box-shadow:var(--shadow-md)}
-.plan.selected{border-color:var(--orange);box-shadow:0 0 0 3px rgba(240,85,40,.1),var(--shadow-lg)}
-.plan.popular{border-color:var(--orange)}
+/* PLANS */
+.plans-section{padding:40px 24px 56px;max-width:1060px;margin:0 auto;display:none}.plans-section.visible{display:block}
+.plans-header{text-align:center;margin-bottom:32px}.plans-header h2{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text1);margin-bottom:8px}.plans-header p{font-size:15px;color:var(--text3)}
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}@media(max-width:860px){.plans-grid{grid-template-columns:1fr;max-width:460px;margin:0 auto 16px}}
+.plan{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:all .2s;position:relative}.plan:hover{border-color:var(--border2);box-shadow:var(--shadow-md)}.plan.selected{border-color:var(--orange);box-shadow:0 0 0 3px rgba(240,85,40,.1),var(--shadow-lg)}.plan.popular{border-color:var(--orange)}
 .plan-badge{background:var(--orange);color:var(--white);font-size:11px;font-weight:700;text-align:center;padding:6px 0;letter-spacing:.5px;text-transform:uppercase}
 .plan-head{padding:24px 22px 18px}
 .plan-name{font-size:13px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
 .plan-tagline{font-size:13px;color:var(--text3);margin-bottom:14px}
-.price-row{display:flex;align-items:baseline;gap:3px;margin-bottom:6px}
-.price-amt{font-size:42px;font-weight:800;color:var(--text1);letter-spacing:-1.5px}
-.price-mo{font-size:15px;color:var(--text4);font-weight:500}
+.price-row{display:flex;align-items:baseline;gap:3px;margin-bottom:6px}.price-amt{font-size:42px;font-weight:800;color:var(--text1);letter-spacing:-1.5px}.price-mo{font-size:15px;color:var(--text4);font-weight:500}
 .lead-badge{display:inline-flex;align-items:center;gap:5px;background:var(--orange-light);color:var(--orange);font-size:12px;font-weight:700;padding:4px 10px;border-radius:100px;margin-bottom:4px}
 .window-badge{font-size:12px;color:var(--text4)}
 .plan-div{height:1px;background:var(--border);margin:0 22px}
-.feats{padding:16px 22px 20px;display:flex;flex-direction:column;gap:3px}
-.fg-lbl{font-size:11px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 4px}.fg-lbl:first-child{margin-top:0}
-.feat-i{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3);padding:2px 0}
-.feat-i.yes{color:var(--text2)}
-.feat-i.no{opacity:.45}
-.feat-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--bg)}
-.feat-i.yes .feat-dot{background:var(--green-light)}
+.feats{padding:16px 22px 20px;display:flex;flex-direction:column;gap:6px}
+.feat{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);padding:2px 0}
+.feat svg{width:16px;height:16px;flex-shrink:0;color:var(--green)}
 .plan-foot{padding:0 22px 22px}
-.plan-sel-bar{display:none;background:var(--orange-light);color:var(--orange);font-size:13px;font-weight:700;text-align:center;padding:10px;border-radius:var(--radius-sm);margin-bottom:12px}
-.plan.selected .plan-sel-bar{display:block}
-.btn-plan{display:block;width:100%;text-align:center;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:700;font-family:inherit;text-decoration:none;transition:all .15s;border:1px solid var(--border);background:var(--white);color:var(--text1);cursor:pointer}
-.btn-plan:hover,.plan.selected .btn-plan{background:var(--orange);color:var(--white);border-color:var(--orange)}
+.btn-plan{display:block;width:100%;text-align:center;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:700;font-family:inherit;text-decoration:none;transition:all .15s;border:1px solid var(--border);background:var(--white);color:var(--text1);cursor:pointer}.btn-plan:hover,.plan.selected .btn-plan{background:var(--orange);color:var(--white);border-color:var(--orange)}
 .plans-note{text-align:center;font-size:12px;color:var(--text4);max-width:600px;margin:0 auto}
 
-/* ═══ HOW IT WORKS ═══ */
-.how-section{padding:64px 24px;background:var(--navy)}.how-inner{max-width:var(--max-w);margin:0 auto;text-align:center}.section-title{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text1)}.how-inner .section-title{color:var(--white);margin-bottom:12px}.how-sub{font-size:15px;color:rgba(255,255,255,.55);margin-bottom:40px}.how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-@media(max-width:700px){.how-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:480px){.how-grid{grid-template-columns:1fr}}
+/* SECTIONS */
+.how-section{padding:64px 24px;background:var(--navy)}.how-inner{max-width:var(--max-w);margin:0 auto;text-align:center}.section-title{font-family:var(--font-display);font-size:28px;font-weight:700}.how-inner .section-title{color:var(--white);margin-bottom:12px}.how-sub{font-size:15px;color:rgba(255,255,255,.55);margin-bottom:40px}.how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}@media(max-width:700px){.how-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:480px){.how-grid{grid-template-columns:1fr}}
 .how-step{text-align:center;padding:24px 16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius-lg)}.how-num{width:40px;height:40px;border-radius:50%;background:var(--orange);color:var(--white);font-family:var(--font-display);font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}.how-step h3{font-size:14px;font-weight:700;color:var(--white);margin-bottom:6px}.how-step p{font-size:13px;color:rgba(255,255,255,.55);line-height:1.5}
-
-/* TRUST */
 .trust-section{padding:64px 24px;background:var(--white);border-bottom:1px solid var(--border)}.trust-inner{max-width:var(--max-w);margin:0 auto;text-align:center}.trust-inner h2{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text1);margin-bottom:12px}.trust-sub{font-size:15px;color:var(--text3);margin-bottom:40px}.trust-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}@media(max-width:600px){.trust-grid{grid-template-columns:1fr}}
 .trust-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px 22px;text-align:left;position:relative;overflow:hidden}.trust-item::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--orange)}.trust-icon{font-size:28px;margin-bottom:12px}.trust-item h3{font-size:16px;font-weight:700;color:var(--text1);margin-bottom:8px}.trust-item p{font-size:14px;color:var(--text3);line-height:1.6}
-
-/* FAQ */
 .faq-section{padding:56px 24px;background:var(--bg)}.faq-inner{max-width:680px;margin:0 auto}.faq-inner h2{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text1);margin-bottom:32px;text-align:center}.faq-item{border-bottom:1px solid var(--border);padding:18px 0}.faq-q{font-size:15px;font-weight:600;color:var(--text1);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px}.faq-q::after{content:'+';font-size:20px;color:var(--orange);flex-shrink:0;transition:transform .2s;font-weight:400}.faq-item.open .faq-q::after{transform:rotate(45deg)}.faq-a{font-size:14px;color:var(--text3);line-height:1.7;max-height:0;overflow:hidden;transition:max-height .3s,padding .2s}.faq-item.open .faq-a{max-height:300px;padding-top:12px}
-
-/* CTA */
-.cta-banner{padding:48px 24px;max-width:var(--max-w);margin:0 auto}.cta-box{background:linear-gradient(135deg,var(--orange) 0%,var(--orange2) 100%);border-radius:var(--radius-lg);padding:48px;display:flex;justify-content:space-between;align-items:center;gap:32px;position:relative;overflow:hidden}.cta-box::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.08)}.cta-box h2{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--white);margin-bottom:10px;position:relative}.cta-box p{font-size:15px;color:rgba(255,255,255,.82);line-height:1.6;position:relative}.cta-btn-w{background:var(--white);color:var(--orange);font-family:var(--font-body);font-size:15px;font-weight:700;padding:14px 32px;border-radius:var(--radius-sm);border:none;cursor:pointer;white-space:nowrap;transition:all .2s;position:relative}.cta-btn-w:hover{background:var(--navy);color:var(--white)}
-@media(max-width:700px){.cta-box{flex-direction:column;text-align:center;padding:36px 24px}.cta-btn-w{width:100%;text-align:center}}
-
-/* FOOTER */
+.cta-banner{padding:48px 24px;max-width:var(--max-w);margin:0 auto}.cta-box{background:linear-gradient(135deg,var(--orange) 0%,var(--orange2) 100%);border-radius:var(--radius-lg);padding:48px;display:flex;justify-content:space-between;align-items:center;gap:32px;position:relative;overflow:hidden}.cta-box::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.08)}.cta-box h2{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--white);margin-bottom:10px;position:relative}.cta-box p{font-size:15px;color:rgba(255,255,255,.82);line-height:1.6;position:relative}.cta-btn-w{background:var(--white);color:var(--orange);font-family:var(--font-body);font-size:15px;font-weight:700;padding:14px 32px;border-radius:var(--radius-sm);border:none;cursor:pointer;white-space:nowrap;transition:all .2s;position:relative}.cta-btn-w:hover{background:var(--navy);color:var(--white)}@media(max-width:700px){.cta-box{flex-direction:column;text-align:center;padding:36px 24px}.cta-btn-w{width:100%;text-align:center}}
 .footer{background:var(--navy);color:rgba(255,255,255,.5);padding:28px 24px;text-align:center}.footer-inner{max-width:var(--max-w);margin:0 auto;font-size:13px}.footer-inner a{color:rgba(255,255,255,.45);transition:color .15s}.footer-inner a:hover{color:var(--orange)}
-
-@media(max-width:600px){.hero{padding:36px 16px 32px}.hero h1{font-size:28px}.hero-sub{font-size:15px}.form-section{padding:24px 16px}.form-card{padding:24px 18px}.stepper{padding:24px 16px 0}.step-label{font-size:11px}.step-line{width:24px;margin:0 6px}}
+@media(max-width:600px){.hero{padding:36px 16px 32px}.hero h1{font-size:28px}.hero-sub{font-size:15px}.stepper{padding:24px 16px 0}.sl{font-size:11px}.sline{width:24px;margin:0 6px}.form-section{padding:24px 16px 40px}.form-card{padding:24px 18px}}
 </style>
 </head>
 <body>
 
-<nav class="nav"><div class="nav-inner"><a href="/" class="logo"><svg width="28" height="33" viewBox="0 0 48 56" fill="none"><path d="M24 2C13 2 4 11 4 22c0 14 20 32 20 32s20-18 20-32C44 11 35 2 24 2z" fill="#f05528"/><circle cx="24" cy="20" r="12" fill="#fff"/><path d="M18 20l4.5 4.5 7.5-7.5" stroke="#f05528" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="logo-select">Select</span><span class="logo-service">Service</span><span class="logo-pros">Pros</span></span></a><div class="nav-links"><a href="/" class="nav-link">← Back to Home</a><a href="#" class="nav-cta" onclick="scrollToForm();return false">Get Started</a></div></div></nav>
+<nav class="nav"><div class="nav-inner"><a href="/" class="logo"><svg width="28" height="33" viewBox="0 0 48 56" fill="none"><path d="M24 2C13 2 4 11 4 22c0 14 20 32 20 32s20-18 20-32C44 11 35 2 24 2z" fill="#f05528"/><circle cx="24" cy="20" r="12" fill="#fff"/><path d="M18 20l4.5 4.5 7.5-7.5" stroke="#f05528" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span><span class="logo-select">Select</span><span class="logo-service">Service</span><span class="logo-pros">Pros</span></span></a><div class="nav-links"><a href="/" class="nav-link">← Home</a><a href="#" class="nav-cta" onclick="scrollTo('#form-section');return false">Get Started</a></div></div></nav>
 
-<section class="hero"><div class="hero-inner"><div class="hero-tag">For Licensed Contractors</div><h1>Get qualified leads. <em>Grow your business.</em></h1><p class="hero-sub">Join Houston's fastest-growing home services network. Tell us about your business, pick a plan, and start receiving leads today.</p></div></section>
+<section class="hero"><div class="hero-inner"><div class="hero-tag">For Licensed Contractors</div><h1>Get qualified leads. <em>Grow your business.</em></h1></div></section>
 
-<!-- STEPPER -->
 <div class="stepper" id="stepper">
-  <div class="step-item active" id="s1"><div class="step-num">1</div><div class="step-label">Your info</div></div>
-  <div class="step-line" id="sl1"></div>
-  <div class="step-item" id="s2"><div class="step-num">2</div><div class="step-label">Pick a plan</div></div>
-  <div class="step-line" id="sl2"></div>
-  <div class="step-item" id="s3"><div class="step-num">3</div><div class="step-label">Set up profile</div></div>
+  <div class="si active" id="si1"><div class="sn" id="sn1">1</div><div class="sl">Your info</div></div>
+  <div class="sline" id="sline1"></div>
+  <div class="si" id="si2"><div class="sn" id="sn2">2</div><div class="sl">Pick a plan</div></div>
+  <div class="sline" id="sline2"></div>
+  <div class="si" id="si3"><div class="sn" id="sn3">3</div><div class="sl">Set up profile</div></div>
 </div>
 
-<!-- STEP 1: LEAD FORM -->
+<!-- STEP 1: FORM -->
 <section class="form-section" id="form-section">
   <div class="form-card">
     <div class="form-title">Tell us about your business</div>
-    <div class="form-sub">We'll match you with homeowners in your service area. Takes 60 seconds.</div>
-
-    <!-- Service search -->
-    <div class="fg">
-      <label class="fl">What services do you offer? <span class="req">*</span></label>
-      <div class="cat-pills" id="cat-pills">
-        <button type="button" class="cpill" onclick="toggleCat(this)">HVAC</button>
-        <button type="button" class="cpill" onclick="toggleCat(this)">Plumbing</button>
-        <button type="button" class="cpill" onclick="toggleCat(this)">Electrical</button>
-        <button type="button" class="cpill" onclick="toggleCat(this)">Roofing</button>
-        <button type="button" class="cpill" onclick="toggleCat(this)">Handyman</button>
-        <button type="button" class="cpill" onclick="toggleCat(this)">Appliance Repair</button>
-        <button type="button" class="cpill" onclick="toggleCat(this)">Remodeling</button>
-        <button type="button" class="cpill" onclick="toggleCat(this)">Painting</button>
-        <button type="button" class="cpill" onclick="toggleCat(this)">Pool & Spa</button>
-        <button type="button" class="cpill" onclick="toggleCat(this)">Windows & Doors</button>
-      </div>
-      <div class="svc-search-wrap">
-        <svg class="svc-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input class="svc-search-input" id="svc-input" type="text" placeholder="Or search: AC repair, plumbing, electrical..." autocomplete="off" oninput="svcSearch(this.value)" onfocus="svcSearch(this.value)"/>
-        <div class="svc-dd" id="svc-dd"></div>
-      </div>
+    <div class="form-sub">We'll match you with homeowners in your area. Takes 60 seconds.</div>
+    <div class="fg"><label class="fl">What services do you offer? <span class="req">*</span></label>
+      <div class="cat-pills" id="cat-pills"></div>
+      <div class="svc-wrap"><svg class="svc-si-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input class="svc-si" id="svc-input" type="text" placeholder="Or search: AC repair, drain cleaning..." autocomplete="off" oninput="svcSearch(this.value)" onfocus="svcSearch(this.value)"/><div class="svc-dd" id="svc-dd"></div></div>
       <div class="svc-tags" id="svc-tags"></div>
     </div>
-
-    <!-- ZIP -->
-    <div class="fg">
-      <label class="fl">ZIP code <span class="req">*</span></label>
-      <input class="fi" type="text" id="c-zip" placeholder="77001" maxlength="5"/>
-    </div>
-
-    <!-- Name -->
-    <div class="fg fi-row">
-      <div><label class="fl">First name <span class="req">*</span></label><input class="fi" type="text" id="c-fname" placeholder="First name"/></div>
-      <div><label class="fl">Last name <span class="req">*</span></label><input class="fi" type="text" id="c-lname" placeholder="Last name"/></div>
-    </div>
-
-    <!-- Business name -->
-    <div class="fg">
-      <label class="fl">Business name <span class="req">*</span></label>
-      <input class="fi" type="text" id="c-biz" placeholder="Your company or DBA name"/>
-    </div>
-
-    <!-- Phone + Email -->
-    <div class="fg fi-row">
-      <div><label class="fl">Mobile phone <span class="req">*</span></label><input class="fi" type="tel" id="c-phone" placeholder="(555) 123-4567"/></div>
-      <div><label class="fl">Email <span class="req">*</span></label><input class="fi" type="email" id="c-email" placeholder="you@company.com"/></div>
-    </div>
-
-    <button class="btn-submit" onclick="submitContractorLead()">Continue — Choose a Plan →</button>
+    <div class="fg"><label class="fl">ZIP code <span class="req">*</span></label><input class="fi" type="text" id="c-zip" placeholder="77001" maxlength="5"/></div>
+    <div class="fg fi-row"><div><label class="fl">First name <span class="req">*</span></label><input class="fi" type="text" id="c-fname" placeholder="First name"/></div><div><label class="fl">Last name <span class="req">*</span></label><input class="fi" type="text" id="c-lname" placeholder="Last name"/></div></div>
+    <div class="fg"><label class="fl">Business name <span class="req">*</span></label><input class="fi" type="text" id="c-biz" placeholder="Your company or DBA name"/></div>
+    <div class="fg fi-row"><div><label class="fl">Mobile phone <span class="req">*</span></label><input class="fi" type="tel" id="c-phone" placeholder="(555) 123-4567"/></div><div><label class="fl">Email <span class="req">*</span></label><input class="fi" type="email" id="c-email" placeholder="you@company.com"/></div></div>
+    <button class="btn-submit" onclick="submitForm()">Continue — Choose a Plan →</button>
     <p class="form-note">By continuing, you agree to receive communications from Select Service Pros.</p>
   </div>
 </section>
 
 <!-- STEP 2: PLANS (hidden until form submitted) -->
 <section class="plans-section" id="plans-section">
-  <div class="plans-label">Choose your membership plan</div>
+  <div class="plans-header"><h2>Choose your plan</h2><p>All plans include qualified homeowner leads, cancel anytime.</p></div>
   <div class="plans-grid" id="plans-grid"></div>
   <p class="plans-note">Lead fees are charged only when you accept a lead · Memberships renew monthly · Cancel anytime</p>
+</section>
+
+<!-- STEP 3: SET UP PROFILE (hidden until plan selected) -->
+<section class="form-section" id="profile-section" style="display:none">
+  <div class="form-card" style="text-align:center">
+    <div style="width:56px;height:56px;border-radius:50%;background:var(--green-light);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;margin:0 auto 16px">✓</div>
+    <div class="form-title" id="welcome-name">Welcome aboard!</div>
+    <p style="font-size:14px;color:var(--text3);line-height:1.6;margin-bottom:24px">Your membership is active. Complete your contractor profile to get verified and start receiving leads.</p>
+    <div style="background:var(--bg);border-radius:var(--radius-sm);padding:16px;margin-bottom:24px;text-align:left">
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3)">Next steps</span></div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2);padding:10px 0;border-bottom:1px solid var(--border)"><span style="color:var(--orange);font-weight:700">1.</span> Upload your contractor license</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2);padding:10px 0;border-bottom:1px solid var(--border)"><span style="color:var(--orange);font-weight:700">2.</span> Add proof of insurance</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2);padding:10px 0;border-bottom:1px solid var(--border)"><span style="color:var(--orange);font-weight:700">3.</span> Set your service area ZIP codes</div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text2);padding:10px 0"><span style="color:var(--orange);font-weight:700">4.</span> Add photos and business description</div>
+    </div>
+    <a href="https://contractors.selectservicepros.com" class="btn-submit" style="display:inline-block;text-decoration:none;text-align:center">Complete Your Profile →</a>
+    <p style="font-size:12px;color:var(--text4);margin-top:10px">Opens your contractor dashboard at contractors.selectservicepros.com</p>
+  </div>
 </section>
 
 <!-- HOW IT WORKS -->
 <section class="how-section"><div class="how-inner"><h2 class="section-title">How it works</h2><p class="how-sub">From signup to your first lead in minutes.</p><div class="how-grid"><div class="how-step"><div class="how-num">1</div><h3>Tell us about you</h3><p>Enter your trade, service area, and contact info.</p></div><div class="how-step"><div class="how-num">2</div><h3>Choose a plan</h3><p>Pick the tier that fits your business and budget.</p></div><div class="how-step"><div class="how-num">3</div><h3>Complete your profile</h3><p>Upload your license, insurance, and set your preferences.</p></div><div class="how-step"><div class="how-num">4</div><h3>Get leads</h3><p>Receive notifications when homeowners in your area need help.</p></div></div></div></section>
 
 <!-- TRUST -->
-<section class="trust-section"><div class="trust-inner"><h2>Why contractors choose us</h2><p class="trust-sub">No middlemen, no commissions, no games.</p><div class="trust-grid"><div class="trust-item"><div class="trust-icon">🎯</div><h3>Qualified leads only</h3><p>Homeowners answer detailed intake questions before you see the request — no tire kickers.</p></div><div class="trust-item"><div class="trust-icon">⚡</div><h3>First-access windows</h3><p>Elite members get a 60-minute exclusive window on every lead before it opens to lower tiers.</p></div><div class="trust-item"><div class="trust-icon">💰</div><h3>You keep 100%</h3><p>Flat per-lead fee only when you accept. No commission on what you charge the homeowner.</p></div></div></div></section>
+<section class="trust-section"><div class="trust-inner"><h2>Why contractors choose us</h2><p class="trust-sub">Better leads, fair pricing, no lock-in.</p><div class="trust-grid"><div class="trust-item"><div class="trust-icon">🎯</div><h3>Qualified leads only</h3><p>Homeowners answer detailed intake questions before you see the request — no tire kickers.</p></div><div class="trust-item"><div class="trust-icon">⚡</div><h3>First-access windows</h3><p>Higher-tier members get exclusive access windows before leads open to other contractors.</p></div><div class="trust-item"><div class="trust-icon">💰</div><h3>You keep 100%</h3><p>Flat per-lead fee only when you accept. No commission on what you charge the homeowner.</p></div></div></div></section>
 
 <!-- FAQ -->
 <section class="faq-section"><div class="faq-inner"><h2>Frequently asked questions</h2>
 <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How does the tiered lead routing work?</div><div class="faq-a">When a homeowner submits a request, Elite members get first access for 60 minutes. If no Elite member accepts, Pro members are notified for 45 minutes. Then Basic for 30 minutes.</div></div>
 <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Am I charged if I pass on a lead?</div><div class="faq-a">No. The per-lead fee is only charged when you click Accept. Pass on as many leads as you want — no charge.</div></div>
-<div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Do I need a license to join?</div><div class="faq-a">Yes. We verify all contractor licenses through the Texas Department of Licensing and Regulation (TDLR) and other state boards. Only licensed, insured contractors are accepted.</div></div>
+<div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Do I need a license to join?</div><div class="faq-a">Yes. We verify all contractor licenses through the Texas Department of Licensing and Regulation (TDLR) and other state boards.</div></div>
 <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Can I change my plan later?</div><div class="faq-a">Yes. Upgrade or downgrade at any time. Changes take effect at the start of your next billing cycle.</div></div>
 </div></section>
 
 <!-- CTA -->
-<section class="cta-banner"><div class="cta-box"><div><h2>Ready to start getting leads?</h2><p>Fill out the form above and pick a plan — you'll be receiving qualified leads in minutes.</p></div><button class="cta-btn-w" onclick="scrollToForm()">Get Started →</button></div></section>
+<section class="cta-banner"><div class="cta-box"><div><h2>Ready to start getting leads?</h2><p>Fill out the form above and pick a plan — you'll be receiving qualified leads in minutes.</p></div><button class="cta-btn-w" onclick="scrollTo('#form-section')">Get Started →</button></div></section>
 
 <footer class="footer"><div class="footer-inner"><p>© 2025 SelectServicePros.com · <a href="/">Home</a> · <a href="mailto:support@selectservicepros.com">Contact</a> · <a href="#">Terms</a> · <a href="#">Privacy</a></p></div></footer>
 
 <script>
-const GHL_CONTRACTOR="https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c";
-let selectedServices=[];
-let contractorData={};
+// ═══ CONFIG FALLBACK ═══
+if(typeof SSP_CONFIG==='undefined'){var SSP_CONFIG={plans:[
+{id:"basic",name:"Basic",monthlyPrice:49,leadPrice:35,leadWindowMinutes:30,badge:"",stripeLink:"#",features:["Lead alerts via email","Public contractor profile","Up to 3 leads matched per job","30-min lead access window"]},
+{id:"pro",name:"Pro",monthlyPrice:149,leadPrice:29,leadWindowMinutes:45,badge:"Most Popular",stripeLink:"#",features:["Lead alerts via email + SMS","Verified Pro badge","Priority listing placement","Up to 3 leads matched per job","45-min lead access window","Seen before Basic members"]},
+{id:"elite",name:"Elite",monthlyPrice:349,leadPrice:19,leadWindowMinutes:60,badge:"",stripeLink:"#",features:["Lead alerts via email + SMS","Verified Pro badge","Priority listing placement","Dedicated account support","Up to 3 leads matched per job","60-min exclusive first-access window","First access — before everyone else"]}
+],markets:[{city:"Houston",state:"TX",enabled:true}]};}
 
-// ═══ SERVICE SEARCH INDEX ═══
+const GHL="https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c";
+let selectedServices=[];
+const CATS=["HVAC","Plumbing","Electrical","Roofing","Handyman","Appliance Repair","Remodeling","Painting","Pool & Spa","Windows & Doors"];
 const SVC=[
-  // HVAC (14)
-  {n:"AC Repair",c:"HVAC"},{n:"AC Installation",c:"HVAC"},{n:"AC Tune-Up / Maintenance",c:"HVAC"},{n:"Heating / Furnace Repair",c:"HVAC"},{n:"Furnace Installation",c:"HVAC"},{n:"Heat Pump Repair",c:"HVAC"},{n:"Heat Pump Installation",c:"HVAC"},{n:"Duct Cleaning",c:"HVAC"},{n:"Duct Repair / Sealing",c:"HVAC"},{n:"Thermostat Install / Replace",c:"HVAC"},{n:"Mini Split Installation",c:"HVAC"},{n:"Indoor Air Quality",c:"HVAC"},{n:"Refrigerant Recharge",c:"HVAC"},{n:"Commercial HVAC",c:"HVAC"},
-  // Plumbing (16)
-  {n:"Leak Repair",c:"Plumbing"},{n:"Drain Cleaning",c:"Plumbing"},{n:"Water Heater Repair",c:"Plumbing"},{n:"Water Heater Installation",c:"Plumbing"},{n:"Tankless Water Heater",c:"Plumbing"},{n:"Toilet Repair / Replace",c:"Plumbing"},{n:"Faucet Repair / Replace",c:"Plumbing"},{n:"Pipe Repair / Repiping",c:"Plumbing"},{n:"Sewer Line Repair",c:"Plumbing"},{n:"Sewer Camera Inspection",c:"Plumbing"},{n:"Garbage Disposal",c:"Plumbing"},{n:"Sump Pump",c:"Plumbing"},{n:"Water Softener",c:"Plumbing"},{n:"Gas Line Repair",c:"Plumbing"},{n:"Backflow Prevention",c:"Plumbing"},{n:"Bathroom / Kitchen Plumbing",c:"Plumbing"},
-  // Electrical (14)
-  {n:"Outlet / Switch Repair",c:"Electrical"},{n:"Lighting Installation",c:"Electrical"},{n:"Recessed Lighting",c:"Electrical"},{n:"Ceiling Fan Install",c:"Electrical"},{n:"Panel Upgrade",c:"Electrical"},{n:"Circuit Breaker Repair",c:"Electrical"},{n:"Whole-Home Rewiring",c:"Electrical"},{n:"Wiring Repair",c:"Electrical"},{n:"Generator Install",c:"Electrical"},{n:"EV Charger Install",c:"Electrical"},{n:"Smoke / CO Detector Install",c:"Electrical"},{n:"Surge Protection",c:"Electrical"},{n:"Landscape / Outdoor Lighting",c:"Electrical"},{n:"Commercial Electrical",c:"Electrical"},
-  // Roofing (10)
-  {n:"Roof Leak Repair",c:"Roofing"},{n:"Roof Replacement",c:"Roofing"},{n:"Shingle Repair",c:"Roofing"},{n:"Flat Roof Repair",c:"Roofing"},{n:"Metal Roofing",c:"Roofing"},{n:"Storm Damage Repair",c:"Roofing"},{n:"Gutter Install / Repair",c:"Roofing"},{n:"Gutter Cleaning",c:"Roofing"},{n:"Roof Inspection",c:"Roofing"},{n:"Skylight Install / Repair",c:"Roofing"},
-  // Handyman (12)
-  {n:"General Repairs",c:"Handyman"},{n:"Furniture Assembly",c:"Handyman"},{n:"Drywall Repair / Patching",c:"Handyman"},{n:"TV Mounting",c:"Handyman"},{n:"Shelf / Curtain Rod Install",c:"Handyman"},{n:"Pressure Washing",c:"Handyman"},{n:"Fence / Gate Repair",c:"Handyman"},{n:"Caulking / Weatherstripping",c:"Handyman"},{n:"Door Repair / Adjustment",c:"Handyman"},{n:"Deck Repair",c:"Handyman"},{n:"Light Fixture Swap",c:"Handyman"},{n:"Tile / Grout Repair",c:"Handyman"},
-  // Appliance Repair (8)
-  {n:"Refrigerator / Freezer",c:"Appliance Repair"},{n:"Washer Repair",c:"Appliance Repair"},{n:"Dryer Repair",c:"Appliance Repair"},{n:"Dishwasher Repair",c:"Appliance Repair"},{n:"Oven / Stove / Range",c:"Appliance Repair"},{n:"Microwave Repair",c:"Appliance Repair"},{n:"Ice Maker Repair",c:"Appliance Repair"},{n:"Garbage Disposal Repair",c:"Appliance Repair"},
-  // Remodeling (10)
-  {n:"Kitchen Remodel",c:"Remodeling"},{n:"Bathroom Remodel",c:"Remodeling"},{n:"Flooring Installation",c:"Remodeling"},{n:"Tile Installation",c:"Remodeling"},{n:"Room Addition",c:"Remodeling"},{n:"Basement Finishing",c:"Remodeling"},{n:"Deck / Patio Build",c:"Remodeling"},{n:"Garage Conversion",c:"Remodeling"},{n:"Cabinet Install / Reface",c:"Remodeling"},{n:"Countertop Installation",c:"Remodeling"},
-  // Painting (8)
-  {n:"Interior Painting",c:"Painting"},{n:"Exterior Painting",c:"Painting"},{n:"Cabinet Painting",c:"Painting"},{n:"Deck / Fence Staining",c:"Painting"},{n:"Wallpaper Removal",c:"Painting"},{n:"Wallpaper Installation",c:"Painting"},{n:"Popcorn Ceiling Removal",c:"Painting"},{n:"Commercial Painting",c:"Painting"},
-  // Pool & Spa (8)
-  {n:"Pool Cleaning / Maintenance",c:"Pool & Spa"},{n:"Pool Equipment Repair",c:"Pool & Spa"},{n:"Pool Leak Detection",c:"Pool & Spa"},{n:"Pool Resurfacing",c:"Pool & Spa"},{n:"Pool Heater Repair",c:"Pool & Spa"},{n:"Spa / Hot Tub Service",c:"Pool & Spa"},{n:"Pool Light Repair",c:"Pool & Spa"},{n:"New Pool Construction",c:"Pool & Spa"},
-  // Windows & Doors (8)
-  {n:"Window Replacement",c:"Windows & Doors"},{n:"Window Repair",c:"Windows & Doors"},{n:"Door Installation",c:"Windows & Doors"},{n:"Door Repair",c:"Windows & Doors"},{n:"Sliding Door Repair",c:"Windows & Doors"},{n:"Storm Door Install",c:"Windows & Doors"},{n:"Screen Repair / Replace",c:"Windows & Doors"},{n:"Window Tinting",c:"Windows & Doors"},
+{n:"AC Repair",c:"HVAC"},{n:"AC Installation",c:"HVAC"},{n:"AC Tune-Up / Maintenance",c:"HVAC"},{n:"Heating / Furnace Repair",c:"HVAC"},{n:"Furnace Installation",c:"HVAC"},{n:"Heat Pump Repair",c:"HVAC"},{n:"Heat Pump Installation",c:"HVAC"},{n:"Duct Cleaning",c:"HVAC"},{n:"Duct Repair / Sealing",c:"HVAC"},{n:"Thermostat Install / Replace",c:"HVAC"},{n:"Mini Split Installation",c:"HVAC"},{n:"Indoor Air Quality",c:"HVAC"},{n:"Refrigerant Recharge",c:"HVAC"},{n:"Commercial HVAC",c:"HVAC"},
+{n:"Leak Repair",c:"Plumbing"},{n:"Drain Cleaning",c:"Plumbing"},{n:"Water Heater Repair",c:"Plumbing"},{n:"Water Heater Installation",c:"Plumbing"},{n:"Tankless Water Heater",c:"Plumbing"},{n:"Toilet Repair / Replace",c:"Plumbing"},{n:"Faucet Repair / Replace",c:"Plumbing"},{n:"Pipe Repair / Repiping",c:"Plumbing"},{n:"Sewer Line Repair",c:"Plumbing"},{n:"Sewer Camera Inspection",c:"Plumbing"},{n:"Garbage Disposal",c:"Plumbing"},{n:"Sump Pump",c:"Plumbing"},{n:"Water Softener",c:"Plumbing"},{n:"Gas Line Repair",c:"Plumbing"},{n:"Backflow Prevention",c:"Plumbing"},{n:"Bathroom / Kitchen Plumbing",c:"Plumbing"},
+{n:"Outlet / Switch Repair",c:"Electrical"},{n:"Lighting Installation",c:"Electrical"},{n:"Recessed Lighting",c:"Electrical"},{n:"Ceiling Fan Install",c:"Electrical"},{n:"Panel Upgrade",c:"Electrical"},{n:"Circuit Breaker Repair",c:"Electrical"},{n:"Whole-Home Rewiring",c:"Electrical"},{n:"Wiring Repair",c:"Electrical"},{n:"Generator Install",c:"Electrical"},{n:"EV Charger Install",c:"Electrical"},{n:"Smoke / CO Detector Install",c:"Electrical"},{n:"Surge Protection",c:"Electrical"},{n:"Landscape / Outdoor Lighting",c:"Electrical"},{n:"Commercial Electrical",c:"Electrical"},
+{n:"Roof Leak Repair",c:"Roofing"},{n:"Roof Replacement",c:"Roofing"},{n:"Shingle Repair",c:"Roofing"},{n:"Flat Roof Repair",c:"Roofing"},{n:"Metal Roofing",c:"Roofing"},{n:"Storm Damage Repair",c:"Roofing"},{n:"Gutter Install / Repair",c:"Roofing"},{n:"Gutter Cleaning",c:"Roofing"},{n:"Roof Inspection",c:"Roofing"},{n:"Skylight Install / Repair",c:"Roofing"},
+{n:"General Repairs",c:"Handyman"},{n:"Furniture Assembly",c:"Handyman"},{n:"Drywall Repair / Patching",c:"Handyman"},{n:"TV Mounting",c:"Handyman"},{n:"Shelf / Curtain Rod Install",c:"Handyman"},{n:"Pressure Washing",c:"Handyman"},{n:"Fence / Gate Repair",c:"Handyman"},{n:"Caulking / Weatherstripping",c:"Handyman"},{n:"Door Repair / Adjustment",c:"Handyman"},{n:"Deck Repair",c:"Handyman"},{n:"Light Fixture Swap",c:"Handyman"},{n:"Tile / Grout Repair",c:"Handyman"},
+{n:"Refrigerator / Freezer",c:"Appliance Repair"},{n:"Washer Repair",c:"Appliance Repair"},{n:"Dryer Repair",c:"Appliance Repair"},{n:"Dishwasher Repair",c:"Appliance Repair"},{n:"Oven / Stove / Range",c:"Appliance Repair"},{n:"Microwave Repair",c:"Appliance Repair"},{n:"Ice Maker Repair",c:"Appliance Repair"},{n:"Garbage Disposal Repair",c:"Appliance Repair"},
+{n:"Kitchen Remodel",c:"Remodeling"},{n:"Bathroom Remodel",c:"Remodeling"},{n:"Flooring Installation",c:"Remodeling"},{n:"Tile Installation",c:"Remodeling"},{n:"Room Addition",c:"Remodeling"},{n:"Basement Finishing",c:"Remodeling"},{n:"Deck / Patio Build",c:"Remodeling"},{n:"Garage Conversion",c:"Remodeling"},{n:"Cabinet Install / Reface",c:"Remodeling"},{n:"Countertop Installation",c:"Remodeling"},
+{n:"Interior Painting",c:"Painting"},{n:"Exterior Painting",c:"Painting"},{n:"Cabinet Painting",c:"Painting"},{n:"Deck / Fence Staining",c:"Painting"},{n:"Wallpaper Removal",c:"Painting"},{n:"Wallpaper Installation",c:"Painting"},{n:"Popcorn Ceiling Removal",c:"Painting"},{n:"Commercial Painting",c:"Painting"},
+{n:"Pool Cleaning / Maintenance",c:"Pool & Spa"},{n:"Pool Equipment Repair",c:"Pool & Spa"},{n:"Pool Leak Detection",c:"Pool & Spa"},{n:"Pool Resurfacing",c:"Pool & Spa"},{n:"Pool Heater Repair",c:"Pool & Spa"},{n:"Spa / Hot Tub Service",c:"Pool & Spa"},{n:"Pool Light Repair",c:"Pool & Spa"},{n:"New Pool Construction",c:"Pool & Spa"},
+{n:"Window Replacement",c:"Windows & Doors"},{n:"Window Repair",c:"Windows & Doors"},{n:"Door Installation",c:"Windows & Doors"},{n:"Door Repair",c:"Windows & Doors"},{n:"Sliding Door Repair",c:"Windows & Doors"},{n:"Storm Door Install",c:"Windows & Doors"},{n:"Screen Repair / Replace",c:"Windows & Doors"},{n:"Window Tinting",c:"Windows & Doors"},
 ];
 
-function svcSearch(val){
-  const dd=document.getElementById('svc-dd');
-  const q=(val||'').toLowerCase().trim();
-  if(!q){dd.classList.remove('visible');return}
-  const matches=SVC.filter(s=>s.n.toLowerCase().includes(q)||s.c.toLowerCase().includes(q));
-  if(matches.length===0){dd.classList.remove('visible');return}
-  dd.innerHTML=matches.slice(0,8).map(s=>
-    `<div class="svc-dd-item" onclick="addService('${s.n}','${s.c}')">${s.n}<span class="svc-dd-cat">${s.c}</span></div>`
-  ).join('');
-  dd.classList.add('visible');
+// ═══ INIT ═══
+function init(){
+  document.getElementById('cat-pills').innerHTML=CATS.map(c=>'<button type="button" class="cpill" onclick="toggleCat(this)">'+c+'</button>').join('');
+  const hash=window.location.hash;
+  if(hash==='#step3'){showPlansQuiet();showProfile(sessionStorage.getItem('ssp_plan')||'')}
+  else if(hash==='#step2'){showPlansQuiet()}
+}
+function showPlansQuiet(){
+  document.getElementById('si1').classList.remove('active');document.getElementById('si1').classList.add('done');document.getElementById('sn1').textContent='✓';document.getElementById('sline1').classList.add('done');document.getElementById('si2').classList.add('active');document.getElementById('form-section').style.display='none';document.getElementById('plans-section').classList.add('visible');renderPlans();
 }
 
-function addService(name,cat){
-  if(selectedServices.find(s=>s.name===name))return;
-  selectedServices.push({name,cat});
-  renderTags();
-  document.getElementById('svc-input').value='';
-  document.getElementById('svc-dd').classList.remove('visible');
-  // Also highlight matching category pill
-  document.querySelectorAll('#cat-pills .cpill').forEach(p=>{
-    if(p.textContent===cat&&!p.classList.contains('sel'))p.classList.add('sel');
-  });
-}
+// ═══ SERVICE SEARCH ═══
+function svcSearch(v){const dd=document.getElementById('svc-dd');const q=(v||'').toLowerCase().trim();if(!q){dd.classList.remove('visible');return}const m=SVC.filter(s=>s.n.toLowerCase().includes(q)||s.c.toLowerCase().includes(q));if(!m.length){dd.classList.remove('visible');return}dd.innerHTML=m.slice(0,8).map(s=>'<div class="svc-dd-item" onclick="addSvc(\''+esc(s.n)+'\',\''+esc(s.c)+'\')">'+s.n+'<span class="svc-dd-cat">'+s.c+'</span></div>').join('');dd.classList.add('visible')}
+function esc(s){return s.replace(/'/g,"\\'")}
+function addSvc(n,c){if(selectedServices.find(s=>s.name===n))return;selectedServices.push({name:n,cat:c});renderTags();document.getElementById('svc-input').value='';document.getElementById('svc-dd').classList.remove('visible');document.querySelectorAll('#cat-pills .cpill').forEach(p=>{if(p.textContent===c&&!p.classList.contains('sel'))p.classList.add('sel')})}
+function rmSvc(n){selectedServices=selectedServices.filter(s=>s.name!==n);renderTags()}
+function renderTags(){document.getElementById('svc-tags').innerHTML=selectedServices.map(s=>'<span class="svc-tag">'+s.name+'<span class="svc-tag-x" onclick="rmSvc(\''+esc(s.name)+'\')">×</span></span>').join('')}
+function toggleCat(el){el.classList.toggle('sel');const c=el.textContent;if(el.classList.contains('sel')){SVC.filter(s=>s.c===c).forEach(s=>{if(!selectedServices.find(x=>x.name===s.n))selectedServices.push({name:s.n,cat:s.c})})}else{selectedServices=selectedServices.filter(s=>s.cat!==c)}renderTags()}
+document.addEventListener('click',e=>{const w=document.querySelector('.svc-wrap');if(w&&!w.contains(e.target))document.getElementById('svc-dd').classList.remove('visible')});
+function scrollTo(sel){document.querySelector(sel).scrollIntoView({behavior:'smooth',block:'start'})}
 
-function removeService(name){
-  selectedServices=selectedServices.filter(s=>s.name!==name);
-  renderTags();
-}
-
-function renderTags(){
-  document.getElementById('svc-tags').innerHTML=selectedServices.map(s=>
-    `<span class="svc-tag">${s.name}<span class="svc-tag-x" onclick="removeService('${s.name}')">×</span></span>`
-  ).join('');
-}
-
-function toggleCat(el){
-  el.classList.toggle('sel');
-  const cat=el.textContent;
-  if(el.classList.contains('sel')){
-    // Add all services from this category
-    SVC.filter(s=>s.c===cat).forEach(s=>{
-      if(!selectedServices.find(x=>x.name===s.n))selectedServices.push({name:s.n,cat:s.c});
-    });
-  }else{
-    // Remove all services from this category
-    selectedServices=selectedServices.filter(s=>s.cat!==cat);
-  }
-  renderTags();
-}
-
-// Close dropdown on outside click
-document.addEventListener('click',e=>{
-  const wrap=document.querySelector('.svc-search-wrap');
-  if(wrap&&!wrap.contains(e.target))document.getElementById('svc-dd').classList.remove('visible');
-});
-
-function scrollToForm(){document.getElementById('form-section').scrollIntoView({behavior:'smooth',block:'start'})}
-
-// ═══ SUBMIT LEAD → GHL ═══
-function submitContractorLead(){
-  const fname=document.getElementById('c-fname').value.trim();
-  const lname=document.getElementById('c-lname').value.trim();
+// ═══ SUBMIT FORM → GHL → SHOW PLANS ═══
+function submitForm(){
+  const fn=document.getElementById('c-fname').value.trim();
+  const ln=document.getElementById('c-lname').value.trim();
   const biz=document.getElementById('c-biz').value.trim();
-  const phone=document.getElementById('c-phone').value.trim();
-  const email=document.getElementById('c-email').value.trim();
+  const ph=document.getElementById('c-phone').value.trim();
+  const em=document.getElementById('c-email').value.trim();
   const zip=document.getElementById('c-zip').value.trim();
-
-  if(!fname||!lname||!phone||!email||!zip){alert('Please fill in all required fields.');return}
-  if(selectedServices.length===0){alert('Please select at least one service you offer.');return}
-
-  const services=selectedServices.map(s=>s.name).join(', ');
-  const categories=[...new Set(selectedServices.map(s=>s.cat))].join(', ');
-
-  contractorData={fname,lname,biz,phone,email,zip,services,categories};
-
+  if(!fn||!ln||!ph||!em||!zip){alert('Please fill in all required fields.');return}
+  if(!selectedServices.length){alert('Please select at least one service you offer.');return}
+  const svcs=selectedServices.map(s=>s.name).join(', ');
+  const cats=[...new Set(selectedServices.map(s=>s.cat))].join(', ');
   // Send to GHL
-  fetch(GHL_CONTRACTOR,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-    name:fname+' '+lname,
-    firstName:fname,
-    lastName:lname,
-    phone,email,zip,
-    companyName:biz,
-    source:'SelectServicePros.com — Contractor Signup',
-    type:'contractor',
-    contractor_services:services,
-    contractor_service_categories:categories,
-    lead_id:'SSP-PRO-'+Date.now()
-  })}).catch(e=>console.error(e));
+  fetch(GHL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:fn+' '+ln,firstName:fn,lastName:ln,phone:ph,email:em,zip:zip,companyName:biz,source:'SelectServicePros.com — Contractor Signup',type:'contractor',contractor_services:svcs,contractor_service_categories:cats,lead_id:'SSP-PRO-'+Date.now()})}).catch(e=>console.error(e));
+  // Save to sessionStorage so refresh preserves state
+  sessionStorage.setItem('ssp_contractor',JSON.stringify({fn,ln,biz,ph,em,zip,svcs,cats}));
+  showPlans();
+}
 
-  // Advance to step 2
-  document.getElementById('s1').classList.remove('active');
-  document.getElementById('s1').classList.add('done');
-  document.querySelector('#s1 .step-num').textContent='✓';
-  document.getElementById('sl1').classList.add('done');
-  document.getElementById('s2').classList.add('active');
+function showPlans(){
+  // Update stepper
+  document.getElementById('si1').classList.remove('active');
+  document.getElementById('si1').classList.add('done');
+  document.getElementById('sn1').textContent='✓';
+  document.getElementById('sline1').classList.add('done');
+  document.getElementById('si2').classList.add('active');
+  // Hide form, show plans
   document.getElementById('form-section').style.display='none';
   document.getElementById('plans-section').classList.add('visible');
   renderPlans();
+  // Update URL hash
+  history.replaceState(null,null,'#step2');
   window.scrollTo({top:document.getElementById('stepper').offsetTop-80,behavior:'smooth'});
 }
 
-// ═══ PLANS (from ssp-config.js) ═══
-const PLAN_FEATURES={
-  basic:{tagline:'Get started and test the platform',leads:[{y:true,t:'30-min access window'},{y:true,t:'Up to 3 leads per job'},{y:false,t:'Priority access'}],notif:[{y:true,t:'Email lead alerts'},{y:false,t:'SMS lead alerts'}],prof:[{y:true,t:'Public profile'},{y:false,t:'Verified badge'},{y:false,t:'Priority placement'},{y:false,t:'Dedicated support'}]},
-  pro:{tagline:'Best value for growing contractors',leads:[{y:true,t:'45-min access window'},{y:true,t:'Up to 3 leads per job'},{y:true,t:'Seen before Basic'}],notif:[{y:true,t:'Email lead alerts'},{y:true,t:'SMS lead alerts'}],prof:[{y:true,t:'Public profile'},{y:true,t:'Verified badge'},{y:true,t:'Priority placement'},{y:false,t:'Dedicated support'}]},
-  elite:{tagline:'For contractors who want every lead first',leads:[{y:true,t:'60-min exclusive window'},{y:true,t:'Up to 3 leads per job'},{y:true,t:'First access — always'}],notif:[{y:true,t:'Email lead alerts'},{y:true,t:'SMS lead alerts'}],prof:[{y:true,t:'Public profile'},{y:true,t:'Verified badge'},{y:true,t:'Priority placement'},{y:true,t:'Dedicated support'}]}
-};
-
-let selectedPlan='pro';
-function ck(){return '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#1a8a4a" stroke-width="2" stroke-linecap="round"><path d="M1.5 5l2.5 2.5 4.5-4.5"/></svg>'}
-function xk(){return '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#9ca0a8" stroke-width="2" stroke-linecap="round"><path d="M2 2l6 6M8 2l-6 6"/></svg>'}
-function rfg(label,items){return '<div class="fg-lbl">'+label+'</div>'+items.map(f=>'<div class="feat-i '+(f.y?'yes':'no')+'"><div class="feat-dot">'+(f.y?ck():xk())+'</div><div>'+f.t+'</div></div>').join('')}
-
-function selPlan(id){selectedPlan=id;document.querySelectorAll('.plan').forEach(el=>el.classList.remove('selected'));const c=document.getElementById('pl-'+id);if(c)c.classList.add('selected')}
-
+// ═══ RENDER PLANS ═══
 function renderPlans(){
-  if(typeof SSP_CONFIG==='undefined'||!SSP_CONFIG.plans){
-    document.getElementById('plans-grid').innerHTML='<p style="text-align:center;color:var(--text3);grid-column:1/-1">Plans loading... If this persists, please refresh the page.</p>';
-    return;
-  }
   const grid=document.getElementById('plans-grid');
-  grid.innerHTML=SSP_CONFIG.plans.map(plan=>{
-    const f=PLAN_FEATURES[plan.id]||{};
-    return '<div class="plan '+(plan.badge?'popular ':'')+( plan.id===selectedPlan?'selected':'')+'" id="pl-'+plan.id+'" onclick="selPlan(\''+plan.id+'\')">'
-      +(plan.badge?'<div class="plan-badge">'+plan.badge+'</div>':'')
-      +'<div class="plan-head"><div class="plan-name">'+plan.name+'</div><div class="plan-tagline">'+(f.tagline||'')+'</div><div class="price-row"><div class="price-amt">$'+plan.monthlyPrice+'</div><div class="price-mo">/month</div></div><div class="lead-badge">+ $'+plan.leadPrice+' per accepted lead</div><div class="window-badge">⏱ '+plan.leadWindowMinutes+'-min lead access window</div></div>'
-      +'<div class="plan-div"></div>'
-      +'<div class="feats">'+rfg('Leads',f.leads||[])+rfg('Notifications',f.notif||[])+rfg('Profile & support',f.prof||[])+'</div>'
-      +'<div class="plan-foot"><div class="plan-sel-bar">✓ Selected — '+plan.name+' Plan</div><a href="'+plan.stripeLink+'" class="btn-plan" target="_blank" onclick="event.stopPropagation();advanceToStep3()">Get Started — '+plan.name+'</a></div></div>';
+  const ck='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  grid.innerHTML=SSP_CONFIG.plans.map(p=>{
+    const isPop=!!p.badge;
+    return '<div class="plan'+(isPop?' popular selected':'')+'" onclick="selPlan(\''+p.id+'\')" id="pl-'+p.id+'">'
+      +(isPop?'<div class="plan-badge">'+p.badge+'</div>':'')
+      +'<div class="plan-head">'
+      +'<div class="plan-name">'+p.name+'</div>'
+      +'<div class="plan-tagline">'+(p.id==='basic'?'Get started and test the platform':p.id==='pro'?'Best value for growing contractors':'For contractors who want every lead first')+'</div>'
+      +'<div class="price-row"><div class="price-amt">$'+p.monthlyPrice+'</div><div class="price-mo">/month</div></div>'
+      +'<div class="lead-badge">+ $'+p.leadPrice+' avg per accepted lead</div>'
+      +'<div class="window-badge">⏱ '+p.leadWindowMinutes+'-min lead access window</div>'
+      +'</div><div class="plan-div"></div><div class="feats">'
+      +p.features.map(f=>'<div class="feat">'+ck+'<span>'+f+'</span></div>').join('')
+      +'</div><div class="plan-foot">'
+      +'<a href="'+p.stripeLink+'" class="btn-plan" target="_blank" onclick="event.stopPropagation();advanceToProfile(\''+p.name+'\')">Get Started — '+p.name+'</a>'
+      +'</div></div>';
   }).join('');
 }
+function selPlan(id){document.querySelectorAll('.plan').forEach(el=>el.classList.remove('selected'));const c=document.getElementById('pl-'+id);if(c)c.classList.add('selected')}
 
-function advanceToStep3(){
-  setTimeout(()=>{
-    document.getElementById('s2').classList.remove('active');
-    document.getElementById('s2').classList.add('done');
-    document.querySelector('#s2 .step-num').textContent='✓';
-    document.getElementById('sl2').classList.add('done');
-    document.getElementById('s3').classList.add('active');
-  },500);
+function advanceToProfile(planName){
+  // Save selected plan
+  sessionStorage.setItem('ssp_plan',planName);
+  // Short delay so Stripe link opens first
+  setTimeout(()=>{showProfile(planName)},600);
 }
 
-function toggleFaq(el){const item=el.closest('.faq-item');const isOpen=item.classList.contains('open');document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));if(!isOpen)item.classList.add('open')}
+function showProfile(planName){
+  document.getElementById('si2').classList.remove('active');
+  document.getElementById('si2').classList.add('done');
+  document.getElementById('sn2').textContent='✓';
+  document.getElementById('sline2').classList.add('done');
+  document.getElementById('si3').classList.add('active');
+  document.getElementById('plans-section').style.display='none';
+  document.getElementById('profile-section').style.display='block';
+  // Set welcome name
+  const saved=sessionStorage.getItem('ssp_contractor');
+  if(saved){const d=JSON.parse(saved);document.getElementById('welcome-name').textContent='Welcome aboard, '+d.fn+'!'}
+  history.replaceState(null,null,'#step3');
+  window.scrollTo({top:document.getElementById('stepper').offsetTop-80,behavior:'smooth'});
+}
+
+function toggleFaq(el){const item=el.closest('.faq-item');const o=item.classList.contains('open');document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));if(!o)item.classList.add('open')}
+
+// ═══ ON LOAD — check hash + sessionStorage ═══
+init();
 </script>
 </body>
 </html>
