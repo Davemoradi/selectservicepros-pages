@@ -184,6 +184,11 @@ a{text-decoration:none;color:inherit}
 .footer a:hover{color:var(--white)}
 
 @keyframes popIn{0%{transform:scale(0);opacity:0}50%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
+.license-checking{color:var(--text3)}
+.license-valid{color:#1a8a4a;font-weight:600}
+.license-invalid{color:#e53e3e}
+.license-spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -275,12 +280,31 @@ a{text-decoration:none;color:inherit}
       <div><label class="fl">Years in business <span class="req">*</span></label>
         <select class="fi" id="p-years" style="appearance:auto"><option value="">Select...</option><option value="Less than 1">Less than 1 year</option><option value="1-3">1–3 years</option><option value="3-5">3–5 years</option><option value="5-10">5–10 years</option><option value="10-20">10–20 years</option><option value="20+">20+ years</option></select>
       </div>
-      <div><label class="fl">License number</label><input class="fi" type="text" id="p-license" placeholder="e.g. TACLA12345C"/></div>
+      <div><label class="fl">Number of employees</label>
+        <select class="fi" id="p-employees" style="appearance:auto"><option value="">Select...</option><option value="Just me">Just me</option><option value="2-5">2–5</option><option value="6-10">6–10</option><option value="11-25">11–25</option><option value="25+">25+</option></select>
+      </div>
+    </div>
+
+    <div class="fg fi-row">
+      <div><label class="fl">License number</label><input class="fi" type="text" id="p-license" placeholder="e.g. TACLA12345C" onblur="verifyLicense()"/><div id="license-status" style="font-size:12px;margin-top:4px;display:none"></div></div>
+      <div><label class="fl">License type</label>
+        <select class="fi" id="p-license-type" style="appearance:auto" onchange="verifyLicense()"><option value="">Select...</option><option value="TDLR">HVAC / Electrical (TDLR)</option><option value="TSBPE">Plumbing (TSBPE)</option><option value="State Contractor">Other State License</option><option value="City/County">City / County License</option><option value="Other">Other</option></select>
+      </div>
     </div>
 
     <div class="fg"><label class="fl">Service area ZIP codes</label><input class="fi" type="text" id="p-zips" placeholder="Add more ZIPs separated by commas (e.g. 77001, 77002, 77003)"/><p style="font-size:12px;color:var(--text3);margin-top:4px">We already have your primary ZIP. Add additional ZIPs where you serve customers.</p></div>
 
     <div class="fg"><label class="fl">Website URL</label><input class="fi" type="url" id="p-website" placeholder="https://www.yourbusiness.com"/></div>
+
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;margin:20px 0">
+      <p style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:6px">📋 After you create your account, you'll be able to:</p>
+      <ul style="font-size:13px;color:var(--text2);line-height:1.8;padding-left:18px;margin:0">
+        <li>Upload your contractor license document (PDF or image)</li>
+        <li>Upload proof of insurance</li>
+        <li>Add your business logo and profile photo</li>
+        <li>Add photos of your work</li>
+      </ul>
+    </div>
 
     <button type="button" class="btn-submit" id="profile-submit-btn" onclick="submitProfile()">Complete Profile & Create Account →</button>
     <p class="form-note">This creates your contractor portal account. You'll receive login credentials via email.</p>
@@ -416,6 +440,8 @@ function submitForm(){
     type:'contractor',
     contractor_services:svcs,
     contractor_service_categories:cats,
+    contractor_service_zips:zip,
+    contractor_status:'New',
     lead_id:'SSP-PRO-'+Date.now()
   })}).catch(function(e){console.error(e)});
 
@@ -580,6 +606,7 @@ function handleCheckoutComplete(){
       contractor_services:d.svcs,
       contractor_service_categories:d.cats,
       contractor_membership_tier:planName,
+      contractor_status:'Paid',
       lead_id:'SSP-PAID-'+Date.now()
     })}).catch(function(e){console.error(e)});
   }
@@ -628,11 +655,86 @@ function showProfile(planName){
   window.scrollTo({top:document.getElementById('stepper').offsetTop-80,behavior:'smooth'});
 }
 
+// ═══ TDLR LICENSE VERIFICATION ═══
+var licenseVerified=false;
+var licenseData=null;
+
+async function verifyLicense(){
+  var license=document.getElementById('p-license').value.trim();
+  var licenseType=document.getElementById('p-license-type').value;
+  var statusEl=document.getElementById('license-status');
+
+  // Only verify for TDLR and TSBPE
+  if(!license||!licenseType||(licenseType!=='TDLR'&&licenseType!=='TSBPE')){
+    statusEl.style.display='none';
+    licenseVerified=false;
+    licenseData=null;
+    return;
+  }
+
+  // Show checking state
+  statusEl.style.display='block';
+  statusEl.className='license-checking';
+  statusEl.innerHTML='<span class="license-spinner"></span> Verifying license with '+(licenseType==='TSBPE'?'Texas State Board of Plumbing Examiners':'Texas Department of Licensing & Regulation')+'...';
+
+  try{
+    var resp=await fetch('/api/verify-license',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        licenseNumber:license,
+        licenseType:licenseType,
+        trade:''
+      })
+    });
+
+    var data=await resp.json();
+
+    if(data.verified){
+      licenseVerified=true;
+      licenseData=data;
+      var name=data.name||data.licensee||'';
+      var expDate=data.expiration_date||data.expirationDate||data.expiry||'';
+      var licStatus=data.status||data.license_status||'';
+      var isExpired=false;
+
+      // Check if license is expired
+      if(expDate){
+        var exp=new Date(expDate);
+        if(exp<new Date()){isExpired=true}
+      }
+      if(licStatus&&licStatus.toLowerCase().indexOf('expir')!==-1){isExpired=true}
+
+      if(isExpired){
+        statusEl.className='license-invalid';
+        statusEl.innerHTML='\u26a0 License found but <strong>EXPIRED</strong>'+(name?' — '+name:'')+(expDate?' (Expired: '+new Date(expDate).toLocaleDateString()+')':'')+'. Please upload a current license after creating your account.';
+        licenseData.expired=true;
+      }else{
+        statusEl.className='license-valid';
+        statusEl.innerHTML='\u2713 License verified'+(name?' — '+name:'')+(licStatus?' ('+licStatus+')':'')+(expDate?' · Expires: '+new Date(expDate).toLocaleDateString():'');
+        licenseData.expired=false;
+      }
+    }else{
+      licenseVerified=false;
+      licenseData=null;
+      statusEl.className='license-invalid';
+      statusEl.innerHTML='\u2717 License not found in '+licenseType+' database. Double-check the number or select a different license type. You can still continue — we\'ll verify manually.';
+    }
+  }catch(err){
+    console.error('License verify error:',err);
+    statusEl.className='license-invalid';
+    statusEl.innerHTML='Could not verify at this time. You can still continue — we\'ll verify manually.';
+    licenseVerified=false;
+  }
+}
+
 // ═══ SUBMIT PROFILE → BD + GHL ═══
 async function submitProfile(){
   var desc=document.getElementById('p-desc').value.trim();
   var years=document.getElementById('p-years').value;
+  var employees=document.getElementById('p-employees').value;
   var license=document.getElementById('p-license').value.trim();
+  var licenseType=document.getElementById('p-license-type').value;
   var zips=document.getElementById('p-zips').value.trim();
   var website=document.getElementById('p-website').value.trim();
 
@@ -650,13 +752,25 @@ async function submitProfile(){
   btn.disabled=true;
   btn.style.opacity='0.6';
 
-  // 1. Send profile data to GHL (update contact)
+  // 1. Send profile data to GHL (update contact) — field names match GHL custom fields
   fetch(GHL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({
     name:fn+' '+ln,firstName:fn,lastName:ln,phone:ph,email:em,zip:zip,
     companyName:biz,source:'SelectServicePros.com — Profile Complete',type:'contractor',
-    contractor_services:svcs,contractor_service_categories:cats,contractor_membership_tier:planName,
-    business_description:desc,years_in_business:years,license_number:license,
-    service_zips:zips,website_url:website,
+    contractor_services:svcs,
+    contractor_service_categories:cats,
+    contractor_membership_tier:planName,
+    contractor_service_zips:zips,
+    contractor_status:(licenseData&&licenseData.expired)?'License Expired':licenseVerified?'Verified':'Pending Verification',
+    business_description:desc,
+    years_in_business:years,
+    number_of_employees:employees,
+    license_number:license,
+    license_type:licenseType,
+    license_verified:licenseVerified?'Yes':'No',
+    license_holder_name:(licenseData&&licenseData.name)?licenseData.name:'',
+    license_expiration_date:(licenseData&&(licenseData.expiration_date||licenseData.expirationDate||licenseData.expiry))?licenseData.expiration_date||licenseData.expirationDate||licenseData.expiry:'',
+    license_expired:(licenseData&&licenseData.expired)?'Yes':'No',
+    website_url:website,
     lead_id:'SSP-PROFILE-'+Date.now()
   })}).catch(function(e){console.error('GHL error:',e)});
 
@@ -741,6 +855,7 @@ function init(){
         contractor_services:d.svcs,
         contractor_service_categories:d.cats,
         contractor_membership_tier:planName,
+        contractor_status:'Paid',
         lead_id:'SSP-PAID-'+Date.now()
       })}).catch(function(e){console.error(e)});
     }
