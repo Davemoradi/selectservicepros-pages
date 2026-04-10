@@ -1,5 +1,5 @@
 // SSP Configuration — Tiered Membership + Per-Lead
-// Last updated: 2026-04-07
+// Last updated: 2026-04-10
 const SSP_CONFIG = {
   plans: [
     {
@@ -9,7 +9,6 @@ const SSP_CONFIG = {
       leadPrice: 35,
       leadWindowMinutes: 30,
       badge: "",
-      stripeLink: "https://buy.stripe.com/6oU5kE5KV3yyd3kd4t0Fi06",
       features: ["Lead alerts via email","Public contractor profile","Up to 3 leads matched per job","30-min lead access window"]
     },
     {
@@ -19,7 +18,6 @@ const SSP_CONFIG = {
       leadPrice: 29,
       leadWindowMinutes: 45,
       badge: "Most Popular",
-      stripeLink: "https://buy.stripe.com/4gM4gA8X7b105AS5C10Fi04",
       features: ["Lead alerts via email + SMS","Verified Pro badge","Priority listing placement","Up to 3 leads matched per job","45-min lead access window","Seen before Basic members"]
     },
     {
@@ -29,10 +27,12 @@ const SSP_CONFIG = {
       leadPrice: 19,
       leadWindowMinutes: 60,
       badge: "",
-      stripeLink: "https://buy.stripe.com/aFa9AU8X7c54d3k7K90Fi03",
       features: ["Lead alerts via email + SMS","Verified Pro badge","Priority listing placement","Dedicated account support","Up to 3 leads matched per job","60-min exclusive first-access window","First access — before everyone else"]
     }
   ],
+  stripe: {
+    publishableKey: "pk_test_51T9qdkKBOgn1FLAED4gACCkVVE1QaZwIWDPww8cpXTVUCl4vQGPEbWYCVCgy7rY3TPkpYm9LY8bGvd5LJP1ZaPsI00FdIgWGDK"
+  },
   markets: [
     { city: "Houston", state: "TX", enabled: true }
   ],

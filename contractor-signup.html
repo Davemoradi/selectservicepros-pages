@@ -248,6 +248,19 @@ a{text-decoration:none;color:inherit}
   <p class="plans-note">Lead fees are charged only when you accept a lead · Memberships renew monthly · Cancel anytime</p>
 </section>
 
+<!-- STEP 2B: STRIPE CHECKOUT (hidden until plan selected) -->
+<section class="form-section" id="checkout-section" style="display:none">
+  <div class="form-card">
+    <div id="checkout-header" style="text-align:center;margin-bottom:20px">
+      <h2 class="form-title" id="checkout-plan-name">Complete Payment</h2>
+      <p class="form-sub" id="checkout-plan-desc"></p>
+    </div>
+    <div id="checkout-mount"></div>
+    <div id="checkout-error" style="color:#e53e3e;text-align:center;margin-top:12px;font-size:14px;display:none"></div>
+    <button type="button" class="btn-submit" style="background:var(--border);color:var(--text2);margin-top:12px" onclick="backToPlans()">← Back to plans</button>
+  </div>
+</section>
+
 <!-- STEP 3: SUCCESS (hidden) -->
 <section class="form-section" id="success-section" style="display:none">
   <div class="form-card" id="success-card"></div>
@@ -273,6 +286,7 @@ a{text-decoration:none;color:inherit}
 <!-- FOOTER -->
 <footer class="footer"><p>&copy; 2025 SelectServicePros.com · <a href="https://www.selectservicepros.com/">Home</a> · <a href="mailto:info@selectservicepros.com">Contact</a> · <a href="#">Terms</a> · <a href="#">Privacy</a></p></footer>
 
+<script src="https://js.stripe.com/v3/"></script>
 <script src="/ssp-config.js"></script>
 <!--email_off-->
 <script>
@@ -406,7 +420,6 @@ function rfg(label,items){return '<div class="fg-lbl">'+label+'</div>'+items.map
 
 function renderPlans(){
   if(typeof SSP_CONFIG==='undefined'){
-    // Fallback if ssp-config.js didn't load
     document.getElementById('plans-grid').innerHTML='<p style="text-align:center;color:#888;grid-column:1/-1;">Loading plans...</p>';
     setTimeout(renderPlans,500);
     return;
@@ -424,15 +437,107 @@ function renderPlans(){
       +rfg('Lead access',f.leads)
       +rfg('Notifications',f.notif)
       +rfg('Profile & support',f.prof)
-      +'<a href="'+p.stripeLink+'" target="_blank" rel="noopener"><button type="button" class="plan-btn '+(isSel?'primary':'outline')+'" onclick="advanceToProfile(\''+p.name+'\')">Choose '+p.name+'</button></a>'
+      +'<button type="button" class="plan-btn '+(isSel?'primary':'outline')+'" onclick="choosePlan(\''+p.id+'\',\''+p.name+'\','+p.monthlyPrice+')">Choose '+p.name+'</button>'
       +'</div>';
   }).join('');
 }
 
 function selPlan(id){document.querySelectorAll('.plan').forEach(function(el){el.classList.remove('selected')});var c=document.getElementById('pl-'+id);if(c)c.classList.add('selected')}
 
-function advanceToProfile(planName){
+// ═══ STRIPE EMBEDDED CHECKOUT ═══
+var stripeInstance=null;
+var embeddedCheckout=null;
+var STRIPE_PK=''; // Set your Stripe publishable key here or in ssp-config.js
+
+function getStripePK(){
+  // Try ssp-config first, then fallback
+  if(typeof SSP_CONFIG!=='undefined'&&SSP_CONFIG.stripe&&SSP_CONFIG.stripe.publishableKey)return SSP_CONFIG.stripe.publishableKey;
+  if(STRIPE_PK)return STRIPE_PK;
+  // Fallback test key — replace with your real publishable key
+  return 'pk_test_REPLACE_WITH_YOUR_KEY';
+}
+
+function choosePlan(planId,planName,monthlyPrice){
   sessionStorage.setItem('ssp_plan',planName);
+  sessionStorage.setItem('ssp_plan_id',planId);
+
+  // Update checkout header
+  document.getElementById('checkout-plan-name').textContent=planName+' Plan — $'+monthlyPrice+'/mo';
+  document.getElementById('checkout-plan-desc').textContent='Enter your payment details below. You can cancel anytime.';
+
+  // Hide plans, show checkout
+  document.getElementById('plans-section').classList.remove('visible');
+  document.getElementById('plans-section').style.display='none';
+  document.getElementById('checkout-section').style.display='block';
+  document.getElementById('checkout-error').style.display='none';
+
+  window.scrollTo({top:document.getElementById('stepper').offsetTop-80,behavior:'smooth'});
+
+  // Initialize Stripe embedded checkout
+  initEmbeddedCheckout(planId);
+}
+
+function backToPlans(){
+  // Destroy existing checkout if any
+  if(embeddedCheckout){embeddedCheckout.destroy();embeddedCheckout=null}
+  document.getElementById('checkout-mount').innerHTML='';
+  document.getElementById('checkout-section').style.display='none';
+  document.getElementById('plans-section').style.display='';
+  document.getElementById('plans-section').classList.add('visible');
+  window.scrollTo({top:document.getElementById('stepper').offsetTop-80,behavior:'smooth'});
+}
+
+async function initEmbeddedCheckout(planId){
+  // Clear previous checkout
+  if(embeddedCheckout){embeddedCheckout.destroy();embeddedCheckout=null}
+  document.getElementById('checkout-mount').innerHTML='<p style="text-align:center;color:var(--text3);padding:40px 0;">Loading secure payment form...</p>';
+
+  try{
+    if(!stripeInstance){
+      stripeInstance=Stripe(getStripePK());
+    }
+
+    var saved=JSON.parse(sessionStorage.getItem('ssp_contractor')||'{}');
+
+    // Call our serverless function to create checkout session
+    var resp=await fetch('/api/create-checkout-session',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        planId:planId,
+        email:saved.em||'',
+        name:(saved.fn||'')+' '+(saved.ln||''),
+        phone:saved.ph||'',
+        companyName:saved.biz||''
+      })
+    });
+
+    if(!resp.ok){
+      var errData=await resp.json();
+      throw new Error(errData.error||'Failed to create checkout session');
+    }
+
+    var data=await resp.json();
+
+    embeddedCheckout=await stripeInstance.initEmbeddedCheckout({
+      clientSecret:data.clientSecret,
+      onComplete:function(){handleCheckoutComplete()}
+    });
+
+    document.getElementById('checkout-mount').innerHTML='';
+    embeddedCheckout.mount('#checkout-mount');
+  }catch(err){
+    console.error('Checkout error:',err);
+    document.getElementById('checkout-mount').innerHTML='';
+    var errEl=document.getElementById('checkout-error');
+    errEl.textContent='Payment setup failed: '+err.message+'. Please try again.';
+    errEl.style.display='block';
+  }
+}
+
+function handleCheckoutComplete(){
+  // Payment succeeded — send plan selection to GHL
+  var planName=sessionStorage.getItem('ssp_plan')||'';
   var saved=sessionStorage.getItem('ssp_contractor');
   if(saved){
     var d=JSON.parse(saved);
@@ -444,15 +549,19 @@ function advanceToProfile(planName){
       email:d.em,
       zip:d.zip,
       companyName:d.biz,
-      source:'SelectServicePros.com — Plan Selected',
+      source:'SelectServicePros.com — Payment Complete',
       type:'contractor',
       contractor_services:d.svcs,
       contractor_service_categories:d.cats,
       contractor_membership_tier:planName,
-      lead_id:'SSP-PLAN-'+Date.now()
+      lead_id:'SSP-PAID-'+Date.now()
     })}).catch(function(e){console.error(e)});
   }
-  setTimeout(function(){showProfile(planName)},600);
+
+  // Destroy checkout and show success
+  if(embeddedCheckout){embeddedCheckout.destroy();embeddedCheckout=null}
+  document.getElementById('checkout-section').style.display='none';
+  showProfile(planName);
 }
 
 function showProfile(planName){
@@ -486,8 +595,16 @@ function toggleMobileMenu(){document.getElementById('mobile-menu').classList.tog
 function init(){
   document.getElementById('cat-pills').innerHTML=CATS.map(function(c){return '<button type="button" class="cpill" onclick="toggleCat(this)">'+c+'</button>'}).join('');
   var hash=window.location.hash;
-  if(hash==='#step3'){showPlansQuiet();showProfile(sessionStorage.getItem('ssp_plan')||'')}
-  else if(hash==='#step2'){showPlansQuiet()}
+  if(hash.indexOf('#success')===0){
+    // Returned from Stripe payment — show success
+    showPlansQuiet();
+    showProfile(sessionStorage.getItem('ssp_plan')||'');
+  }else if(hash==='#step3'){
+    showPlansQuiet();
+    showProfile(sessionStorage.getItem('ssp_plan')||'');
+  }else if(hash==='#step2'){
+    showPlansQuiet();
+  }
 }
 function showPlansQuiet(){
   document.getElementById('si1').classList.remove('active');document.getElementById('si1').classList.add('done');document.getElementById('sn1').textContent='\u2713';document.getElementById('sline1').classList.add('done');document.getElementById('si2').classList.add('active');document.getElementById('form-section').style.display='none';document.getElementById('plans-section').classList.add('visible');renderPlans();
