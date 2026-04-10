@@ -558,10 +558,25 @@ function handleCheckoutComplete(){
     })}).catch(function(e){console.error(e)});
   }
 
-  // Destroy checkout and show success
+  // Destroy checkout and show payment confirmation
   if(embeddedCheckout){embeddedCheckout.destroy();embeddedCheckout=null}
-  document.getElementById('checkout-section').style.display='none';
-  showProfile(planName);
+  document.getElementById('checkout-mount').innerHTML='';
+  document.getElementById('checkout-error').style.display='none';
+
+  // Show payment confirmed message in the checkout section
+  var fn='';
+  if(saved){fn=JSON.parse(saved).fn||''}
+  document.getElementById('checkout-header').innerHTML='<div style="text-align:center;padding:20px 0"><div style="width:72px;height:72px;background:#e8f5e9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:36px;color:#1a8a4a;font-weight:700">\u2713</div><h2 class="form-title" style="color:#1a8a4a">Payment Successful!</h2><p class="form-sub" style="margin-top:8px">Your '+planName+' membership is now active'+(fn?', '+fn:'')+'.</p><p style="font-size:13px;color:var(--text3);margin-top:4px">Redirecting to your profile setup...</p></div>';
+
+  // Remove the back button during confirmation
+  var backBtn=document.querySelector('#checkout-section .btn-submit');
+  if(backBtn)backBtn.style.display='none';
+
+  // After 3 seconds, transition to the full welcome/profile screen
+  setTimeout(function(){
+    document.getElementById('checkout-section').style.display='none';
+    showProfile(planName);
+  },3000);
 }
 
 function showProfile(planName){
@@ -579,7 +594,7 @@ function showProfile(planName){
   if(saved){var d=JSON.parse(saved);fn=d.fn;biz=d.biz;cats=d.cats;ph=d.ph;zip=d.zip}
 
   document.getElementById('success-section').style.display='block';
-  document.getElementById('success-card').innerHTML='<div class="success-wrap"><div class="s-icon">\u2713</div><div class="s-title">Welcome aboard'+(fn?', '+fn:'')+'!</div><p class="s-msg">Your membership is active. Complete your contractor profile to start receiving leads.</p><div class="s-box"><div class="s-row"><span>Plan</span><span>'+(planName||'—')+'</span></div><div class="s-row"><span>Services</span><span>'+cats+'</span></div><div class="s-row"><span>Business</span><span>'+biz+'</span></div><div class="s-row"><span>ZIP code</span><span>'+zip+'</span></div><div class="s-row"><span>Contact</span><span>'+ph+'</span></div></div><h3 style="font-size:15px;margin-bottom:12px">Next steps</h3><ol style="text-align:left;font-size:14px;color:var(--text2);line-height:2;padding-left:20px"><li>Upload your contractor license</li><li>Add proof of insurance</li><li>Set your service area ZIP codes</li><li>Add photos and business description</li></ol><a href="https://contractors.selectservicepros.com" class="s-next" style="margin-top:20px">Complete Your Profile →</a><p class="s-note">Opens your contractor dashboard at contractors.selectservicepros.com</p></div>';
+  document.getElementById('success-card').innerHTML='<div class="success-wrap"><div class="s-icon">\u2713</div><div class="s-title">Welcome aboard'+(fn?', '+fn:'')+'!</div><p class="s-msg">Your payment has been processed and your <strong>'+planName+'</strong> membership is now active. Complete your contractor profile to start receiving leads.</p><div class="s-box"><div class="s-row"><span>Plan</span><span style="color:#1a8a4a;font-weight:700">'+(planName||'—')+' — Active \u2713</span></div><div class="s-row"><span>Services</span><span>'+cats+'</span></div><div class="s-row"><span>Business</span><span>'+biz+'</span></div><div class="s-row"><span>ZIP code</span><span>'+zip+'</span></div><div class="s-row"><span>Contact</span><span>'+ph+'</span></div></div><h3 style="font-size:15px;margin-bottom:12px">Set up your profile to start getting leads:</h3><ol style="text-align:left;font-size:14px;color:var(--text2);line-height:2;padding-left:20px"><li>Upload your contractor license</li><li>Add proof of insurance</li><li>Set your service area ZIP codes</li><li>Add photos and business description</li></ol><a href="https://contractors.selectservicepros.com" class="s-next" style="margin-top:20px">Complete Your Profile \u2192</a><p class="s-note">Opens your contractor dashboard at contractors.selectservicepros.com</p></div>';
 
   history.replaceState(null,null,'#step3');
   window.scrollTo({top:document.getElementById('stepper').offsetTop-80,behavior:'smooth'});
