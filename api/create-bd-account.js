@@ -105,7 +105,8 @@ module.exports = async (req, res) => {
       success: true,
       message: 'Account created successfully',
       loginUrl: BD_DOMAIN + '/login',
-      email: email
+      email: email,
+      tempPassword: password
     });
 
   } catch (err) {
