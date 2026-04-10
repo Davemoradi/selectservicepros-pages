@@ -795,22 +795,24 @@ async function submitProfile(){
     }
 
     // Success — show final confirmation
-    showFinalSuccess(fn,planName,biz,cats,ph,zip,em,data.loginUrl||'');
+    showFinalSuccess(fn,planName,biz,cats,ph,zip,em,data.loginUrl||'',data.tempPassword||'');
 
   }catch(err){
     console.error('BD account error:',err);
     // Even if BD fails, show success — they're already paid and in GHL
     // We can create their BD account manually later
-    showFinalSuccess(fn,planName,biz,cats,ph,zip,em,'');
+    showFinalSuccess(fn,planName,biz,cats,ph,zip,em,'','');
   }
 }
 
-function showFinalSuccess(fn,planName,biz,cats,ph,zip,em,loginUrl){
+function showFinalSuccess(fn,planName,biz,cats,ph,zip,em,loginUrl,tempPw){
   document.getElementById('profile-section').style.display='none';
   document.getElementById('success-section').style.display='block';
 
   var loginBlock='';
-  if(loginUrl){
+  if(loginUrl&&tempPw){
+    loginBlock='<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:20px;margin-top:20px;text-align:left"><p style="font-size:15px;font-weight:700;color:#166534;margin-bottom:12px">\u2709 Your login credentials</p><p style="font-size:14px;color:var(--text1);margin-bottom:4px"><strong>Email:</strong> '+em+'</p><p style="font-size:14px;color:var(--text1);margin-bottom:12px"><strong>Temporary password:</strong> <code style="background:#e5e7eb;padding:2px 8px;border-radius:4px;font-size:15px;letter-spacing:1px">'+tempPw+'</code></p><p style="font-size:12px;color:var(--text3)">Please change your password after your first login.</p></div><a href="'+loginUrl+'" class="s-next" style="margin-top:16px">Log In to Your Dashboard \u2192</a>';
+  }else if(loginUrl){
     loginBlock='<a href="'+loginUrl+'" class="s-next" style="margin-top:20px">Log In to Your Dashboard \u2192</a><p class="s-note">Use your email <strong>'+em+'</strong> — check your inbox for your password.</p>';
   }else{
     loginBlock='<p style="font-size:14px;color:var(--text2);margin-top:20px;padding:16px;background:var(--bg);border-radius:8px"><strong>Check your email at '+em+'</strong> — we\'re sending your contractor dashboard login credentials now.</p>';
