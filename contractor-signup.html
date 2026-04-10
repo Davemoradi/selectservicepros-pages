@@ -890,6 +890,51 @@ function showPlansQuiet(){
   document.getElementById('si1').classList.remove('active');document.getElementById('si1').classList.add('done');document.getElementById('sn1').textContent='\u2713';document.getElementById('sline1').classList.add('done');document.getElementById('si2').classList.add('active');document.getElementById('form-section').style.display='none';document.getElementById('plans-section').classList.add('visible');renderPlans();
 }
 window.addEventListener('load',init);
+window.addEventListener('hashchange',function(){
+  var hash=window.location.hash;
+  if(hash.indexOf('#success')===0){
+    // Stripe just completed payment and changed the hash
+    // Destroy the checkout if it's still mounted
+    if(embeddedCheckout){embeddedCheckout.destroy();embeddedCheckout=null}
+    document.getElementById('checkout-mount').innerHTML='';
+    document.getElementById('checkout-section').style.display='none';
+
+    var planName=sessionStorage.getItem('ssp_plan')||'';
+    var saved=sessionStorage.getItem('ssp_contractor');
+    var fn='';
+    if(saved){fn=JSON.parse(saved).fn||''}
+
+    // Send payment complete to GHL
+    if(saved){
+      var d=JSON.parse(saved);
+      fetch(GHL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        name:d.fn+' '+d.ln,firstName:d.fn,lastName:d.ln,phone:d.ph,email:d.em,zip:d.zip,
+        companyName:d.biz,source:'SelectServicePros.com — Payment Complete',type:'contractor',
+        contractor_services:d.svcs,contractor_service_categories:d.cats,
+        contractor_membership_tier:planName,contractor_status:'Paid',
+        lead_id:'SSP-PAID-'+Date.now()
+      })}).catch(function(e){console.error(e)});
+    }
+
+    // Update stepper
+    document.getElementById('si1').classList.remove('active');document.getElementById('si1').classList.add('done');document.getElementById('sn1').textContent='\u2713';
+    document.getElementById('sline1').classList.add('done');
+    document.getElementById('si2').classList.remove('active');document.getElementById('si2').classList.add('done');document.getElementById('sn2').textContent='\u2713';
+    document.getElementById('sline2').classList.add('done');
+    document.getElementById('si3').classList.add('active');
+
+    // Hide everything except profile
+    document.getElementById('form-section').style.display='none';
+    document.getElementById('plans-section').style.display='none';
+
+    // Show payment success briefly, then profile form
+    document.getElementById('profile-section').style.display='block';
+    document.getElementById('profile-section').querySelector('.form-title').textContent='Payment Successful! Complete your profile';
+    document.getElementById('profile-section').querySelector('.form-sub').textContent='Your '+planName+' membership is active. Fill in your business details to start receiving leads.';
+
+    window.scrollTo({top:document.getElementById('stepper').offsetTop-80,behavior:'smooth'});
+  }
+});
 </script>
 <!--/email_off-->
 </body>
