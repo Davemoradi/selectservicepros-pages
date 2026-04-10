@@ -809,14 +809,9 @@ function showFinalSuccess(fn,planName,biz,cats,ph,zip,em,loginUrl,tempPw){
   document.getElementById('profile-section').style.display='none';
   document.getElementById('success-section').style.display='block';
 
-  var loginBlock='';
-  if(loginUrl&&tempPw){
-    loginBlock='<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:20px;margin-top:20px;text-align:left"><p style="font-size:15px;font-weight:700;color:#166534;margin-bottom:12px">\u2709 Your login credentials</p><p style="font-size:14px;color:var(--text1);margin-bottom:4px"><strong>Email:</strong> '+em+'</p><p style="font-size:14px;color:var(--text1);margin-bottom:12px"><strong>Temporary password:</strong> <code style="background:#e5e7eb;padding:2px 8px;border-radius:4px;font-size:15px;letter-spacing:1px">'+tempPw+'</code></p><p style="font-size:12px;color:var(--text3)">Please change your password after your first login.</p></div><a href="'+loginUrl+'" class="s-next" style="margin-top:16px">Log In to Your Dashboard \u2192</a>';
-  }else if(loginUrl){
-    loginBlock='<a href="'+loginUrl+'" class="s-next" style="margin-top:20px">Log In to Your Dashboard \u2192</a><p class="s-note">Use your email <strong>'+em+'</strong> — check your inbox for your password.</p>';
-  }else{
-    loginBlock='<p style="font-size:14px;color:var(--text2);margin-top:20px;padding:16px;background:var(--bg);border-radius:8px"><strong>Check your email at '+em+'</strong> — we\'re sending your contractor dashboard login credentials now.</p>';
-  }
+  var retrievalUrl='https://contractors.selectservicepros.com/login/retrieval';
+
+  var loginBlock='<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:20px;margin-top:20px;text-align:left"><p style="font-size:15px;font-weight:700;color:#166534;margin-bottom:12px">\u2709 Set up your account</p><p style="font-size:14px;color:var(--text1);margin-bottom:12px">Your contractor profile has been created with the email <strong>'+em+'</strong>.</p><p style="font-size:14px;color:var(--text1);margin-bottom:4px">Click below to set your password and start receiving leads:</p></div><a href="'+retrievalUrl+'" class="s-next" style="margin-top:16px">Set Your Password \u2192</a><p style="font-size:13px;color:var(--text3);text-align:center;margin-top:8px">Enter your email on the next page and we\'ll send you a link to create your password.</p>';
 
   document.getElementById('success-card').innerHTML='<div class="success-wrap"><div class="s-icon" style="animation:popIn .4s ease">\u2713</div><div class="s-title">You\'re all set'+(fn?', '+fn:'')+'!</div><p class="s-msg">Your <strong>'+planName+'</strong> membership is active and your contractor profile has been created.</p><div class="s-box"><div class="s-row"><span>Plan</span><span style="color:#1a8a4a;font-weight:700">'+(planName||'—')+' — Active \u2713</span></div><div class="s-row"><span>Services</span><span>'+cats+'</span></div><div class="s-row"><span>Business</span><span>'+biz+'</span></div><div class="s-row"><span>ZIP code</span><span>'+zip+'</span></div><div class="s-row"><span>Contact</span><span>'+ph+'</span></div></div>'+loginBlock+'<p style="font-size:13px;color:var(--text3);text-align:center;margin-top:16px">Questions? Email us at <a href="mailto:support@selectservicepros.com" style="color:var(--orange)">support@selectservicepros.com</a></p></div>';
 
