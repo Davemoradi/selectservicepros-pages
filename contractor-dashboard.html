@@ -3,1037 +3,358 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Contractor Portal — Select Service Pros</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<title>Contractor Dashboard — Select Service Pros</title>
+<link rel="icon" href="/favicon.ico"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@700;800&display=swap" rel="stylesheet"/>
 <style>
-  :root {
-    --navy: #0c2340;
-    --orange: #f05528;
-    --orange-light: #fff3ef;
-    --green: #16a34a;
-    --green-light: #f0fdf4;
-    --yellow: #ca8a04;
-    --yellow-light: #fefce8;
-    --red: #dc2626;
-    --red-light: #fef2f2;
-    --gray1: #f8f9fa;
-    --gray2: #e9ecef;
-    --gray3: #adb5bd;
-    --gray4: #6c757d;
-    --text: #1a1a2e;
-    --white: #ffffff;
-    --radius: 12px;
-    --shadow: 0 2px 12px rgba(0,0,0,0.08);
-    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
-  }
+:root{--orange:#f05528;--orange2:#d94a20;--orange-light:rgba(240,85,40,.08);--navy:#0a1628;--navy2:#122240;--bg:#f8f7f4;--white:#ffffff;--border:#e5e4e0;--text1:#111318;--text2:#3d3f44;--text3:#6b6e76;--text4:#9ca0a8;--green:#1a8a4a;--green-light:#e6f9ed;--red:#e53e3e;--yellow:#d97706;--yellow-light:#fef3c7;--radius:12px;--shadow:0 2px 12px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text1);-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* NAV */
+.nav{background:var(--navy);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif;font-weight:800;font-size:17px;color:#fff}
+.nav-logo .ls{color:var(--orange)}
+.nav-right{display:flex;align-items:center;gap:16px}
+.nav-user{font-size:13px;color:rgba(255,255,255,.7);font-weight:500}
+.nav-logout{background:rgba(255,255,255,.12);color:#fff;border:none;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.nav-logout:hover{background:rgba(255,255,255,.2)}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--gray1);
-    color: var(--text);
-    min-height: 100vh;
-  }
+/* LAYOUT */
+.dash{max-width:1100px;margin:0 auto;padding:32px 24px 60px}
+.dash-header{margin-bottom:32px}
+.dash-header h1{font-family:'Fraunces',serif;font-weight:800;font-size:clamp(24px,4vw,32px);color:var(--navy)}
+.dash-header p{font-size:14px;color:var(--text3);margin-top:4px}
 
-  /* ── NAV ── */
-  .nav {
-    background: var(--navy);
-    padding: 0 24px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-  }
-  .logo svg { flex-shrink: 0; }
-  .logo-text { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
-  .logo-text span { color: var(--orange); }
-  .nav-right { display: flex; align-items: center; gap: 12px; }
-  .nav-name { color: rgba(255,255,255,0.75); font-size: 14px; }
-  .btn-logout {
-    background: rgba(255,255,255,0.1);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 6px 14px;
-    font-size: 13px;
-    font-family: inherit;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-  .btn-logout:hover { background: rgba(255,255,255,0.18); }
+/* STATS ROW */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.stat-label{font-size:12px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-value{font-size:28px;font-weight:800;color:var(--navy)}
+.stat-sub{font-size:12px;color:var(--text3);margin-top:2px}
 
-  /* ── LOGIN SCREEN ── */
-  #login-screen {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: linear-gradient(135deg, var(--navy) 0%, #1a3a5c 100%);
-  }
-  .login-card {
-    background: white;
-    border-radius: 20px;
-    padding: 48px 40px;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: var(--shadow-lg);
-    text-align: center;
-  }
-  .login-logo { margin-bottom: 28px; }
-  .login-logo-text { font-size: 22px; font-weight: 700; color: var(--navy); }
-  .login-logo-text span { color: var(--orange); }
-  .login-card h2 { font-size: 20px; font-weight: 600; margin-bottom: 6px; color: var(--navy); }
-  .login-card p { font-size: 14px; color: var(--gray4); margin-bottom: 28px; }
-  .form-group { margin-bottom: 16px; text-align: left; }
-  .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
-  .form-group input {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1.5px solid var(--gray2);
-    border-radius: 10px;
-    font-size: 15px;
-    font-family: inherit;
-    transition: border-color 0.15s;
-    outline: none;
-  }
-  .form-group input:focus { border-color: var(--orange); }
-  .btn-login {
-    width: 100%;
-    background: var(--orange);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 14px;
-    font-size: 16px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    margin-top: 4px;
-    transition: background 0.15s, transform 0.1s;
-  }
-  .btn-login:hover { background: #d94d24; }
-  .btn-login:active { transform: scale(0.98); }
-  .login-error {
-    color: var(--red);
-    font-size: 13px;
-    margin-top: 12px;
-    display: none;
-  }
-  .login-help { margin-top: 20px; font-size: 13px; color: var(--gray4); }
-  .login-help a { color: var(--orange); text-decoration: none; }
+/* SECTIONS */
+.section{margin-bottom:32px}
+.section-title{font-family:'Fraunces',serif;font-weight:700;font-size:20px;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.section-title .count{background:var(--orange);color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px}
 
-  /* ── MAIN DASHBOARD ── */
-  #dashboard { display: none; }
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:16px}
 
-  .page-wrap { max-width: 1100px; margin: 0 auto; padding: 32px 24px 60px; }
+/* LEAD CARDS */
+.lead-card{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.lead-info{flex:1;min-width:200px}
+.lead-service{font-size:16px;font-weight:700;color:var(--navy)}
+.lead-detail{font-size:13px;color:var(--text2);margin-top:4px}
+.lead-time{font-size:12px;color:var(--text4);margin-top:6px}
+.lead-actions{display:flex;gap:8px;align-items:center}
+.lead-accept{background:var(--green);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
+.lead-accept:hover{background:#158a3e}
+.lead-pass{background:var(--bg);color:var(--text2);border:1px solid var(--border);padding:8px 18px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.lead-pass:hover{background:#eee}
+.lead-badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;margin-top:8px}
+.badge-new{background:var(--orange-light);color:var(--orange)}
+.badge-accepted{background:var(--green-light);color:var(--green)}
+.badge-expired{background:var(--yellow-light);color:var(--yellow)}
 
-  /* Welcome banner */
-  .welcome-bar {
-    background: linear-gradient(135deg, var(--navy) 0%, #1a3a5c 100%);
-    border-radius: var(--radius);
-    padding: 24px 28px;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-  .welcome-bar h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-  .welcome-bar p { font-size: 14px; color: rgba(255,255,255,0.7); }
-  .tier-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-  }
-  .tier-elite { background: linear-gradient(135deg, #f59e0b, #f05528); color: white; }
-  .tier-pro { background: rgba(255,255,255,0.15); color: white; border: 1.5px solid rgba(255,255,255,0.3); }
-  .tier-basic { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); border: 1.5px solid rgba(255,255,255,0.2); }
+/* PROFILE SECTION */
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.profile-field{font-size:14px}
+.profile-label{font-size:12px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.profile-value{color:var(--text1);font-weight:500}
 
-  /* Stats row */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  @media (max-width: 700px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
-  .stat-card {
-    background: white;
-    border-radius: var(--radius);
-    padding: 20px;
-    box-shadow: var(--shadow);
-  }
-  .stat-label { font-size: 12px; font-weight: 600; color: var(--gray4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-  .stat-value { font-size: 28px; font-weight: 700; color: var(--navy); }
-  .stat-sub { font-size: 12px; color: var(--gray4); margin-top: 4px; }
+/* PLAN STATUS */
+.plan-card{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.plan-name{font-size:20px;font-weight:800;color:var(--orange)}
+.plan-price{font-size:14px;color:var(--text2)}
+.plan-status{display:inline-block;background:var(--green-light);color:var(--green);font-size:12px;font-weight:700;padding:4px 10px;border-radius:6px}
 
-  /* Section title */
-  .section-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--navy);
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+/* EMPTY STATE */
+.empty{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty-title{font-size:16px;font-weight:700;color:var(--text2);margin-bottom:4px}
+.empty-sub{font-size:13px}
 
-  /* Main grid */
-  .main-grid {
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 24px;
-    align-items: start;
-  }
-  @media (max-width: 860px) { .main-grid { grid-template-columns: 1fr; } }
+/* LOADING */
+.loading{text-align:center;padding:60px 20px}
+.loading-spinner{display:inline-block;width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:var(--text3);margin-top:12px}
 
-  /* Lead cards */
-  .leads-panel { }
-  .card {
-    background: white;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    overflow: hidden;
-  }
-  .card-header {
-    padding: 18px 20px;
-    border-bottom: 1px solid var(--gray2);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .card-body { padding: 0; }
+/* EDIT BUTTON */
+.edit-btn{background:var(--bg);border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.edit-btn:hover{background:#e9e8e4}
 
-  .lead-item {
-    padding: 18px 20px;
-    border-bottom: 1px solid var(--gray2);
-    transition: background 0.12s;
-  }
-  .lead-item:last-child { border-bottom: none; }
-  .lead-item:hover { background: var(--gray1); }
-
-  .lead-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    gap: 12px;
-  }
-  .lead-service { font-size: 14px; font-weight: 700; color: var(--navy); }
-  .lead-date { font-size: 12px; color: var(--gray4); white-space: nowrap; }
-  .lead-desc { font-size: 13px; color: var(--gray4); margin-bottom: 12px; line-height: 1.5; }
-  .lead-meta { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-  .lead-meta-item { font-size: 12px; color: var(--gray4); display: flex; align-items: center; gap: 4px; }
-
-  .status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-  .pill-new { background: var(--orange-light); color: var(--orange); }
-  .pill-accepted { background: var(--green-light); color: var(--green); }
-  .pill-expired { background: var(--gray2); color: var(--gray4); }
-  .pill-passed { background: var(--yellow-light); color: var(--yellow); }
-
-  .lead-actions { display: flex; gap: 8px; margin-top: 12px; }
-  .btn-accept {
-    background: var(--green);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 18px;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-  .btn-accept:hover { background: #15803d; }
-  .btn-pass {
-    background: white;
-    color: var(--gray4);
-    border: 1.5px solid var(--gray2);
-    border-radius: 8px;
-    padding: 8px 18px;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn-pass:hover { border-color: var(--red); color: var(--red); }
-
-  .empty-state {
-    padding: 48px 24px;
-    text-align: center;
-    color: var(--gray4);
-  }
-  .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
-  .empty-state p { font-size: 14px; line-height: 1.6; }
-
-  /* Sidebar */
-  .sidebar { display: flex; flex-direction: column; gap: 20px; }
-
-  /* Profile card */
-  .profile-section { padding: 20px; }
-  .profile-avatar {
-    width: 56px;
-    height: 56px;
-    background: var(--navy);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    font-weight: 700;
-    color: white;
-    margin-bottom: 14px;
-  }
-  .profile-name { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 2px; }
-  .profile-company { font-size: 13px; color: var(--gray4); margin-bottom: 14px; }
-  .profile-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--gray2); font-size: 13px; }
-  .profile-row:last-child { border-bottom: none; }
-  .profile-key { color: var(--gray4); font-weight: 500; }
-  .profile-val { color: var(--navy); font-weight: 600; }
-
-  .btn-edit-profile {
-    width: 100%;
-    background: var(--gray1);
-    color: var(--navy);
-    border: 1.5px solid var(--gray2);
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    margin-top: 14px;
-    transition: all 0.15s;
-  }
-  .btn-edit-profile:hover { background: var(--navy); color: white; border-color: var(--navy); }
-
-  /* Tier card */
-  .tier-card-inner { padding: 20px; }
-  .tier-name { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
-  .tier-price { font-size: 13px; color: var(--gray4); margin-bottom: 16px; }
-  .tier-feature { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 5px 0; color: var(--text); }
-  .tier-feature .check { color: var(--green); font-weight: 700; }
-  .btn-upgrade {
-    width: 100%;
-    background: var(--orange);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 11px;
-    font-size: 13px;
-    font-weight: 700;
-    font-family: inherit;
-    cursor: pointer;
-    margin-top: 16px;
-    transition: background 0.15s;
-  }
-  .btn-upgrade:hover { background: #d94d24; }
-
-  /* Notification banner */
-  .notice-banner {
-    background: var(--yellow-light);
-    border: 1.5px solid #fde68a;
-    border-radius: var(--radius);
-    padding: 14px 18px;
-    font-size: 13px;
-    color: #92400e;
-    line-height: 1.5;
-    margin-bottom: 24px;
-  }
-  .notice-banner strong { display: block; margin-bottom: 2px; }
-
-  /* Tabs */
-  .tab-row { display: flex; gap: 4px; margin-bottom: 20px; }
-  .tab-btn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: none;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    background: white;
-    color: var(--gray4);
-    transition: all 0.15s;
-  }
-  .tab-btn.active { background: var(--navy); color: white; }
-  .tab-btn:hover:not(.active) { background: var(--gray2); color: var(--navy); }
-
-  /* Edit profile modal */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 200;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: white;
-    border-radius: 16px;
-    padding: 32px;
-    width: 100%;
-    max-width: 480px;
-    box-shadow: var(--shadow-lg);
-  }
-  .modal h3 { font-size: 18px; font-weight: 700; color: var(--navy); margin-bottom: 20px; }
-  .modal .form-group { margin-bottom: 14px; }
-  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
-  .btn-save {
-    flex: 1;
-    background: var(--orange);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-  }
-  .btn-cancel {
-    flex: 1;
-    background: var(--gray1);
-    color: var(--navy);
-    border: 1.5px solid var(--gray2);
-    border-radius: 10px;
-    padding: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-  }
+@media(max-width:600px){
+  .profile-grid{grid-template-columns:1fr}
+  .lead-card{flex-direction:column}
+  .lead-actions{width:100%;justify-content:flex-end}
+  .stats{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════
-     LOGIN SCREEN
-══════════════════════════════════════════ -->
-<div id="login-screen">
-  <div class="login-card">
-    <div class="login-logo">
-      <div class="login-logo-text">Select <span>Service</span> Pros</div>
-    </div>
-    <h2>Contractor Portal</h2>
-    <p>Sign in with your email and the access code sent to you after signup.</p>
+<!-- NAV -->
+<nav class="nav">
+  <a href="/" class="nav-logo">
+    <svg width="24" height="28" viewBox="0 0 48 56" fill="none"><path d="M24 2C13 2 4 11 4 22c0 14 20 32 20 32s20-18 20-32C44 11 35 2 24 2z" fill="#f05528"/><circle cx="24" cy="20" r="12" fill="#fff"/><path d="M18 20l4.5 4.5 7.5-7.5" stroke="#f05528" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>Select<span class="ls">Service</span>Pros</span>
+  </a>
+  <div class="nav-right">
+    <span class="nav-user" id="nav-user"></span>
+    <button class="nav-logout" onclick="doLogout()">Log Out</button>
+  </div>
+</nav>
 
-    <div class="form-group">
-      <label>Email Address</label>
-      <input type="email" id="login-email" placeholder="you@company.com" autocomplete="email"/>
-    </div>
-    <div class="form-group">
-      <label>Access Code</label>
-      <input type="text" id="login-code" placeholder="e.g. SSP-12345" autocomplete="off" maxlength="20"/>
-    </div>
-    <button class="btn-login" onclick="handleLogin()">Sign In</button>
-    <div class="login-error" id="login-error">Incorrect email or access code. Please try again or contact support.</div>
-    <div class="login-help">Need help? <a href="mailto:support@selectservicepros.com">support@selectservicepros.com</a></div>
+<!-- LOADING STATE -->
+<div class="dash" id="loading-state">
+  <div class="loading">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Loading your dashboard...</p>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     DASHBOARD
-══════════════════════════════════════════ -->
-<div id="dashboard">
+<!-- DASHBOARD CONTENT (hidden until data loads) -->
+<div class="dash" id="dashboard" style="display:none">
 
-  <!-- NAV -->
-  <nav class="nav">
-    <a href="/" class="logo">
-      <svg width="26" height="26" viewBox="0 0 40 40" fill="none">
-        <path d="M20 2L6 12v16c0 6 6 10 14 10s14-4 14-10V12L20 2z" fill="#f05528"/>
-        <path d="M15 20l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span class="logo-text">Select <span>Service</span> Pros</span>
-    </a>
-    <div class="nav-right">
-      <span class="nav-name" id="nav-name"></span>
-      <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
+  <!-- HEADER -->
+  <div class="dash-header">
+    <h1 id="dash-greeting">Welcome back!</h1>
+    <p id="dash-sub">Here's your lead activity and account overview.</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Total Leads</div>
+      <div class="stat-value" id="stat-leads">0</div>
+      <div class="stat-sub">lifetime received</div>
     </div>
-  </nav>
-
-  <div class="page-wrap">
-
-    <!-- SMS notice banner - shown until A2P SMS is live -->
-    <div class="notice-banner" id="sms-notice">
-      <strong>📱 Lead notifications are currently email-only.</strong>
-      SMS notifications are coming soon. Make sure to check your inbox — lead windows close in 30–60 min.
+    <div class="stat-card">
+      <div class="stat-label">Accepted</div>
+      <div class="stat-value" id="stat-accepted">0</div>
+      <div class="stat-sub">leads accepted</div>
     </div>
-
-    <!-- Welcome bar -->
-    <div class="welcome-bar">
-      <div>
-        <h1 id="welcome-name">Welcome back</h1>
-        <p id="welcome-sub">Here's your lead activity and account overview.</p>
-      </div>
-      <div id="tier-badge-wrap"></div>
+    <div class="stat-card">
+      <div class="stat-label">Acceptance Rate</div>
+      <div class="stat-value" id="stat-rate">—</div>
+      <div class="stat-sub">of leads accepted</div>
     </div>
-
-    <!-- Stats -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-label">Leads This Month</div>
-        <div class="stat-value" id="stat-leads">—</div>
-        <div class="stat-sub">All lead types</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Accepted</div>
-        <div class="stat-value" id="stat-accepted">—</div>
-        <div class="stat-sub">Jobs taken</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Acceptance Rate</div>
-        <div class="stat-value" id="stat-rate">—</div>
-        <div class="stat-sub">Higher = better ranking</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Avg Response Time</div>
-        <div class="stat-value" id="stat-response">—</div>
-        <div class="stat-sub">Faster = more leads</div>
-      </div>
+    <div class="stat-card">
+      <div class="stat-label">Plan</div>
+      <div class="stat-value" id="stat-plan" style="color:var(--orange)">—</div>
+      <div class="stat-sub" id="stat-plan-status"></div>
     </div>
+  </div>
 
-    <!-- Main grid -->
-    <div class="main-grid">
-
-      <!-- Left: Leads panel -->
-      <div class="leads-panel">
-
-        <!-- Tab row -->
-        <div class="tab-row">
-          <button class="tab-btn active" onclick="switchTab('active', this)">Active Leads</button>
-          <button class="tab-btn" onclick="switchTab('history', this)">Lead History</button>
-        </div>
-
-        <!-- Active leads -->
-        <div id="tab-active">
-          <div class="card">
-            <div class="card-header">
-              <span class="section-title" style="margin:0">Leads Awaiting Response</span>
-              <span id="active-count" style="font-size:13px;color:var(--gray4)"></span>
-            </div>
-            <div class="card-body" id="active-leads-list">
-              <div class="empty-state">
-                <div class="icon">📭</div>
-                <p>No active leads right now.<br/>New leads will appear here — check your email for notifications.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Lead history -->
-        <div id="tab-history" style="display:none">
-          <div class="card">
-            <div class="card-header">
-              <span class="section-title" style="margin:0">All Leads</span>
-              <span id="history-count" style="font-size:13px;color:var(--gray4)"></span>
-            </div>
-            <div class="card-body" id="history-leads-list">
-              <div class="empty-state">
-                <div class="icon">📋</div>
-                <p>No lead history yet. Accepted and passed leads will appear here.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right: Sidebar -->
-      <div class="sidebar">
-
-        <!-- Profile card -->
-        <div class="card">
-          <div class="card-header">
-            <span class="section-title" style="margin:0">My Profile</span>
-          </div>
-          <div class="profile-section">
-            <div class="profile-avatar" id="profile-avatar">?</div>
-            <div class="profile-name" id="profile-name">—</div>
-            <div class="profile-company" id="profile-company">—</div>
-            <div class="profile-row">
-              <span class="profile-key">Email</span>
-              <span class="profile-val" id="profile-email">—</span>
-            </div>
-            <div class="profile-row">
-              <span class="profile-key">Phone</span>
-              <span class="profile-val" id="profile-phone">—</span>
-            </div>
-            <div class="profile-row">
-              <span class="profile-key">Service Areas</span>
-              <span class="profile-val" id="profile-zips">—</span>
-            </div>
-            <div class="profile-row">
-              <span class="profile-key">Services</span>
-              <span class="profile-val" id="profile-services">—</span>
-            </div>
-            <div class="profile-row">
-              <span class="profile-key">Member Since</span>
-              <span class="profile-val" id="profile-since">—</span>
-            </div>
-            <button class="btn-edit-profile" onclick="openEditModal()">Edit Profile</button>
-          </div>
-        </div>
-
-        <!-- Membership tier card -->
-        <div class="card" id="tier-card">
-          <div class="card-header">
-            <span class="section-title" style="margin:0">My Plan</span>
-          </div>
-          <div class="tier-card-inner" id="tier-card-inner">
-            <!-- Populated by JS -->
-          </div>
-        </div>
-
+  <!-- RECENT LEADS -->
+  <div class="section">
+    <div class="section-title">Recent Leads <span class="count" id="lead-count">0</span></div>
+    <div id="leads-list">
+      <div class="card empty">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">No leads yet</div>
+        <div class="empty-sub">When homeowners in your area request service, you'll see their leads here.</div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Edit Profile Modal -->
-<div class="modal-overlay" id="edit-modal">
-  <div class="modal">
-    <h3>Edit Profile</h3>
-    <div class="form-group">
-      <label>Full Name</label>
-      <input type="text" id="edit-name" placeholder="John Smith"/>
+  <!-- PROFILE -->
+  <div class="section">
+    <div class="section-title" style="justify-content:space-between">
+      <span>Your Profile</span>
     </div>
-    <div class="form-group">
-      <label>Company Name</label>
-      <input type="text" id="edit-company" placeholder="Smith HVAC LLC"/>
-    </div>
-    <div class="form-group">
-      <label>Phone</label>
-      <input type="tel" id="edit-phone" placeholder="(713) 555-0000"/>
-    </div>
-    <div class="form-group">
-      <label>Service ZIP Codes <span style="color:var(--gray4);font-weight:400">(comma-separated)</span></label>
-      <input type="text" id="edit-zips" placeholder="77001, 77002, 77003"/>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeEditModal()">Cancel</button>
-      <button class="btn-save" onclick="saveProfile()">Save Changes</button>
+    <div class="card">
+      <div class="profile-grid" id="profile-grid">
+        <!-- filled by JS -->
+      </div>
     </div>
   </div>
+
+  <!-- PLAN & BILLING -->
+  <div class="section">
+    <div class="section-title">Plan & Billing</div>
+    <div class="card">
+      <div class="plan-card" id="plan-card">
+        <!-- filled by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVICE AREAS -->
+  <div class="section">
+    <div class="section-title">Service Areas</div>
+    <div class="card">
+      <div id="service-areas">
+        <!-- filled by JS -->
+      </div>
+    </div>
+  </div>
+
 </div>
 
+<!--email_off-->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-// ══════════════════════════════════════════
-// CONFIG & STATE
-// ══════════════════════════════════════════
+var SUPABASE_URL='https://kasqtxwbsmjlisbnebku.supabase.co';
+var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imthc3F0eHdic21qbGlzYm5lYmt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMzNjkxNjQsImV4cCI6MjA1ODk0NTE2NH0.WyNid7MbJHYNPmnFnXCloK5w_aBJccEkwqZqhmMeg0M';
 
-const GHL_WEBHOOK = 'https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c';
+var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+var contractor=null;
 
-const TIER_DETAILS = {
-  elite: {
-    label: 'Elite',
-    price: '$499/mo · $15/lead',
-    features: ['First access — 60 min exclusive window', 'Lowest per-lead cost ($15)', 'Priority ranking in results', 'Dedicated account support'],
-    badgeClass: 'tier-elite'
-  },
-  pro: {
-    label: 'Pro',
-    price: '$249/mo · $25/lead',
-    features: ['Second access — after Elite window', '$25 per lead', 'Standard ranking', 'Email support'],
-    badgeClass: 'tier-pro'
-  },
-  basic: {
-    label: 'Basic',
-    price: '$99/mo · $35/lead',
-    features: ['Third access — after Pro window', '$35 per lead', 'Standard ranking', 'Email support'],
-    badgeClass: 'tier-basic'
-  }
-};
-
-let currentContractor = null;
-
-// ══════════════════════════════════════════
-// AUTH — token in URL or sessionStorage
-// ══════════════════════════════════════════
-
-function init() {
-  // Check for token in URL: ?cid=CONTACT_ID&token=ACCESS_CODE
-  const params = new URLSearchParams(window.location.search);
-  const urlCid = params.get('cid');
-  const urlToken = params.get('token');
-
-  if (urlCid && urlToken) {
-    // Auto-login from email link
-    sessionStorage.setItem('ssp_cid', urlCid);
-    sessionStorage.setItem('ssp_token', urlToken);
-    loadDashboard(urlCid, urlToken);
+// ═══ AUTH CHECK ═══
+async function init(){
+  var session=await sb.auth.getSession();
+  if(!session.data.session){
+    window.location.href='/contractor-login.html';
     return;
   }
 
-  const storedCid = sessionStorage.getItem('ssp_cid');
-  const storedToken = sessionStorage.getItem('ssp_token');
-  if (storedCid && storedToken) {
-    loadDashboard(storedCid, storedToken);
+  var user=session.data.session.user;
+  document.getElementById('nav-user').textContent=user.email;
+
+  // Fetch contractor profile
+  var result=await sb.from('contractors').select('*').eq('auth_id',user.id).single();
+
+  if(result.error||!result.data){
+    // No contractor profile — they might have auth but no profile yet
+    document.getElementById('loading-state').innerHTML='<div class="loading"><p class="loading-text">Setting up your dashboard... If this takes too long, please <a href="mailto:support@selectservicepros.com" style="color:var(--orange)">contact support</a>.</p></div>';
     return;
   }
 
-  showLogin();
+  contractor=result.data;
+  renderDashboard();
 }
 
-function showLogin() {
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('dashboard').style.display = 'none';
-}
+// ═══ RENDER DASHBOARD ═══
+function renderDashboard(){
+  var c=contractor;
+  document.getElementById('loading-state').style.display='none';
+  document.getElementById('dashboard').style.display='block';
 
-async function handleLogin() {
-  const email = document.getElementById('login-email').value.trim().toLowerCase();
-  const code = document.getElementById('login-code').value.trim().toUpperCase();
-  const errEl = document.getElementById('login-error');
-  errEl.style.display = 'none';
-
-  if (!email || !code) { errEl.style.display = 'block'; errEl.textContent = 'Please enter your email and access code.'; return; }
-
-  // Access code format: SSP-XXXXX where XXXXX is last 5 of GHL contact ID
-  // For now: validate format, then load demo or real data
-  if (!code.startsWith('SSP-') || code.length < 8) {
-    errEl.style.display = 'block';
-    return;
-  }
-
-  // Store and load
-  sessionStorage.setItem('ssp_email', email);
-  sessionStorage.setItem('ssp_code', code);
-
-  // In production: verify against GHL contact lookup
-  // For now: load with placeholder data keyed to code
-  loadDashboardFromCode(email, code);
-}
-
-function handleLogout() {
-  sessionStorage.clear();
-  showLogin();
-}
-
-// ══════════════════════════════════════════
-// LOAD DASHBOARD
-// ══════════════════════════════════════════
-
-function loadDashboard(cid, token) {
-  // Production: fetch contractor data from GHL via a Vercel edge function
-  // For now: load demo data + show dashboard
-  const demo = getDemoContractor();
-  renderDashboard(demo);
-}
-
-function loadDashboardFromCode(email, code) {
-  // Build a contractor profile from what we know
-  const demo = getDemoContractor();
-  demo.email = email;
-  renderDashboard(demo);
-}
-
-function getDemoContractor() {
-  return {
-    id: 'demo',
-    name: 'James Rivera',
-    company: 'Rivera HVAC Solutions',
-    email: sessionStorage.getItem('ssp_email') || 'contractor@example.com',
-    phone: '(713) 555-0192',
-    tier: 'pro',
-    zips: ['77001', '77002', '77003', '77004', '77005'],
-    services: ['HVAC'],
-    memberSince: 'April 2026',
-    stats: {
-      leadsThisMonth: 4,
-      accepted: 3,
-      rate: '75%',
-      avgResponse: '18 min'
-    },
-    leads: [
-      {
-        id: 'lead-001',
-        service: 'HVAC',
-        desc: 'AC unit stopped cooling. 2,200 sq ft home. Last serviced 2 years ago.',
-        zip: '77005',
-        city: 'Houston, TX',
-        date: 'Today, 2:14 PM',
-        status: 'new'
-      }
-    ],
-    history: [
-      {
-        id: 'lead-h1',
-        service: 'HVAC',
-        desc: 'Furnace making loud noise. Older unit, may need replacement.',
-        zip: '77002',
-        city: 'Houston, TX',
-        date: 'Apr 3, 10:08 AM',
-        status: 'accepted'
-      },
-      {
-        id: 'lead-h2',
-        service: 'HVAC',
-        desc: 'Annual AC maintenance and tune-up.',
-        zip: '77004',
-        city: 'Houston, TX',
-        date: 'Apr 2, 3:45 PM',
-        status: 'accepted'
-      },
-      {
-        id: 'lead-h3',
-        service: 'HVAC',
-        desc: 'Mini-split installation quote needed for home office addition.',
-        zip: '77001',
-        city: 'Houston, TX',
-        date: 'Apr 1, 11:22 AM',
-        status: 'passed'
-      }
-    ]
-  };
-}
-
-// ══════════════════════════════════════════
-// RENDER
-// ══════════════════════════════════════════
-
-function renderDashboard(contractor) {
-  currentContractor = contractor;
-
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
-
-  // Nav
-  const firstName = contractor.name.split(' ')[0];
-  document.getElementById('nav-name').textContent = firstName;
-
-  // Welcome
-  document.getElementById('welcome-name').textContent = `Welcome back, ${firstName} 👋`;
-  document.getElementById('welcome-sub').textContent = `${contractor.company} · ${contractor.tier.charAt(0).toUpperCase() + contractor.tier.slice(1)} Member`;
-
-  // Tier badge
-  const tierInfo = TIER_DETAILS[contractor.tier];
-  document.getElementById('tier-badge-wrap').innerHTML =
-    `<span class="tier-badge ${tierInfo.badgeClass}">${tierInfo.label} Member</span>`;
+  // Greeting
+  document.getElementById('dash-greeting').textContent='Welcome back, '+(c.first_name||'')+'!';
+  document.getElementById('dash-sub').textContent=c.company_name||'Your contractor dashboard';
 
   // Stats
-  document.getElementById('stat-leads').textContent = contractor.stats.leadsThisMonth;
-  document.getElementById('stat-accepted').textContent = contractor.stats.accepted;
-  document.getElementById('stat-rate').textContent = contractor.stats.rate;
-  document.getElementById('stat-response').textContent = contractor.stats.avgResponse;
+  document.getElementById('stat-leads').textContent=c.lead_count||'0';
+  document.getElementById('stat-accepted').textContent='0';
+  document.getElementById('stat-rate').textContent=c.acceptance_rate?c.acceptance_rate+'%':'—';
+  document.getElementById('stat-plan').textContent=c.membership_tier||'—';
+  document.getElementById('stat-plan-status').textContent=c.status==='Verified'?'Active ✓':c.status||'';
 
   // Profile
-  const initials = contractor.name.split(' ').map(n => n[0]).join('').toUpperCase();
-  document.getElementById('profile-avatar').textContent = initials;
-  document.getElementById('profile-name').textContent = contractor.name;
-  document.getElementById('profile-company').textContent = contractor.company;
-  document.getElementById('profile-email').textContent = contractor.email;
-  document.getElementById('profile-phone').textContent = contractor.phone;
-  document.getElementById('profile-zips').textContent = contractor.zips.slice(0,3).join(', ') + (contractor.zips.length > 3 ? ` +${contractor.zips.length - 3}` : '');
-  document.getElementById('profile-services').textContent = contractor.services.join(', ');
-  document.getElementById('profile-since').textContent = contractor.memberSince;
+  var fields=[
+    {l:'Company',v:c.company_name},
+    {l:'Name',v:(c.first_name||'')+' '+(c.last_name||'')},
+    {l:'Email',v:c.email},
+    {l:'Phone',v:c.phone},
+    {l:'Services',v:c.service_categories},
+    {l:'License',v:c.license_number?(c.license_number+(c.license_verified?' ✓ Verified':' — Pending')):'Not provided'},
+    {l:'Years in Business',v:c.years_in_business},
+    {l:'Employees',v:c.number_of_employees},
+    {l:'Website',v:c.website_url?'<a href="'+c.website_url+'" target="_blank" style="color:var(--orange)">'+c.website_url+'</a>':'—'},
+    {l:'Description',v:c.business_description||'—'}
+  ];
 
-  // Tier card
-  renderTierCard(contractor.tier);
+  var html='';
+  fields.forEach(function(f){
+    html+='<div class="profile-field"><div class="profile-label">'+f.l+'</div><div class="profile-value">'+(f.v||'—')+'</div></div>';
+  });
+  document.getElementById('profile-grid').innerHTML=html;
 
-  // Leads
-  renderLeads(contractor.leads, 'active-leads-list', true);
-  document.getElementById('active-count').textContent = contractor.leads.filter(l => l.status === 'new').length + ' pending';
+  // Plan
+  var tier=c.membership_tier||'Basic';
+  var prices={Basic:'$99/mo',Pro:'$199/mo',Elite:'$299/mo'};
+  document.getElementById('plan-card').innerHTML='<div><div class="plan-name">'+tier+' Plan</div><div class="plan-price">'+(prices[tier]||'')+'</div></div><div class="plan-status">Active</div>';
 
-  renderLeads(contractor.history, 'history-leads-list', false);
-  document.getElementById('history-count').textContent = contractor.history.length + ' total';
-}
-
-function renderTierCard(tier) {
-  const info = TIER_DETAILS[tier];
-  const isElite = tier === 'elite';
-  document.getElementById('tier-card-inner').innerHTML = `
-    <div class="tier-name">${info.label} Plan</div>
-    <div class="tier-price">${info.price}</div>
-    ${info.features.map(f => `<div class="tier-feature"><span class="check">✓</span> ${f}</div>`).join('')}
-    ${!isElite ? `<button class="btn-upgrade" onclick="handleUpgrade()">Upgrade to ${tier === 'basic' ? 'Pro' : 'Elite'}</button>` : ''}
-  `;
-}
-
-function renderLeads(leads, containerId, showActions) {
-  const container = document.getElementById(containerId);
-  if (!leads || leads.length === 0) return; // keep empty state
-
-  const statusLabels = {
-    new: ['pill-new', '🔔 New — Respond Now'],
-    accepted: ['pill-accepted', '✓ Accepted'],
-    passed: ['pill-passed', '— Passed'],
-    expired: ['pill-expired', '⏱ Expired']
-  };
-
-  container.innerHTML = leads.map(lead => {
-    const [pillClass, pillLabel] = statusLabels[lead.status] || ['pill-expired', lead.status];
-    return `
-      <div class="lead-item" id="lead-${lead.id}">
-        <div class="lead-top">
-          <div class="lead-service">${lead.service} · ${lead.city}</div>
-          <div class="lead-date">${lead.date}</div>
-        </div>
-        <div class="lead-desc">${lead.desc}</div>
-        <div class="lead-meta">
-          <div class="lead-meta-item">📍 ZIP ${lead.zip}</div>
-          <span class="status-pill ${pillClass}">${pillLabel}</span>
-        </div>
-        ${showActions && lead.status === 'new' ? `
-          <div class="lead-actions">
-            <button class="btn-accept" onclick="acceptLead('${lead.id}')">Accept Lead</button>
-            <button class="btn-pass" onclick="passLead('${lead.id}')">Pass</button>
-          </div>
-        ` : ''}
-      </div>
-    `;
-  }).join('');
-}
-
-// ══════════════════════════════════════════
-// LEAD ACTIONS
-// ══════════════════════════════════════════
-
-async function acceptLead(leadId) {
-  const btn = document.querySelector(`#lead-${leadId} .btn-accept`);
-  if (btn) { btn.textContent = 'Accepting...'; btn.disabled = true; }
-
-  try {
-    await fetch(GHL_WEBHOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        event: 'contractor_accepted_lead',
-        lead_id: leadId,
-        contractor_id: currentContractor.id,
-        contractor_name: currentContractor.name,
-        contractor_email: currentContractor.email,
-        contractor_tier: currentContractor.tier,
-        timestamp: new Date().toISOString()
-      })
-    });
-  } catch(e) { console.warn('Webhook error', e); }
-
-  // Update UI
-  const item = document.getElementById(`lead-${leadId}`);
-  if (item) {
-    item.querySelector('.status-pill').className = 'status-pill pill-accepted';
-    item.querySelector('.status-pill').textContent = '✓ Accepted';
-    const actions = item.querySelector('.lead-actions');
-    if (actions) actions.remove();
+  // Service areas
+  var zips=c.service_zips||c.zip_code||'';
+  if(zips){
+    var zipArr=zips.split(',').map(function(z){return z.trim()}).filter(Boolean);
+    var zipHtml=zipArr.map(function(z){return '<span style="display:inline-block;background:var(--bg);border:1px solid var(--border);padding:4px 10px;border-radius:6px;font-size:13px;font-weight:600;margin:4px 4px 4px 0">'+z+'</span>'}).join('');
+    document.getElementById('service-areas').innerHTML=zipHtml;
+  }else{
+    document.getElementById('service-areas').innerHTML='<p style="font-size:14px;color:var(--text3)">No service areas set yet.</p>';
   }
 
-  // Update stats
-  if (currentContractor) {
-    currentContractor.stats.accepted++;
-    document.getElementById('stat-accepted').textContent = currentContractor.stats.accepted;
+  // Load leads
+  loadLeads();
+}
+
+// ═══ LOAD LEADS ═══
+async function loadLeads(){
+  var result=await sb.from('leads')
+    .select('*')
+    .eq('assigned_contractor_id',contractor.id)
+    .order('created_at',{ascending:false})
+    .limit(10);
+
+  if(result.error||!result.data||result.data.length===0){
+    document.getElementById('lead-count').textContent='0';
+    return;
   }
+
+  var leads=result.data;
+  document.getElementById('lead-count').textContent=leads.length;
+  document.getElementById('stat-leads').textContent=leads.length;
+
+  var html='';
+  leads.forEach(function(lead){
+    var badgeClass=lead.status==='New'?'badge-new':lead.status==='Accepted'?'badge-accepted':'badge-expired';
+    html+='<div class="card lead-card">'
+      +'<div class="lead-info">'
+      +'<div class="lead-service">'+(lead.service_type||lead.service_category||'Service Request')+'</div>'
+      +'<div class="lead-detail">'+(lead.homeowner_name||'Homeowner')+' · '+(lead.homeowner_zip||'')+'</div>'
+      +'<div class="lead-detail">'+(lead.description||'No details provided')+'</div>'
+      +'<span class="lead-badge '+badgeClass+'">'+lead.status+'</span>'
+      +'<div class="lead-time">'+timeAgo(lead.created_at)+'</div>'
+      +'</div>'
+      +'<div class="lead-actions">'
+      +(lead.status==='New'?'<button class="lead-accept" onclick="acceptLead(\''+lead.id+'\')">Accept</button><button class="lead-pass" onclick="passLead(\''+lead.id+'\')">Pass</button>':'')
+      +'</div>'
+      +'</div>';
+  });
+  document.getElementById('leads-list').innerHTML=html;
 }
 
-async function passLead(leadId) {
-  try {
-    await fetch(GHL_WEBHOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        event: 'contractor_passed_lead',
-        lead_id: leadId,
-        contractor_id: currentContractor.id,
-        contractor_name: currentContractor.name,
-        contractor_email: currentContractor.email,
-        timestamp: new Date().toISOString()
-      })
-    });
-  } catch(e) { console.warn('Webhook error', e); }
+// ═══ ACCEPT/PASS LEAD ═══
+async function acceptLead(id){
+  await sb.from('leads').update({status:'Accepted',accepted_at:new Date().toISOString()}).eq('id',id);
+  loadLeads();
+}
 
-  const item = document.getElementById(`lead-${leadId}`);
-  if (item) {
-    item.querySelector('.status-pill').className = 'status-pill pill-passed';
-    item.querySelector('.status-pill').textContent = '— Passed';
-    const actions = item.querySelector('.lead-actions');
-    if (actions) actions.remove();
+async function passLead(id){
+  await sb.from('leads').update({status:'Passed'}).eq('id',id);
+  loadLeads();
+}
+
+// ═══ LOGOUT ═══
+async function doLogout(){
+  await sb.auth.signOut();
+  window.location.href='/contractor-login.html';
+}
+
+// ═══ HELPERS ═══
+function timeAgo(date){
+  var s=Math.floor((Date.now()-new Date(date).getTime())/1000);
+  if(s<60) return 'just now';
+  if(s<3600) return Math.floor(s/60)+' min ago';
+  if(s<86400) return Math.floor(s/3600)+' hr ago';
+  return Math.floor(s/86400)+' days ago';
+}
+
+// Listen for auth state changes
+sb.auth.onAuthStateChange(function(event,session){
+  if(event==='SIGNED_OUT'){
+    window.location.href='/contractor-login.html';
   }
-}
+});
 
-// ══════════════════════════════════════════
-// TABS
-// ══════════════════════════════════════════
-
-function switchTab(tab, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('tab-active').style.display = tab === 'active' ? 'block' : 'none';
-  document.getElementById('tab-history').style.display = tab === 'history' ? 'block' : 'none';
-}
-
-// ══════════════════════════════════════════
-// PROFILE EDIT
-// ══════════════════════════════════════════
-
-function openEditModal() {
-  document.getElementById('edit-name').value = currentContractor.name;
-  document.getElementById('edit-company').value = currentContractor.company;
-  document.getElementById('edit-phone').value = currentContractor.phone;
-  document.getElementById('edit-zips').value = currentContractor.zips.join(', ');
-  document.getElementById('edit-modal').classList.add('open');
-}
-
-function closeEditModal() {
-  document.getElementById('edit-modal').classList.remove('open');
-}
-
-function saveProfile() {
-  currentContractor.name = document.getElementById('edit-name').value.trim();
-  currentContractor.company = document.getElementById('edit-company').value.trim();
-  currentContractor.phone = document.getElementById('edit-phone').value.trim();
-  currentContractor.zips = document.getElementById('edit-zips').value.split(',').map(z => z.trim()).filter(z => z);
-
-  renderDashboard(currentContractor);
-  closeEditModal();
-}
-
-// ══════════════════════════════════════════
-// UPGRADE
-// ══════════════════════════════════════════
-
-function handleUpgrade() {
-  // Link to Stripe upgrade — replace with actual Stripe payment links
-  const upgradeLinks = {
-    basic: 'https://buy.stripe.com/pro-upgrade-link',   // Basic → Pro
-    pro:   'https://buy.stripe.com/elite-upgrade-link'  // Pro → Elite
-  };
-  const link = upgradeLinks[currentContractor.tier];
-  if (link) window.open(link, '_blank');
-}
-
-// ══════════════════════════════════════════
-// START
-// ══════════════════════════════════════════
 init();
 </script>
+<!--/email_off-->
 </body>
 </html>
