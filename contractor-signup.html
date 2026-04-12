@@ -776,7 +776,7 @@ async function submitProfile(){
 
   // 2. Create BD account via serverless function
   try{
-    var resp=await fetch('/api/create-bd-account',{
+    var resp=await fetch('//api/create-contractor',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
