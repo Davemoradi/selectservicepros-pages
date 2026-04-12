@@ -1,38 +1,59 @@
-// SSP Configuration — Tiered Membership + Per-Lead
-// Last updated: 2026-04-10
+// SSP Configuration — Model A: Low monthly + per-lead
+// Last updated: 2026-04-12
+// Pricing source of truth: SSP-BRAND-BIBLE.md
 const SSP_CONFIG = {
   plans: [
     {
       id: "basic",
       name: "Basic",
-      monthlyPrice: 99,
-      leadPrice: 35,
+      monthlyPrice: 49,
+      leadPrice: 39,
       leadWindowMinutes: 30,
       badge: "",
-      features: ["Lead alerts via email","Public contractor profile","Up to 3 leads matched per job","30-min lead access window"]
+      stripeLink: "#",
+      features: [
+        "Lead alerts via email",
+        "Public contractor profile",
+        "Up to 3 leads matched per job",
+        "30-min lead access window"
+      ]
     },
     {
       id: "pro",
       name: "Pro",
-      monthlyPrice: 199,
+      monthlyPrice: 99,
       leadPrice: 29,
       leadWindowMinutes: 45,
       badge: "Most Popular",
-      features: ["Lead alerts via email + SMS","Verified Pro badge","Priority listing placement","Up to 3 leads matched per job","45-min lead access window","Seen before Basic members"]
+      stripeLink: "#",
+      features: [
+        "Lead alerts via email + SMS",
+        "Verified Pro badge",
+        "Priority listing placement",
+        "Up to 3 leads matched per job",
+        "45-min lead access window",
+        "Seen before Basic members"
+      ]
     },
     {
       id: "elite",
       name: "Elite",
-      monthlyPrice: 299,
+      monthlyPrice: 199,
       leadPrice: 19,
       leadWindowMinutes: 60,
       badge: "",
-      features: ["Lead alerts via email + SMS","Verified Pro badge","Priority listing placement","Dedicated account support","Up to 3 leads matched per job","60-min exclusive first-access window","First access — before everyone else"]
+      stripeLink: "#",
+      features: [
+        "Lead alerts via email + SMS",
+        "Verified Pro badge",
+        "Priority listing placement",
+        "Dedicated account support",
+        "Up to 3 leads matched per job",
+        "60-min exclusive first-access window",
+        "First access — before everyone else"
+      ]
     }
   ],
-  stripe: {
-    publishableKey: "pk_test_51T9qdkKBOgn1FLAED4gACCkVVE1QaZwIWDPww8cpXTVUCl4vQGPEbWYCVCgy7rY3TPkpYm9LY8bGvd5LJP1ZaPsI00FdIgWGDK"
-  },
   markets: [
     { city: "Houston", state: "TX", enabled: true }
   ],
