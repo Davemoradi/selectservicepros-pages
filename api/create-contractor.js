@@ -71,38 +71,51 @@ module.exports = async (req, res) => {
       // Don't fail completely — auth user was created
     }
 
-    // 3. Call GHL webhook server-side (reliable, no CORS issues)
-    const GHL_WEBHOOK = 'https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c';
-    try {
-      const ghlPayload = {
-        name: firstName + ' ' + lastName,
-        firstName: firstName,
-        lastName: lastName,
-        phone: phone || '',
-        email: email,
-        companyName: companyName || '',
-        source: 'SelectServicePros.com — Contractor Signup',
-        type: 'contractor',
-        contractor_services: services || '',
-        contractor_service_categories: serviceCategories || '',
-        contractor_service_zips: serviceZips || '',
-        contractor_membership_tier: planName || 'Basic',
-        contractor_status: 'Paid',
-        tags: ['contractor_status: Paid', 'contractor_membership_tier: ' + (planName || 'Basic')],
-        lead_id: 'SSP-PAID-' + Date.now()
-      };
+    // 3. Call GHL webhooks server-side (reliable, no CORS issues)
+    const GHL_CONTACT_WEBHOOK = 'https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c';
+    const GHL_WF5_WEBHOOK = 'https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/Ny618W28bwWSntyu1DyL';
 
-      const ghlResp = await fetch(GHL_WEBHOOK, {
+    const ghlPayload = {
+      name: firstName + ' ' + lastName,
+      firstName: firstName,
+      lastName: lastName,
+      phone: phone || '',
+      email: email,
+      companyName: companyName || '',
+      source: 'SelectServicePros.com — Contractor Signup',
+      type: 'contractor',
+      contractor_services: services || '',
+      contractor_service_categories: serviceCategories || '',
+      contractor_service_zips: serviceZips || '',
+      contractor_membership_tier: planName || 'Basic',
+      contractor_status: 'Paid',
+      lead_id: 'SSP-PAID-' + Date.now()
+    };
+
+    // 3a. Create/update GHL contact
+    try {
+      const ghlResp = await fetch(GHL_CONTACT_WEBHOOK, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(ghlPayload)
       });
-
       const ghlResult = await ghlResp.text();
-      console.log('GHL webhook response:', ghlResp.status, ghlResult);
+      console.log('GHL contact webhook:', ghlResp.status, ghlResult);
     } catch (ghlErr) {
-      console.error('GHL webhook error:', ghlErr.message);
-      // Don't fail the whole request if GHL fails
+      console.error('GHL contact webhook error:', ghlErr.message);
+    }
+
+    // 3b. Trigger WF5 welcome email workflow
+    try {
+      const wf5Resp = await fetch(GHL_WF5_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ghlPayload)
+      });
+      const wf5Result = await wf5Resp.text();
+      console.log('GHL WF5 webhook:', wf5Resp.status, wf5Result);
+    } catch (wf5Err) {
+      console.error('GHL WF5 webhook error:', wf5Err.message);
     }
 
     console.log('Account created for:', email);
