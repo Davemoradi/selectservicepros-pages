@@ -37,10 +37,14 @@ module.exports = async (req, res) => {
 
     console.log('Creating contractor:', email);
 
-    // 1. Create auth user — sends verification email automatically
+    // Generate a temporary password
+    var tempPw = 'SSP-' + Math.random().toString(36).slice(2,10) + '!' + Math.floor(Math.random()*90+10);
+
+    // 1. Create auth user with temp password, auto-confirmed
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: email,
-      email_confirm: false,
+      password: tempPw,
+      email_confirm: true,
       user_metadata: { first_name: firstName, last_name: lastName, role: 'contractor' }
     });
 
@@ -72,18 +76,12 @@ module.exports = async (req, res) => {
     if (profileError) console.error('Profile error:', profileError.message);
     else console.log('Contractor profile created:', email);
 
-    // 3. Generate password recovery link (sends email to set password)
-    await supabase.auth.admin.generateLink({
-      type: 'recovery',
-      email: email,
-      options: { redirectTo: 'https://www.selectservicepros.com/contractor-login.html' }
-    });
-
     console.log('Account created for:', email);
     res.status(200).json({
       success: true,
-      message: 'Check your email to set your password',
-      loginUrl: 'https://www.selectservicepros.com/contractor-login.html'
+      message: 'Account created successfully',
+      loginUrl: 'https://www.selectservicepros.com/contractor-login.html',
+      tempPassword: tempPw
     });
 
   } catch (err) {
