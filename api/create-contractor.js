@@ -1,6 +1,5 @@
 // /api/create-contractor.js
 // Creates contractor in Supabase Auth + contractors table
-// Replaces create-bd-account.js (Brilliant Directories)
 
 const { createClient } = require('@supabase/supabase-js');
 
@@ -37,10 +36,11 @@ module.exports = async (req, res) => {
 
     console.log('Creating contractor:', email);
 
-    // Generate a temporary password
-    var tempPw = 'SSP-' + Math.random().toString(36).slice(2,10) + '!' + Math.floor(Math.random()*90+10);
+    // Random password — user will set their own via Reset Password on login page
+    // GHL sends welcome email directing them to do this
+    var tempPw = 'SSP_' + Math.random().toString(36).slice(2, 10) + Math.floor(Math.random() * 9000 + 1000);
 
-    // 1. Create auth user with temp password, auto-confirmed
+    // 1. Create auth user — auto-confirmed so they can reset password immediately
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: email,
       password: tempPw,
@@ -79,9 +79,8 @@ module.exports = async (req, res) => {
     console.log('Account created for:', email);
     res.status(200).json({
       success: true,
-      message: 'Account created successfully',
-      loginUrl: 'https://www.selectservicepros.com/contractor-login.html',
-      tempPassword: tempPw
+      message: 'Account created — check your email to set your password',
+      loginUrl: 'https://www.selectservicepros.com/contractor-login.html'
     });
 
   } catch (err) {
