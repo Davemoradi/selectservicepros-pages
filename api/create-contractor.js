@@ -43,6 +43,26 @@ module.exports = async (req, res) => {
     const authId = authData.user.id;
     console.log('Auth user created:', authId);
 
+    // 1b. Generate password recovery link (contractor clicks this to set their password)
+    let passwordResetUrl = 'https://www.selectservicepros.com/contractor-login.html';
+    try {
+      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+        type: 'recovery',
+        email: email,
+        options: {
+          redirectTo: 'https://www.selectservicepros.com/contractor-login.html'
+        }
+      });
+      if (linkError) {
+        console.error('Recovery link error:', linkError.message);
+      } else if (linkData && linkData.properties && linkData.properties.action_link) {
+        passwordResetUrl = linkData.properties.action_link;
+        console.log('Recovery link generated for:', email);
+      }
+    } catch (linkErr) {
+      console.error('Recovery link generation failed:', linkErr.message);
+    }
+
     // 2. Insert contractor profile into contractors table
     const { error: insertError } = await supabase.from('contractors').insert({
       auth_id: authId,
@@ -89,6 +109,7 @@ module.exports = async (req, res) => {
       contractor_service_zips: serviceZips || '',
       contractor_membership_tier: planName || 'Basic',
       contractor_status: 'Paid',
+      passwordResetUrl: passwordResetUrl,
       lead_id: 'SSP-PAID-' + Date.now()
     };
 
