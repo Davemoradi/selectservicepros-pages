@@ -213,6 +213,19 @@ var PLAN_PRICING={
   Elite:{monthly:199,perLead:19}
 };
 
+// Load pricing from Supabase on page load
+(function(){
+  fetch('/api/save-pricing',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'read'})})
+    .then(function(r){return r.json()}).then(function(d){
+      if(d.success&&d.pricing){
+        var p=d.pricing;
+        if(p.basic) PLAN_PRICING.Basic={monthly:p.basic.monthly||49,perLead:p.basic.perLead||39};
+        if(p.pro) PLAN_PRICING.Pro={monthly:p.pro.monthly||99,perLead:p.pro.perLead||29};
+        if(p.elite) PLAN_PRICING.Elite={monthly:p.elite.monthly||199,perLead:p.elite.perLead||19};
+      }
+    }).catch(function(){});
+})();
+
 async function init(){
   var session=await sb.auth.getSession();
   if(!session.data.session){

@@ -82,7 +82,7 @@ tr:hover{background:rgba(240,85,40,.02)}
 </style>
 </head>
 <body>
-<!--email_off-->
+
 <nav class="nav">
   <div style="display:flex;align-items:center">
     <a href="/" class="nav-logo">
@@ -137,6 +137,8 @@ tr:hover{background:rgba(240,85,40,.02)}
           <th onclick="sortC('plan')">Plan <span id="sa-plan"></span></th>
           <th onclick="sortC('status')">Status <span id="sa-status"></span></th>
           <th onclick="sortC('leads')">Leads <span id="sa-leads"></span></th>
+          <th onclick="sortC('accepted')">Accepted <span id="sa-accepted"></span></th>
+          <th onclick="sortC('passed')">Passed <span id="sa-passed"></span></th>
           <th onclick="sortC('rate')">Accept % <span id="sa-rate"></span></th>
           <th onclick="sortC('response')">Avg Response <span id="sa-response"></span></th>
           <th onclick="sortC('joined')">Joined <span id="sa-joined"></span></th>
@@ -258,9 +260,11 @@ function renderContractors(){
     else if(f==='company'){va=(a.company_name||'').toLowerCase();vb=(b.company_name||'').toLowerCase()}
     else if(f==='plan'){var o={Elite:3,Pro:2,Basic:1};va=o[a.membership_tier]||0;vb=o[b.membership_tier]||0}
     else if(f==='status'){va=a.status||'';vb=b.status||''}
-    else if(f==='leads'){va=a.lead_count||0;vb=b.lead_count||0}
-    else if(f==='rate'){va=a.acceptance_rate||0;vb=b.acceptance_rate||0}
-    else if(f==='response'){va=a.avg_response_time||0;vb=b.avg_response_time||0}
+    else if(f==='leads'){va=a.computed_leads||0;vb=b.computed_leads||0}
+    else if(f==='accepted'){va=a.computed_accepted||0;vb=b.computed_accepted||0}
+    else if(f==='passed'){va=a.computed_passed||0;vb=b.computed_passed||0}
+    else if(f==='rate'){va=a.computed_rate||0;vb=b.computed_rate||0}
+    else if(f==='response'){va=a.computed_avg_response||0;vb=b.computed_avg_response||0}
     else{va=new Date(a.created_at||0).getTime();vb=new Date(b.created_at||0).getTime()}
     return va>vb?d:va<vb?-d:0});
 
@@ -269,18 +273,26 @@ function renderContractors(){
   if(arrow) arrow.textContent=cSort.dir==='asc'?'\u25B2':'\u25BC';
 
   document.getElementById('c-count').textContent=cs.length;
-  if(!cs.length){document.getElementById('contractors-table').innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text3)">No contractors match</td></tr>';return}
+  if(!cs.length){document.getElementById('contractors-table').innerHTML='<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--text3)">No contractors match</td></tr>';return}
   var h='';
   cs.forEach(function(c){
     var tier=c.membership_tier||'Basic';
     var tc=tier==='Elite'?'b-elite':tier==='Pro'?'b-pro':'b-basic';
     var st=c.status||'Paid';
     var sc=st==='Paid'||st==='Verified'?'b-paid':'b-pending';
-    var rt=c.avg_response_time>0?fmtTime(c.avg_response_time):'\u2014';
+    var rt=c.computed_avg_response>0?fmtTime(c.computed_avg_response):'\u2014';
+    var tl=c.computed_leads||0;
+    var ac=c.computed_accepted||0;
+    var pa=c.computed_passed||0;
+    var ra=c.computed_rate||0;
     h+='<tr><td><div class="name-cell">'+(c.first_name||'')+' '+(c.last_name||'')+'</div><div class="sub-text">'+c.email+'</div></td>'
       +'<td>'+(c.company_name||'\u2014')+'</td><td><span class="badge '+tc+'">'+tier+'</span></td>'
-      +'<td><span class="badge '+sc+'">'+st+'</span></td><td>'+(c.lead_count||0)+'</td>'
-      +'<td>'+(c.acceptance_rate?c.acceptance_rate+'%':'\u2014')+'</td><td>'+rt+'</td>'
+      +'<td><span class="badge '+sc+'">'+st+'</span></td>'
+      +'<td>'+tl+'</td>'
+      +'<td>'+(ac>0?'<span style="color:var(--green);font-weight:700">'+ac+'</span>':'0')+'</td>'
+      +'<td>'+(pa>0?'<span style="color:var(--text4)">'+pa+'</span>':'0')+'</td>'
+      +'<td>'+(tl>0?ra+'%':'\u2014')+'</td>'
+      +'<td>'+rt+'</td>'
       +'<td><div class="sub-text">'+fmtDate(c.created_at)+'</div></td></tr>'});
   document.getElementById('contractors-table').innerHTML=h;
 }
@@ -321,11 +333,14 @@ function filterLeads(f,btn){
 }
 
 function loadPricing(){
-  try{var s=localStorage.getItem('ssp_pricing');if(s){var p=JSON.parse(s);
-    if(p.basic){document.getElementById('p-basic-mo').value=p.basic.monthly;document.getElementById('p-basic-lead').value=p.basic.perLead;document.getElementById('p-basic-win').value=p.basic.window||30}
-    if(p.pro){document.getElementById('p-pro-mo').value=p.pro.monthly;document.getElementById('p-pro-lead').value=p.pro.perLead;document.getElementById('p-pro-win').value=p.pro.window||45}
-    if(p.elite){document.getElementById('p-elite-mo').value=p.elite.monthly;document.getElementById('p-elite-lead').value=p.elite.perLead;document.getElementById('p-elite-win').value=p.elite.window||60}
-  }}catch(e){}
+  fetch('/api/save-pricing',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'read'})})
+    .then(function(r){return r.json()}).then(function(d){
+      if(!d.success||!d.pricing) return;
+      var p=d.pricing;
+      if(p.basic){document.getElementById('p-basic-mo').value=p.basic.monthly;document.getElementById('p-basic-lead').value=p.basic.perLead;document.getElementById('p-basic-win').value=p.basic.window||30}
+      if(p.pro){document.getElementById('p-pro-mo').value=p.pro.monthly;document.getElementById('p-pro-lead').value=p.pro.perLead;document.getElementById('p-pro-win').value=p.pro.window||45}
+      if(p.elite){document.getElementById('p-elite-mo').value=p.elite.monthly;document.getElementById('p-elite-lead').value=p.elite.perLead;document.getElementById('p-elite-win').value=p.elite.window||60}
+    }).catch(function(){});
 }
 
 function savePricing(){
@@ -334,8 +349,15 @@ function savePricing(){
     pro:{monthly:+document.getElementById('p-pro-mo').value||99,perLead:+document.getElementById('p-pro-lead').value||29,window:+document.getElementById('p-pro-win').value||45},
     elite:{monthly:+document.getElementById('p-elite-mo').value||199,perLead:+document.getElementById('p-elite-lead').value||19,window:+document.getElementById('p-elite-win').value||60}
   };
-  localStorage.setItem('ssp_pricing',JSON.stringify(pricing));
-  var m=document.getElementById('pricing-msg');m.style.display='inline';setTimeout(function(){m.style.display='none'},3000);
+  var btn=document.querySelector('.save-btn');btn.textContent='Saving...';
+  fetch('/api/save-pricing',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'write',password:storedPw,pricing:pricing})})
+    .then(function(r){return r.json()}).then(function(d){
+      btn.textContent='Save Pricing';
+      var m=document.getElementById('pricing-msg');
+      if(d.success){m.textContent='Pricing saved!';m.style.color='var(--green)'}
+      else{m.textContent='Error: '+d.error;m.style.color='var(--red)'}
+      m.style.display='inline';setTimeout(function(){m.style.display='none'},4000);
+    }).catch(function(){btn.textContent='Save Pricing'});
 }
 
 function fmtTime(s){if(s<60)return s+'s';if(s<3600)return Math.floor(s/60)+'m';return Math.floor(s/3600)+'h '+Math.floor((s%3600)/60)+'m'}
