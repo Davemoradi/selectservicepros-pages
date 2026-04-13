@@ -3,16 +3,15 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Contractor Dashboard — Select Service Pros</title>
+<title>Contractor Dashboard &mdash; Select Service Pros</title>
 <link rel="icon" href="/favicon.ico"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@700;800&display=swap" rel="stylesheet"/>
 <style>
-:root{--orange:#f05528;--orange2:#d94a20;--orange-light:rgba(240,85,40,.08);--navy:#0a1628;--navy2:#122240;--bg:#f8f7f4;--white:#ffffff;--border:#e5e4e0;--text1:#111318;--text2:#3d3f44;--text3:#6b6e76;--text4:#9ca0a8;--green:#1a8a4a;--green-light:#e6f9ed;--red:#e53e3e;--yellow:#d97706;--yellow-light:#fef3c7;--radius:12px;--shadow:0 2px 12px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08)}
+:root{--orange:#f05528;--orange2:#d94a20;--orange-light:rgba(240,85,40,.08);--navy:#0a1628;--navy2:#122240;--bg:#f8f7f4;--white:#ffffff;--border:#e5e4e0;--text1:#111318;--text2:#3d3f44;--text3:#6b6e76;--text4:#9ca0a8;--green:#1a8a4a;--green-light:#e6f9ed;--red:#e53e3e;--red-light:#fee2e2;--yellow:#d97706;--yellow-light:#fef3c7;--blue:#2563eb;--blue-light:#eff6ff;--radius:12px;--shadow:0 2px 12px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08)}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text1);-webkit-font-smoothing:antialiased}
 a{text-decoration:none;color:inherit}
 
-/* NAV */
 .nav{background:var(--navy);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .nav-logo{display:flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif;font-weight:800;font-size:17px;color:#fff}
 .nav-logo .ls{color:var(--orange)}
@@ -21,82 +20,86 @@ a{text-decoration:none;color:inherit}
 .nav-logout{background:rgba(255,255,255,.12);color:#fff;border:none;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
 .nav-logout:hover{background:rgba(255,255,255,.2)}
 
-/* LAYOUT */
 .dash{max-width:1100px;margin:0 auto;padding:32px 24px 60px}
 .dash-header{margin-bottom:32px}
 .dash-header h1{font-family:'Fraunces',serif;font-weight:800;font-size:clamp(24px,4vw,32px);color:var(--navy)}
 .dash-header p{font-size:14px;color:var(--text3);margin-top:4px}
 
-/* STATS ROW */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px}
 .stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
 .stat-label{font-size:12px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
 .stat-value{font-size:28px;font-weight:800;color:var(--navy)}
 .stat-sub{font-size:12px;color:var(--text3);margin-top:2px}
 
-/* SECTIONS */
 .section{margin-bottom:32px}
 .section-title{font-family:'Fraunces',serif;font-weight:700;font-size:20px;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:10px}
 .section-title .count{background:var(--orange);color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px}
 
-/* CARDS */
 .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:16px}
 
-/* LEAD CARDS */
 .lead-card{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
 .lead-info{flex:1;min-width:200px}
+.lead-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .lead-service{font-size:16px;font-weight:700;color:var(--navy)}
+.lead-urgency{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.3px}
+.urgency-emergency{background:var(--red-light);color:var(--red)}
+.urgency-soon{background:var(--yellow-light);color:var(--yellow)}
+.urgency-planning{background:var(--blue-light);color:var(--blue)}
 .lead-detail{font-size:13px;color:var(--text2);margin-top:4px}
+.lead-phone{font-size:13px;color:var(--green);font-weight:600;margin-top:4px}
 .lead-time{font-size:12px;color:var(--text4);margin-top:6px}
+.lead-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;min-width:130px}
+.lead-fee{font-size:14px;font-weight:700;color:var(--text1)}
+.lead-fee-note{font-size:11px;color:var(--text4)}
 .lead-actions{display:flex;gap:8px;align-items:center}
 .lead-accept{background:var(--green);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
 .lead-accept:hover{background:#158a3e}
 .lead-pass{background:var(--bg);color:var(--text2);border:1px solid var(--border);padding:8px 18px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
-.lead-pass:hover{background:#eee}
+.lead-pass:hover{background:#e9e8e4}
 .lead-badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;margin-top:8px}
-.badge-new{background:var(--orange-light);color:var(--orange)}
+.badge-new,.badge-pending{background:var(--orange-light);color:var(--orange)}
 .badge-accepted{background:var(--green-light);color:var(--green)}
+.badge-passed{background:var(--bg);color:var(--text4)}
 .badge-expired{background:var(--yellow-light);color:var(--yellow)}
 
-/* PROFILE SECTION */
 .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .profile-field{font-size:14px}
 .profile-label{font-size:12px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
 .profile-value{color:var(--text1);font-weight:500}
 
-/* PLAN STATUS */
-.plan-card{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.billing-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.billing-item{background:var(--bg);border-radius:8px;padding:16px}
+.billing-label{font-size:12px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.billing-value{font-size:22px;font-weight:800;color:var(--navy)}
+.billing-note{font-size:12px;color:var(--text3);margin-top:2px}
+
+.plan-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
 .plan-name{font-size:20px;font-weight:800;color:var(--orange)}
-.plan-price{font-size:14px;color:var(--text2)}
+.plan-price{font-size:14px;color:var(--text2);margin-top:2px}
 .plan-status{display:inline-block;background:var(--green-light);color:var(--green);font-size:12px;font-weight:700;padding:4px 10px;border-radius:6px}
 
-/* EMPTY STATE */
 .empty{text-align:center;padding:40px 20px;color:var(--text3)}
 .empty-icon{font-size:48px;margin-bottom:12px}
 .empty-title{font-size:16px;font-weight:700;color:var(--text2);margin-bottom:4px}
 .empty-sub{font-size:13px}
 
-/* LOADING */
 .loading{text-align:center;padding:60px 20px}
 .loading-spinner{display:inline-block;width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:14px;color:var(--text3);margin-top:12px}
 
-/* EDIT BUTTON */
-.edit-btn{background:var(--bg);border:1px solid var(--border);color:var(--text2);padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
-.edit-btn:hover{background:#e9e8e4}
-
 @media(max-width:600px){
   .profile-grid{grid-template-columns:1fr}
+  .billing-grid{grid-template-columns:1fr}
   .lead-card{flex-direction:column}
-  .lead-actions{width:100%;justify-content:flex-end}
+  .lead-right{width:100%;flex-direction:row;justify-content:space-between;align-items:center}
   .stats{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
 <body>
 
-<!-- NAV -->
+<!--email_off-->
 <nav class="nav">
   <a href="/" class="nav-logo">
     <svg width="24" height="28" viewBox="0 0 48 56" fill="none"><path d="M24 2C13 2 4 11 4 22c0 14 20 32 20 32s20-18 20-32C44 11 35 2 24 2z" fill="#f05528"/><circle cx="24" cy="20" r="12" fill="#fff"/><path d="M18 20l4.5 4.5 7.5-7.5" stroke="#f05528" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -108,7 +111,6 @@ a{text-decoration:none;color:inherit}
   </div>
 </nav>
 
-<!-- LOADING STATE -->
 <div class="dash" id="loading-state">
   <div class="loading">
     <div class="loading-spinner"></div>
@@ -116,16 +118,13 @@ a{text-decoration:none;color:inherit}
   </div>
 </div>
 
-<!-- DASHBOARD CONTENT (hidden until data loads) -->
 <div class="dash" id="dashboard" style="display:none">
 
-  <!-- HEADER -->
   <div class="dash-header">
     <h1 id="dash-greeting">Welcome back!</h1>
     <p id="dash-sub">Here's your lead activity and account overview.</p>
   </div>
 
-  <!-- STATS -->
   <div class="stats">
     <div class="stat-card">
       <div class="stat-label">Total Leads</div>
@@ -139,111 +138,115 @@ a{text-decoration:none;color:inherit}
     </div>
     <div class="stat-card">
       <div class="stat-label">Acceptance Rate</div>
-      <div class="stat-value" id="stat-rate">—</div>
+      <div class="stat-value" id="stat-rate">&mdash;</div>
       <div class="stat-sub">of leads accepted</div>
     </div>
     <div class="stat-card">
+      <div class="stat-label">Avg Response</div>
+      <div class="stat-value" id="stat-response">&mdash;</div>
+      <div class="stat-sub">time to respond</div>
+    </div>
+    <div class="stat-card">
       <div class="stat-label">Plan</div>
-      <div class="stat-value" id="stat-plan" style="color:var(--orange)">—</div>
+      <div class="stat-value" id="stat-plan" style="color:var(--orange)">&mdash;</div>
       <div class="stat-sub" id="stat-plan-status"></div>
     </div>
   </div>
 
-  <!-- RECENT LEADS -->
   <div class="section">
     <div class="section-title">Recent Leads <span class="count" id="lead-count">0</span></div>
     <div id="leads-list">
       <div class="card empty">
-        <div class="empty-icon">📋</div>
+        <div class="empty-icon">&#128203;</div>
         <div class="empty-title">No leads yet</div>
         <div class="empty-sub">When homeowners in your area request service, you'll see their leads here.</div>
       </div>
     </div>
   </div>
 
-  <!-- PROFILE -->
   <div class="section">
-    <div class="section-title" style="justify-content:space-between">
-      <span>Your Profile</span>
-    </div>
+    <div class="section-title">Plan &amp; Billing</div>
     <div class="card">
-      <div class="profile-grid" id="profile-grid">
-        <!-- filled by JS -->
-      </div>
+      <div class="billing-grid" id="billing-grid"></div>
+      <div class="plan-row" id="plan-row"></div>
     </div>
   </div>
 
-  <!-- PLAN & BILLING -->
   <div class="section">
-    <div class="section-title">Plan & Billing</div>
+    <div class="section-title">Your Profile</div>
     <div class="card">
-      <div class="plan-card" id="plan-card">
-        <!-- filled by JS -->
-      </div>
+      <div class="profile-grid" id="profile-grid"></div>
     </div>
   </div>
 
-  <!-- SERVICE AREAS -->
   <div class="section">
     <div class="section-title">Service Areas</div>
     <div class="card">
-      <div id="service-areas">
-        <!-- filled by JS -->
-      </div>
+      <div id="service-areas"></div>
     </div>
   </div>
 
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 var SUPABASE_URL='https://kasqtxwbsmjlisbnebku.supabase.co';
 var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imthc3F0eHdic21qbGlzYm5lYmt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzkxODgsImV4cCI6MjA5MTQxNTE4OH0.QEiRMQYZlOEgk1FzOV-L3TMRjgC046ymziSE7RNO8Yg';
-
 var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 var contractor=null;
+var leads=[];
 
-// ═══ AUTH CHECK ═══
+var PLAN_PRICING={
+  Basic:{monthly:49,perLead:39},
+  Pro:{monthly:99,perLead:29},
+  Elite:{monthly:199,perLead:19}
+};
+
 async function init(){
   var session=await sb.auth.getSession();
   if(!session.data.session){
     window.location.href='/contractor-login.html';
     return;
   }
-
   var user=session.data.session.user;
   document.getElementById('nav-user').textContent=user.email;
 
-  // Fetch contractor profile
   var result=await sb.from('contractors').select('*').eq('auth_id',user.id).single();
-
   if(result.error||!result.data){
-    // No contractor profile — they might have auth but no profile yet
     document.getElementById('loading-state').innerHTML='<div class="loading"><p class="loading-text">Setting up your dashboard... If this takes too long, please <a href="mailto:support@selectservicepros.com" style="color:var(--orange)">contact support</a>.</p></div>';
     return;
   }
-
   contractor=result.data;
-  renderDashboard();
+  await renderDashboard();
 }
 
-// ═══ RENDER DASHBOARD ═══
-function renderDashboard(){
+async function renderDashboard(){
   var c=contractor;
   document.getElementById('loading-state').style.display='none';
   document.getElementById('dashboard').style.display='block';
 
-  // Greeting
   document.getElementById('dash-greeting').textContent='Welcome back, '+(c.first_name||'')+'!';
   document.getElementById('dash-sub').textContent=c.company_name||'Your contractor dashboard';
 
-  // Stats
-  document.getElementById('stat-leads').textContent=c.lead_count||'0';
-  document.getElementById('stat-accepted').textContent='0';
-  document.getElementById('stat-rate').textContent=c.acceptance_rate?c.acceptance_rate+'%':'—';
-  document.getElementById('stat-plan').textContent=c.membership_tier||'—';
-  document.getElementById('stat-plan-status').textContent=c.status==='Verified'?'Active ✓':c.status||'';
+  // Load leads first so we can compute stats from them
+  await loadLeads();
+
+  // Compute stats from leads
+  var totalLeads=leads.length;
+  var accepted=leads.filter(function(l){return l.status==='Accepted'}).length;
+  var rate=totalLeads>0?Math.round((accepted/totalLeads)*100):0;
+  var totalCharges=leads.filter(function(l){return l.status==='Accepted'&&l.lead_fee}).reduce(function(sum,l){return sum+(parseFloat(l.lead_fee)||0)},0);
+
+  // Avg response time from leads that have response_time_seconds
+  var responded=leads.filter(function(l){return l.response_time_seconds>0});
+  var avgResponse=responded.length>0?Math.round(responded.reduce(function(sum,l){return sum+l.response_time_seconds},0)/responded.length):0;
+
+  document.getElementById('stat-leads').textContent=totalLeads||c.lead_count||'0';
+  document.getElementById('stat-accepted').textContent=accepted;
+  document.getElementById('stat-rate').textContent=totalLeads>0?rate+'%':'\u2014';
+  document.getElementById('stat-response').textContent=avgResponse>0?formatTime(avgResponse):'\u2014';
+  document.getElementById('stat-plan').textContent=c.membership_tier||'\u2014';
+  document.getElementById('stat-plan-status').textContent=c.status==='Verified'?'Active \u2713':c.status||'';
 
   // Profile
   var fields=[
@@ -252,23 +255,30 @@ function renderDashboard(){
     {l:'Email',v:c.email},
     {l:'Phone',v:c.phone},
     {l:'Services',v:c.service_categories},
-    {l:'License',v:c.license_number?(c.license_number+(c.license_verified?' ✓ Verified':' — Pending')):'Not provided'},
+    {l:'License',v:c.license_number?(c.license_number+(c.license_verified?' \u2713 Verified':' \u2014 Pending')):'Not provided'},
     {l:'Years in Business',v:c.years_in_business},
     {l:'Employees',v:c.number_of_employees},
-    {l:'Website',v:c.website_url?'<a href="'+c.website_url+'" target="_blank" style="color:var(--orange)">'+c.website_url+'</a>':'—'},
-    {l:'Description',v:c.business_description||'—'}
+    {l:'Website',v:c.website_url?'<a href="'+c.website_url+'" target="_blank" style="color:var(--orange)">'+c.website_url+'</a>':'\u2014'},
+    {l:'Description',v:c.business_description||'\u2014'}
   ];
-
   var html='';
   fields.forEach(function(f){
-    html+='<div class="profile-field"><div class="profile-label">'+f.l+'</div><div class="profile-value">'+(f.v||'—')+'</div></div>';
+    html+='<div class="profile-field"><div class="profile-label">'+f.l+'</div><div class="profile-value">'+(f.v||'\u2014')+'</div></div>';
   });
   document.getElementById('profile-grid').innerHTML=html;
 
-  // Plan
+  // Plan & Billing
   var tier=c.membership_tier||'Basic';
-  var prices={Basic:'$99/mo',Pro:'$199/mo',Elite:'$299/mo'};
-  document.getElementById('plan-card').innerHTML='<div><div class="plan-name">'+tier+' Plan</div><div class="plan-price">'+(prices[tier]||'')+'</div></div><div class="plan-status">Active</div>';
+  var pricing=PLAN_PRICING[tier]||PLAN_PRICING.Basic;
+
+  document.getElementById('billing-grid').innerHTML=
+    '<div class="billing-item"><div class="billing-label">Monthly Fee</div><div class="billing-value">$'+pricing.monthly+'</div><div class="billing-note">'+tier+' plan</div></div>'
+    +'<div class="billing-item"><div class="billing-label">Lead Charges</div><div class="billing-value">$'+totalCharges.toFixed(0)+'</div><div class="billing-note">'+accepted+' accepted leads @ $'+pricing.perLead+'/ea</div></div>'
+    +'<div class="billing-item"><div class="billing-label">Est. Total</div><div class="billing-value">$'+(pricing.monthly+totalCharges).toFixed(0)+'</div><div class="billing-note">this billing period</div></div>';
+
+  document.getElementById('plan-row').innerHTML=
+    '<div><div class="plan-name">'+tier+' Plan</div><div class="plan-price">$'+pricing.monthly+'/mo + $'+pricing.perLead+' per accepted lead</div></div>'
+    +'<div class="plan-status">Active</div>';
 
   // Service areas
   var zips=c.service_zips||c.zip_code||'';
@@ -279,65 +289,105 @@ function renderDashboard(){
   }else{
     document.getElementById('service-areas').innerHTML='<p style="font-size:14px;color:var(--text3)">No service areas set yet.</p>';
   }
-
-  // Load leads
-  loadLeads();
 }
 
-// ═══ LOAD LEADS ═══
 async function loadLeads(){
   var result=await sb.from('leads')
     .select('*')
     .eq('assigned_contractor_id',contractor.id)
     .order('created_at',{ascending:false})
-    .limit(10);
+    .limit(20);
 
-  if(result.error||!result.data||result.data.length===0){
+  if(result.error||!result.data){
+    leads=[];
     document.getElementById('lead-count').textContent='0';
     return;
   }
-
-  var leads=result.data;
+  leads=result.data;
   document.getElementById('lead-count').textContent=leads.length;
-  document.getElementById('stat-leads').textContent=leads.length;
+
+  if(leads.length===0) return;
+
+  var tier=contractor.membership_tier||'Basic';
+  var perLead=PLAN_PRICING[tier]?PLAN_PRICING[tier].perLead:39;
 
   var html='';
   leads.forEach(function(lead){
-    var badgeClass=lead.status==='New'?'badge-new':lead.status==='Accepted'?'badge-accepted':'badge-expired';
+    var st=lead.status||'pending';
+    var stLower=st.toLowerCase();
+    var badgeClass=stLower==='new'||stLower==='pending'?'badge-new':stLower==='accepted'?'badge-accepted':stLower==='passed'?'badge-passed':'badge-expired';
+    var fee=lead.lead_fee||perLead;
+    var isNew=stLower==='new'||stLower==='pending';
+    var isAccepted=stLower==='accepted';
+
+    // Urgency badge
+    var urgencyHtml='';
+    if(lead.urgency){
+      var uClass=lead.urgency.toLowerCase()==='emergency'?'urgency-emergency':lead.urgency.toLowerCase()==='soon'?'urgency-soon':'urgency-planning';
+      urgencyHtml='<span class="lead-urgency '+uClass+'">'+lead.urgency+'</span>';
+    }
+
     html+='<div class="card lead-card">'
       +'<div class="lead-info">'
-      +'<div class="lead-service">'+(lead.service_type||lead.service_category||'Service Request')+'</div>'
-      +'<div class="lead-detail">'+(lead.homeowner_name||'Homeowner')+' · '+(lead.homeowner_zip||'')+'</div>'
-      +'<div class="lead-detail">'+(lead.description||'No details provided')+'</div>'
-      +'<span class="lead-badge '+badgeClass+'">'+lead.status+'</span>'
+      +'<div class="lead-top">'
+      +'<span class="lead-service">'+(lead.service_type||lead.service_category||'Service Request')+'</span>'
+      +urgencyHtml
+      +'</div>'
+      +'<div class="lead-detail">'+(lead.homeowner_name||'Homeowner')+' \u00B7 '+(lead.homeowner_zip||'')+'</div>'
+      +(isAccepted&&lead.homeowner_phone?'<div class="lead-phone">\u260E '+lead.homeowner_phone+'</div>':'')
+      +'<div class="lead-detail" style="color:var(--text3)">'+(lead.description||'No details provided')+'</div>'
+      +'<span class="lead-badge '+badgeClass+'">'+st+'</span>'
       +'<div class="lead-time">'+timeAgo(lead.created_at)+'</div>'
       +'</div>'
+      +'<div class="lead-right">'
+      +'<div>'
+      +'<div class="lead-fee">'+(isAccepted?'$'+fee+' charged':isNew?'$'+fee+' if accepted':'No charge')+'</div>'
+      +'<div class="lead-fee-note">'+(isNew?'per-lead fee':'')+'</div>'
+      +'</div>'
       +'<div class="lead-actions">'
-      +(lead.status==='New'?'<button class="lead-accept" onclick="acceptLead(\''+lead.id+'\')">Accept</button><button class="lead-pass" onclick="passLead(\''+lead.id+'\')">Pass</button>':'')
+      +(isNew?'<button class="lead-accept" onclick="acceptLead(\''+lead.id+'\','+fee+')">Accept</button><button class="lead-pass" onclick="passLead(\''+lead.id+'\')">Pass</button>':'')
+      +'</div>'
       +'</div>'
       +'</div>';
   });
   document.getElementById('leads-list').innerHTML=html;
 }
 
-// ═══ ACCEPT/PASS LEAD ═══
-async function acceptLead(id){
-  await sb.from('leads').update({status:'Accepted',accepted_at:new Date().toISOString()}).eq('id',id);
-  loadLeads();
+async function acceptLead(id,fee){
+  var now=new Date().toISOString();
+  var lead=leads.find(function(l){return l.id===id});
+  var responseSeconds=lead?Math.floor((Date.now()-new Date(lead.created_at).getTime())/1000):null;
+
+  await sb.from('leads').update({
+    status:'Accepted',
+    accepted_at:now,
+    responded_at:now,
+    lead_fee:fee||null,
+    response_time_seconds:responseSeconds
+  }).eq('id',id);
+
+  await renderDashboard();
 }
 
 async function passLead(id){
-  await sb.from('leads').update({status:'Passed'}).eq('id',id);
-  loadLeads();
+  var now=new Date().toISOString();
+  var lead=leads.find(function(l){return l.id===id});
+  var responseSeconds=lead?Math.floor((Date.now()-new Date(lead.created_at).getTime())/1000):null;
+
+  await sb.from('leads').update({
+    status:'Passed',
+    responded_at:now,
+    response_time_seconds:responseSeconds
+  }).eq('id',id);
+
+  await renderDashboard();
 }
 
-// ═══ LOGOUT ═══
 async function doLogout(){
   await sb.auth.signOut();
   window.location.href='/contractor-login.html';
 }
 
-// ═══ HELPERS ═══
 function timeAgo(date){
   var s=Math.floor((Date.now()-new Date(date).getTime())/1000);
   if(s<60) return 'just now';
@@ -346,18 +396,18 @@ function timeAgo(date){
   return Math.floor(s/86400)+' days ago';
 }
 
-// Listen for auth state changes
-sb.auth.onAuthStateChange(function(event,session){
-  if(event==='SIGNED_OUT'){
-    window.location.href='/contractor-login.html';
-  }
+function formatTime(seconds){
+  if(seconds<60) return seconds+'s';
+  if(seconds<3600) return Math.floor(seconds/60)+'m';
+  return Math.floor(seconds/3600)+'h '+Math.floor((seconds%3600)/60)+'m';
+}
+
+sb.auth.onAuthStateChange(function(event){
+  if(event==='SIGNED_OUT') window.location.href='/contractor-login.html';
 });
 
 init();
 </script>
-
-</body>
-</html>
-!--/email_off-->
+<!--email_off-->
 </body>
 </html>
