@@ -88,6 +88,10 @@ a{text-decoration:none;color:inherit}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{font-size:14px;color:var(--text3);margin-top:12px}
 
+.filter-btn{background:var(--white);border:1px solid var(--border);color:var(--text3);padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.filter-btn:hover{border-color:var(--orange);color:var(--orange)}
+.filter-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+
 @media(max-width:600px){
   .profile-grid{grid-template-columns:1fr}
   .billing-grid{grid-template-columns:1fr}
@@ -155,6 +159,12 @@ a{text-decoration:none;color:inherit}
 
   <div class="section">
     <div class="section-title">Recent Leads <span class="count" id="lead-count">0</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap" id="lead-filters">
+      <button class="filter-btn active" onclick="filterLeads('all')">All</button>
+      <button class="filter-btn" onclick="filterLeads('new')">New</button>
+      <button class="filter-btn" onclick="filterLeads('accepted')">Accepted</button>
+      <button class="filter-btn" onclick="filterLeads('passed')">Passed</button>
+    </div>
     <div id="leads-list">
       <div class="card empty">
         <div class="empty-icon">&#128203;</div>
@@ -195,6 +205,7 @@ var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 var contractor=null;
 var leads=[];
+var currentFilter='all';
 
 var PLAN_PRICING={
   Basic:{monthly:49,perLead:39},
@@ -296,23 +307,38 @@ async function loadLeads(){
     .select('*')
     .eq('assigned_contractor_id',contractor.id)
     .order('created_at',{ascending:false})
-    .limit(20);
+    .limit(50);
 
   if(result.error||!result.data){
     leads=[];
-    document.getElementById('lead-count').textContent='0';
+  } else {
+    leads=result.data;
+  }
+  renderLeads();
+}
+
+function renderLeads(){
+  var filtered=leads;
+  if(currentFilter!=='all'){
+    filtered=leads.filter(function(l){
+      var s=(l.status||'').toLowerCase();
+      if(currentFilter==='new') return s==='new'||s==='pending';
+      return s===currentFilter;
+    });
+  }
+
+  document.getElementById('lead-count').textContent=filtered.length;
+
+  if(filtered.length===0){
+    document.getElementById('leads-list').innerHTML='<div class="card empty"><div class="empty-icon">&#128203;</div><div class="empty-title">No '+currentFilter+' leads</div><div class="empty-sub">'+(currentFilter==='all'?'When homeowners in your area request service, you\'ll see their leads here.':'Try a different filter.')+'</div></div>';
     return;
   }
-  leads=result.data;
-  document.getElementById('lead-count').textContent=leads.length;
-
-  if(leads.length===0) return;
 
   var tier=contractor.membership_tier||'Basic';
   var perLead=PLAN_PRICING[tier]?PLAN_PRICING[tier].perLead:39;
 
   var html='';
-  leads.forEach(function(lead){
+  filtered.forEach(function(lead){
     var st=lead.status||'pending';
     var stLower=st.toLowerCase();
     var badgeClass=stLower==='new'||stLower==='pending'?'badge-new':stLower==='accepted'?'badge-accepted':stLower==='passed'?'badge-passed':'badge-expired';
@@ -320,7 +346,6 @@ async function loadLeads(){
     var isNew=stLower==='new'||stLower==='pending';
     var isAccepted=stLower==='accepted';
 
-    // Urgency badge
     var urgencyHtml='';
     if(lead.urgency){
       var uClass=lead.urgency.toLowerCase()==='emergency'?'urgency-emergency':lead.urgency.toLowerCase()==='soon'?'urgency-soon':'urgency-planning';
@@ -386,6 +411,14 @@ async function passLead(id){
 async function doLogout(){
   await sb.auth.signOut();
   window.location.href='/contractor-login.html';
+}
+
+function filterLeads(filter){
+  currentFilter=filter;
+  var btns=document.querySelectorAll('.filter-btn');
+  btns.forEach(function(b){b.classList.remove('active')});
+  event.target.classList.add('active');
+  renderLeads();
 }
 
 function timeAgo(date){
