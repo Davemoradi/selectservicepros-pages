@@ -27,6 +27,30 @@ module.exports = async (req, res) => {
     var contractors = contractorsResult.data || [];
     var leads = leadsResult.data || [];
 
+    // Compute real stats per contractor from leads data
+    var contractorLeadStats = {};
+    leads.forEach(function(l) {
+      var cid = l.assigned_contractor_id;
+      if (!cid) return;
+      if (!contractorLeadStats[cid]) contractorLeadStats[cid] = { total: 0, accepted: 0, passed: 0, responseTimes: [] };
+      contractorLeadStats[cid].total++;
+      if (l.status === 'Accepted') contractorLeadStats[cid].accepted++;
+      if (l.status === 'Passed') contractorLeadStats[cid].passed++;
+      if (l.response_time_seconds > 0) contractorLeadStats[cid].responseTimes.push(l.response_time_seconds);
+    });
+
+    // Enrich contractors with computed stats
+    contractors = contractors.map(function(c) {
+      var stats = contractorLeadStats[c.id] || { total: 0, accepted: 0, passed: 0, responseTimes: [] };
+      var avgResp = stats.responseTimes.length > 0 ? Math.round(stats.responseTimes.reduce(function(a, b) { return a + b }, 0) / stats.responseTimes.length) : 0;
+      c.computed_leads = stats.total;
+      c.computed_accepted = stats.accepted;
+      c.computed_passed = stats.passed;
+      c.computed_rate = stats.total > 0 ? Math.round((stats.accepted / stats.total) * 100) : 0;
+      c.computed_avg_response = avgResp;
+      return c;
+    });
+
     var totalMRR = contractors.reduce(function(sum, c) {
       var prices = { Basic: 49, Pro: 99, Elite: 199 };
       return sum + (prices[c.membership_tier] || 0);
