@@ -11,12 +11,10 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text1);-webkit-font-smoothing:antialiased}
 a{text-decoration:none;color:inherit}
-
-.nav{background:var(--navy);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav{background:var(--navy);padding:0 24px;height:60px;display:flex;align-items:center;position:sticky;top:0;z-index:100}
 .nav-logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;color:#fff}
 .nav-logo .ls{color:var(--orange)}
 .nav-badge{background:var(--orange);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;margin-left:8px}
-
 .login-wrap{max-width:400px;margin:120px auto;text-align:center}
 .login-wrap h1{font-family:'Fraunces',serif;font-weight:800;font-size:28px;color:var(--navy);margin-bottom:8px}
 .login-wrap p{font-size:14px;color:var(--text3);margin-bottom:24px}
@@ -25,67 +23,65 @@ a{text-decoration:none;color:inherit}
 .login-btn{width:100%;padding:12px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
 .login-btn:hover{background:var(--orange2)}
 .login-error{color:var(--red);font-size:13px;margin-top:8px;display:none}
-
 .dash{max-width:1200px;margin:0 auto;padding:32px 24px 60px;display:none}
-.dash-header{margin-bottom:32px}
-.dash-header h1{font-family:'Fraunces',serif;font-weight:800;font-size:clamp(24px,4vw,32px);color:var(--navy)}
-.dash-header p{font-size:14px;color:var(--text3);margin-top:4px}
-
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px}
-.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
-.stat-label{font-size:12px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.stat-value{font-size:28px;font-weight:800;color:var(--navy)}
-.stat-sub{font-size:12px;color:var(--text3);margin-top:2px}
-
-.section{margin-bottom:32px}
-.section-title{font-family:'Fraunces',serif;font-weight:700;font-size:20px;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.tabs{display:flex;gap:4px;margin-bottom:28px;border-bottom:2px solid var(--border)}
+.tab{padding:10px 20px;font-size:14px;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab:hover{color:var(--text1)}
+.tab.active{color:var(--orange);border-bottom-color:var(--orange)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.dash-header{margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.dash-header h1{font-family:'Fraunces',serif;font-weight:800;font-size:clamp(22px,3vw,28px);color:var(--navy)}
+.dash-header p{font-size:13px;color:var(--text3);margin-top:2px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:28px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.stat-label{font-size:11px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-value{font-size:26px;font-weight:800;color:var(--navy)}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.section{margin-bottom:28px}
+.section-title{font-family:'Fraunces',serif;font-weight:700;font-size:18px;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:10px}
 .section-title .count{background:var(--orange);color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px}
-
 .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
-
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead{background:var(--bg)}
-th{padding:10px 14px;text-align:left;font-weight:600;color:var(--text4);text-transform:uppercase;font-size:11px;letter-spacing:.5px;border-bottom:1px solid var(--border);white-space:nowrap}
-td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text2)}
+th{padding:10px 12px;text-align:left;font-weight:600;color:var(--text4);text-transform:uppercase;font-size:11px;letter-spacing:.5px;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--orange)}
+td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2)}
 tr:last-child td{border-bottom:none}
 tr:hover{background:rgba(240,85,40,.02)}
-
 .badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px}
-.b-elite{background:var(--orange-light);color:var(--orange)}
-.b-pro{background:var(--blue-light);color:var(--blue)}
-.b-basic{background:var(--bg);color:var(--text3)}
-.b-paid{background:var(--green-light);color:var(--green)}
-.b-new{background:var(--orange-light);color:var(--orange)}
-.b-accepted{background:var(--green-light);color:var(--green)}
-.b-passed{background:var(--bg);color:var(--text4)}
-.b-emergency{background:var(--red-light);color:var(--red)}
-.b-soon{background:var(--yellow-light);color:var(--yellow)}
-.b-planning{background:var(--blue-light);color:var(--blue)}
-
+.b-elite{background:var(--orange-light);color:var(--orange)}.b-pro{background:var(--blue-light);color:var(--blue)}.b-basic{background:var(--bg);color:var(--text3)}
+.b-paid{background:var(--green-light);color:var(--green)}.b-pending{background:var(--yellow-light);color:var(--yellow)}
+.b-new{background:var(--orange-light);color:var(--orange)}.b-accepted{background:var(--green-light);color:var(--green)}.b-passed{background:var(--bg);color:var(--text4)}
+.b-emergency{background:var(--red-light);color:var(--red)}.b-soon{background:var(--yellow-light);color:var(--yellow)}.b-planning{background:var(--blue-light);color:var(--blue)}
 .name-cell{font-weight:600;color:var(--text1)}
 .sub-text{font-size:11px;color:var(--text4)}
 .money{font-weight:700;color:var(--navy)}
-
-.loading{text-align:center;padding:60px 20px}
-.loading-spinner{display:inline-block;width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
 .filter-btn{background:var(--white);border:1px solid var(--border);color:var(--text3);padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .filter-btn:hover{border-color:var(--orange);color:var(--orange)}
 .filter-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
-
 .refresh-btn{background:var(--white);border:1px solid var(--border);color:var(--text2);padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
 .refresh-btn:hover{background:var(--bg)}
-
-@media(max-width:768px){
-  table{font-size:12px}
-  th,td{padding:8px 10px}
-  .stats{grid-template-columns:1fr 1fr}
-}
+.search-input{padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;width:220px}
+.search-input:focus{outline:none;border-color:var(--orange)}
+.sel{padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text2);background:var(--white)}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.pricing-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.pricing-card h3{font-size:16px;font-weight:700;margin-bottom:12px}
+.pricing-card.elite{border-top:3px solid var(--orange)}.pricing-card.pro{border-top:3px solid var(--blue)}.pricing-card.basic{border-top:3px solid var(--text4)}
+.pricing-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.pricing-row:last-child{border-bottom:none}
+.pricing-row label{font-size:13px;color:var(--text2)}
+.pricing-row input{width:80px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-weight:700;text-align:right;font-family:'DM Sans',sans-serif}
+.pricing-row input:focus{outline:none;border-color:var(--orange)}
+.pricing-row .unit{font-size:12px;color:var(--text4);margin-left:4px}
+.save-btn{background:var(--green);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
+.save-btn:hover{background:#158a3e}
+.save-msg{font-size:13px;color:var(--green);margin-left:12px;display:none}
+@media(max-width:768px){table{font-size:12px}th,td{padding:8px}.stats{grid-template-columns:1fr 1fr}.pricing-grid{grid-template-columns:1fr}.search-input{width:100%}}
 </style>
 </head>
 <body>
-
 <!--email_off-->
 <nav class="nav">
   <div style="display:flex;align-items:center">
@@ -106,210 +102,244 @@ tr:hover{background:rgba(240,85,40,.02)}
 </div>
 
 <div class="dash" id="dashboard">
-  <div class="dash-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-    <div>
-      <h1>Business Overview</h1>
-      <p id="dash-time"></p>
-    </div>
-    <button class="refresh-btn" onclick="loadData()">Refresh</button>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('overview',this)">Overview</div>
+    <div class="tab" onclick="switchTab('config',this)">Platform Config</div>
   </div>
 
-  <div class="stats">
-    <div class="stat-card">
-      <div class="stat-label">Contractors</div>
-      <div class="stat-value" id="s-contractors">0</div>
-      <div class="stat-sub">active contractors</div>
+  <!-- ═══ OVERVIEW TAB ═══ -->
+  <div class="tab-content active" id="tab-overview">
+    <div class="dash-header">
+      <div><h1>Business Overview</h1><p id="dash-time"></p></div>
+      <button class="refresh-btn" onclick="loadData()">Refresh</button>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Total Leads</div>
-      <div class="stat-value" id="s-leads">0</div>
-      <div class="stat-sub">all time</div>
+    <div class="stats">
+      <div class="stat-card"><div class="stat-label">Contractors</div><div class="stat-value" id="s-contractors">0</div><div class="stat-sub">active</div></div>
+      <div class="stat-card"><div class="stat-label">Total Leads</div><div class="stat-value" id="s-leads">0</div><div class="stat-sub">all time</div></div>
+      <div class="stat-card"><div class="stat-label">Monthly MRR</div><div class="stat-value money" id="s-mrr">$0</div><div class="stat-sub">memberships</div></div>
+      <div class="stat-card"><div class="stat-label">Lead Revenue</div><div class="stat-value money" id="s-lead-rev">$0</div><div class="stat-sub">accepted leads</div></div>
+      <div class="stat-card"><div class="stat-label">Est. Revenue</div><div class="stat-value money" id="s-total" style="color:var(--green)">$0</div><div class="stat-sub">MRR + leads</div></div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Monthly MRR</div>
-      <div class="stat-value money" id="s-mrr">$0</div>
-      <div class="stat-sub">from memberships</div>
+
+    <div class="section">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+        <div class="section-title" style="margin-bottom:0">Contractors <span class="count" id="c-count">0</span></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input class="search-input" type="text" id="contractor-search" placeholder="Search contractors..." oninput="renderContractors()"/>
+          <select class="sel" id="plan-filter" onchange="renderContractors()"><option value="all">All Plans</option><option value="Elite">Elite</option><option value="Pro">Pro</option><option value="Basic">Basic</option></select>
+          <select class="sel" id="status-filter" onchange="renderContractors()"><option value="all">All Status</option><option value="Paid">Paid</option><option value="Verified">Verified</option><option value="Pending">Pending</option></select>
+        </div>
+      </div>
+      <div class="card"><div style="overflow-x:auto">
+        <table><thead><tr>
+          <th onclick="sortC('name')">Name <span id="sa-name"></span></th>
+          <th onclick="sortC('company')">Company <span id="sa-company"></span></th>
+          <th onclick="sortC('plan')">Plan <span id="sa-plan"></span></th>
+          <th onclick="sortC('status')">Status <span id="sa-status"></span></th>
+          <th onclick="sortC('leads')">Leads <span id="sa-leads"></span></th>
+          <th onclick="sortC('rate')">Accept % <span id="sa-rate"></span></th>
+          <th onclick="sortC('response')">Avg Response <span id="sa-response"></span></th>
+          <th onclick="sortC('joined')">Joined <span id="sa-joined"></span></th>
+        </tr></thead><tbody id="contractors-table"></tbody></table>
+      </div></div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Lead Revenue</div>
-      <div class="stat-value money" id="s-lead-rev">$0</div>
-      <div class="stat-sub">from accepted leads</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Est. Revenue</div>
-      <div class="stat-value money" id="s-total" style="color:var(--green)">$0</div>
-      <div class="stat-sub">MRR + lead charges</div>
+
+    <div class="section">
+      <div class="section-title">Recent Leads <span class="count" id="l-count">0</span></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="filter-btn active" onclick="filterLeads('all',this)">All</button>
+        <button class="filter-btn" onclick="filterLeads('new',this)">New</button>
+        <button class="filter-btn" onclick="filterLeads('accepted',this)">Accepted</button>
+        <button class="filter-btn" onclick="filterLeads('passed',this)">Passed</button>
+      </div>
+      <div class="card"><div style="overflow-x:auto">
+        <table><thead><tr><th>Service</th><th>Homeowner</th><th>ZIP</th><th>Urgency</th><th>Contractor</th><th>Status</th><th>Fee</th><th>Date</th></tr></thead>
+        <tbody id="leads-table"></tbody></table>
+      </div></div>
     </div>
   </div>
 
-  <div class="section">
-    <div class="section-title">Contractors <span class="count" id="c-count">0</span></div>
-    <div class="card">
-      <div style="overflow-x:auto">
-        <table>
-          <thead>
-            <tr><th>Name</th><th>Company</th><th>Plan</th><th>Status</th><th>Leads</th><th>Accept %</th><th>Avg Response</th><th>Joined</th></tr>
-          </thead>
-          <tbody id="contractors-table"></tbody>
-        </table>
+  <!-- ═══ PLATFORM CONFIG TAB ═══ -->
+  <div class="tab-content" id="tab-config">
+    <div class="dash-header"><div><h1>Platform Configuration</h1><p>Manage pricing, service categories, and markets.</p></div></div>
+
+    <div class="section">
+      <div class="section-title">Lead Fee Pricing</div>
+      <p style="font-size:13px;color:var(--text3);margin-bottom:16px">Adjust per-lead fees by plan tier. Changes apply to new leads and update the contractor dashboard in real time.</p>
+      <div class="pricing-grid">
+        <div class="pricing-card basic">
+          <h3>Basic</h3>
+          <div class="pricing-row"><label>Monthly Fee</label><div><input type="number" id="p-basic-mo" value="49"/><span class="unit">/mo</span></div></div>
+          <div class="pricing-row"><label>Per-Lead Fee</label><div><input type="number" id="p-basic-lead" value="39"/><span class="unit">/lead</span></div></div>
+          <div class="pricing-row"><label>Response Window</label><div><input type="number" id="p-basic-win" value="30"/><span class="unit">min</span></div></div>
+        </div>
+        <div class="pricing-card pro">
+          <h3>Pro</h3>
+          <div class="pricing-row"><label>Monthly Fee</label><div><input type="number" id="p-pro-mo" value="99"/><span class="unit">/mo</span></div></div>
+          <div class="pricing-row"><label>Per-Lead Fee</label><div><input type="number" id="p-pro-lead" value="29"/><span class="unit">/lead</span></div></div>
+          <div class="pricing-row"><label>Response Window</label><div><input type="number" id="p-pro-win" value="45"/><span class="unit">min</span></div></div>
+        </div>
+        <div class="pricing-card elite">
+          <h3>Elite</h3>
+          <div class="pricing-row"><label>Monthly Fee</label><div><input type="number" id="p-elite-mo" value="199"/><span class="unit">/mo</span></div></div>
+          <div class="pricing-row"><label>Per-Lead Fee</label><div><input type="number" id="p-elite-lead" value="19"/><span class="unit">/lead</span></div></div>
+          <div class="pricing-row"><label>Response Window</label><div><input type="number" id="p-elite-win" value="60"/><span class="unit">min</span></div></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center">
+        <button class="save-btn" onclick="savePricing()">Save Pricing</button>
+        <span class="save-msg" id="pricing-msg">Pricing saved!</span>
       </div>
     </div>
-  </div>
 
-  <div class="section">
-    <div class="section-title">Recent Leads <span class="count" id="l-count">0</span></div>
-    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-      <button class="filter-btn active" onclick="filterLeads('all',this)">All</button>
-      <button class="filter-btn" onclick="filterLeads('new',this)">New</button>
-      <button class="filter-btn" onclick="filterLeads('accepted',this)">Accepted</button>
-      <button class="filter-btn" onclick="filterLeads('passed',this)">Passed</button>
-    </div>
-    <div class="card">
-      <div style="overflow-x:auto">
-        <table>
-          <thead>
-            <tr><th>Service</th><th>Homeowner</th><th>ZIP</th><th>Urgency</th><th>Contractor</th><th>Status</th><th>Fee</th><th>Date</th></tr>
-          </thead>
-          <tbody id="leads-table"></tbody>
-        </table>
-      </div>
+    <div class="section">
+      <div class="section-title">Service Categories &amp; Markets</div>
+      <p style="font-size:13px;color:var(--text3);margin-bottom:16px">Toggle service categories on/off and manage active markets (cities, states, ZIP codes).</p>
+      <a href="/admin.html" target="_blank" style="display:inline-block;background:var(--navy);color:#fff;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:700">Open Category &amp; Market Manager</a>
     </div>
   </div>
 </div>
 
 <script>
-var adminData=null;
-var leadFilter='all';
+var adminData=null,leadFilter='all',storedPw='',cSort={field:'joined',dir:'desc'};
+
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active')});
+  el.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
 
 function doLogin(){
   var pw=document.getElementById('pw').value;
   if(!pw){document.getElementById('login-error').style.display='block';return}
+  storedPw=pw;
   fetch('/api/admin-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})})
-    .then(function(r){return r.json()})
-    .then(function(data){
-      if(data.error){document.getElementById('login-error').style.display='block';return}
-      adminData=data;
+    .then(function(r){return r.json()}).then(function(d){
+      if(d.error){document.getElementById('login-error').style.display='block';return}
+      adminData=d;
       document.getElementById('login-wrap').style.display='none';
       document.getElementById('dashboard').style.display='block';
-      renderDashboard();
-    })
-    .catch(function(){document.getElementById('login-error').style.display='block'});
+      renderAll();loadPricing();
+    }).catch(function(){document.getElementById('login-error').style.display='block'});
 }
 
 function loadData(){
-  fetch('/api/admin-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:'ssp2025'})})
-    .then(function(r){return r.json()})
-    .then(function(data){
-      if(data.error) return;
-      adminData=data;
-      renderDashboard();
-    });
+  var btn=document.querySelector('.refresh-btn');btn.textContent='Loading...';
+  fetch('/api/admin-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:storedPw})})
+    .then(function(r){return r.json()}).then(function(d){
+      btn.textContent='Refresh';if(d.error) return;adminData=d;renderAll();
+    }).catch(function(){btn.textContent='Refresh'});
 }
 
-function renderDashboard(){
-  var d=adminData;
-  document.getElementById('dash-time').textContent='Last updated: '+new Date().toLocaleString();
-
-  document.getElementById('s-contractors').textContent=d.stats.totalContractors;
-  document.getElementById('s-leads').textContent=d.stats.totalLeads;
-  document.getElementById('s-mrr').textContent='$'+d.stats.totalMRR.toLocaleString();
-  document.getElementById('s-lead-rev').textContent='$'+Math.round(d.stats.totalLeadCharges).toLocaleString();
-  document.getElementById('s-total').textContent='$'+Math.round(d.stats.totalRevenue).toLocaleString();
-
-  renderContractors();
-  renderLeads();
+function renderAll(){
+  document.getElementById('dash-time').textContent='Updated: '+new Date().toLocaleString();
+  var s=adminData.stats;
+  document.getElementById('s-contractors').textContent=s.totalContractors;
+  document.getElementById('s-leads').textContent=s.totalLeads;
+  document.getElementById('s-mrr').textContent='$'+s.totalMRR.toLocaleString();
+  document.getElementById('s-lead-rev').textContent='$'+Math.round(s.totalLeadCharges).toLocaleString();
+  document.getElementById('s-total').textContent='$'+Math.round(s.totalRevenue).toLocaleString();
+  renderContractors();renderLeads();
 }
 
 function renderContractors(){
-  var cs=adminData.contractors;
+  var cs=adminData.contractors.slice();
+  var q=(document.getElementById('contractor-search').value||'').toLowerCase();
+  var pf=document.getElementById('plan-filter').value;
+  var sf=document.getElementById('status-filter').value;
+  if(q) cs=cs.filter(function(c){return((c.first_name||'')+' '+(c.last_name||'')+' '+(c.email||'')+' '+(c.company_name||'')).toLowerCase().includes(q)});
+  if(pf!=='all') cs=cs.filter(function(c){return c.membership_tier===pf});
+  if(sf!=='all') cs=cs.filter(function(c){return(c.status||'').includes(sf)});
+
+  var f=cSort.field,d=cSort.dir==='asc'?1:-1;
+  cs.sort(function(a,b){var va,vb;
+    if(f==='name'){va=(a.first_name||'').toLowerCase();vb=(b.first_name||'').toLowerCase()}
+    else if(f==='company'){va=(a.company_name||'').toLowerCase();vb=(b.company_name||'').toLowerCase()}
+    else if(f==='plan'){var o={Elite:3,Pro:2,Basic:1};va=o[a.membership_tier]||0;vb=o[b.membership_tier]||0}
+    else if(f==='status'){va=a.status||'';vb=b.status||''}
+    else if(f==='leads'){va=a.lead_count||0;vb=b.lead_count||0}
+    else if(f==='rate'){va=a.acceptance_rate||0;vb=b.acceptance_rate||0}
+    else if(f==='response'){va=a.avg_response_time||0;vb=b.avg_response_time||0}
+    else{va=new Date(a.created_at||0).getTime();vb=new Date(b.created_at||0).getTime()}
+    return va>vb?d:va<vb?-d:0});
+
+  document.querySelectorAll('[id^="sa-"]').forEach(function(el){el.textContent=''});
+  var arrow=document.getElementById('sa-'+f);
+  if(arrow) arrow.textContent=cSort.dir==='asc'?'\u25B2':'\u25BC';
+
   document.getElementById('c-count').textContent=cs.length;
-
-  if(cs.length===0){
-    document.getElementById('contractors-table').innerHTML='<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">No contractors yet</td></tr>';
-    return;
-  }
-
-  var html='';
+  if(!cs.length){document.getElementById('contractors-table').innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text3)">No contractors match</td></tr>';return}
+  var h='';
   cs.forEach(function(c){
     var tier=c.membership_tier||'Basic';
-    var tierClass=tier==='Elite'?'b-elite':tier==='Pro'?'b-pro':'b-basic';
-    var rt=c.avg_response_time>0?formatTime(c.avg_response_time):'\u2014';
-    html+='<tr>'
-      +'<td><div class="name-cell">'+(c.first_name||'')+' '+(c.last_name||'')+'</div><div class="sub-text">'+c.email+'</div></td>'
-      +'<td>'+(c.company_name||'\u2014')+'</td>'
-      +'<td><span class="badge '+tierClass+'">'+tier+'</span></td>'
-      +'<td><span class="badge b-paid">'+(c.status||'Paid')+'</span></td>'
-      +'<td>'+(c.lead_count||0)+'</td>'
-      +'<td>'+(c.acceptance_rate?c.acceptance_rate+'%':'\u2014')+'</td>'
-      +'<td>'+rt+'</td>'
-      +'<td><div class="sub-text">'+formatDate(c.created_at)+'</div></td>'
-      +'</tr>';
-  });
-  document.getElementById('contractors-table').innerHTML=html;
+    var tc=tier==='Elite'?'b-elite':tier==='Pro'?'b-pro':'b-basic';
+    var st=c.status||'Paid';
+    var sc=st==='Paid'||st==='Verified'?'b-paid':'b-pending';
+    var rt=c.avg_response_time>0?fmtTime(c.avg_response_time):'\u2014';
+    h+='<tr><td><div class="name-cell">'+(c.first_name||'')+' '+(c.last_name||'')+'</div><div class="sub-text">'+c.email+'</div></td>'
+      +'<td>'+(c.company_name||'\u2014')+'</td><td><span class="badge '+tc+'">'+tier+'</span></td>'
+      +'<td><span class="badge '+sc+'">'+st+'</span></td><td>'+(c.lead_count||0)+'</td>'
+      +'<td>'+(c.acceptance_rate?c.acceptance_rate+'%':'\u2014')+'</td><td>'+rt+'</td>'
+      +'<td><div class="sub-text">'+fmtDate(c.created_at)+'</div></td></tr>'});
+  document.getElementById('contractors-table').innerHTML=h;
+}
+
+function sortC(field){
+  if(cSort.field===field) cSort.dir=cSort.dir==='asc'?'desc':'asc';
+  else{cSort.field=field;cSort.dir='desc'}
+  renderContractors();
 }
 
 function renderLeads(){
-  var ls=adminData.leads;
-  var contractorMap={};
-  adminData.contractors.forEach(function(c){contractorMap[c.id]=c});
-
-  var filtered=ls;
-  if(leadFilter!=='all'){
-    filtered=ls.filter(function(l){
-      var s=(l.status||'').toLowerCase();
-      if(leadFilter==='new') return s==='new'||s==='pending';
-      return s===leadFilter;
-    });
-  }
-
-  document.getElementById('l-count').textContent=filtered.length;
-
-  if(filtered.length===0){
-    document.getElementById('leads-table').innerHTML='<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">No '+leadFilter+' leads</td></tr>';
-    return;
-  }
-
-  var html='';
-  filtered.forEach(function(l){
+  var ls=adminData.leads,cm={};
+  adminData.contractors.forEach(function(c){cm[c.id]=c});
+  var fl=ls;
+  if(leadFilter!=='all') fl=ls.filter(function(l){var s=(l.status||'').toLowerCase();return leadFilter==='new'?s==='new'||s==='pending':s===leadFilter});
+  document.getElementById('l-count').textContent=fl.length;
+  if(!fl.length){document.getElementById('leads-table').innerHTML='<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text3)">No '+leadFilter+' leads</td></tr>';return}
+  var h='';
+  fl.forEach(function(l){
     var st=(l.status||'pending').toLowerCase();
-    var stBadge=st==='new'||st==='pending'?'b-new':st==='accepted'?'b-accepted':'b-passed';
-    var urgBadge=!l.urgency?'':l.urgency.toLowerCase()==='emergency'?'b-emergency':l.urgency.toLowerCase()==='soon'?'b-soon':'b-planning';
-    var contractor=contractorMap[l.assigned_contractor_id];
-    var cName=contractor?(contractor.first_name+' '+(contractor.last_name||'')):'\u2014';
-    var fee=l.lead_fee?'$'+l.lead_fee:'\u2014';
-
-    html+='<tr>'
-      +'<td class="name-cell">'+(l.service_type||l.service_category||'\u2014')+'</td>'
+    var sb=st==='new'||st==='pending'?'b-new':st==='accepted'?'b-accepted':'b-passed';
+    var ub=!l.urgency?'':l.urgency.toLowerCase()==='emergency'?'b-emergency':l.urgency.toLowerCase()==='soon'?'b-soon':'b-planning';
+    var cn=cm[l.assigned_contractor_id];var nm=cn?(cn.first_name+' '+(cn.last_name||'')):'\u2014';
+    h+='<tr><td class="name-cell">'+(l.service_type||l.service_category||'\u2014')+'</td>'
       +'<td>'+(l.homeowner_name||'\u2014')+'<div class="sub-text">'+(l.homeowner_phone||'')+'</div></td>'
       +'<td>'+(l.homeowner_zip||'')+'</td>'
-      +'<td>'+(l.urgency?'<span class="badge '+urgBadge+'">'+l.urgency+'</span>':'\u2014')+'</td>'
-      +'<td>'+cName+'</td>'
-      +'<td><span class="badge '+stBadge+'">'+(l.status||'Pending')+'</span></td>'
-      +'<td class="money">'+fee+'</td>'
-      +'<td><div class="sub-text">'+formatDate(l.created_at)+'</div></td>'
-      +'</tr>';
-  });
-  document.getElementById('leads-table').innerHTML=html;
+      +'<td>'+(l.urgency?'<span class="badge '+ub+'">'+l.urgency+'</span>':'\u2014')+'</td>'
+      +'<td>'+nm+'</td><td><span class="badge '+sb+'">'+(l.status||'Pending')+'</span></td>'
+      +'<td class="money">'+(l.lead_fee?'$'+l.lead_fee:'\u2014')+'</td>'
+      +'<td><div class="sub-text">'+fmtDate(l.created_at)+'</div></td></tr>'});
+  document.getElementById('leads-table').innerHTML=h;
 }
 
-function filterLeads(filter,btn){
-  leadFilter=filter;
+function filterLeads(f,btn){
+  leadFilter=f;
   document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active')});
-  btn.classList.add('active');
-  renderLeads();
+  btn.classList.add('active');renderLeads();
 }
 
-function formatTime(seconds){
-  if(seconds<60) return seconds+'s';
-  if(seconds<3600) return Math.floor(seconds/60)+'m';
-  return Math.floor(seconds/3600)+'h '+Math.floor((seconds%3600)/60)+'m';
+function loadPricing(){
+  try{var s=localStorage.getItem('ssp_pricing');if(s){var p=JSON.parse(s);
+    if(p.basic){document.getElementById('p-basic-mo').value=p.basic.monthly;document.getElementById('p-basic-lead').value=p.basic.perLead;document.getElementById('p-basic-win').value=p.basic.window||30}
+    if(p.pro){document.getElementById('p-pro-mo').value=p.pro.monthly;document.getElementById('p-pro-lead').value=p.pro.perLead;document.getElementById('p-pro-win').value=p.pro.window||45}
+    if(p.elite){document.getElementById('p-elite-mo').value=p.elite.monthly;document.getElementById('p-elite-lead').value=p.elite.perLead;document.getElementById('p-elite-win').value=p.elite.window||60}
+  }}catch(e){}
 }
 
-function formatDate(d){
-  if(!d) return '\u2014';
-  var dt=new Date(d);
-  return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+function savePricing(){
+  var pricing={
+    basic:{monthly:+document.getElementById('p-basic-mo').value||49,perLead:+document.getElementById('p-basic-lead').value||39,window:+document.getElementById('p-basic-win').value||30},
+    pro:{monthly:+document.getElementById('p-pro-mo').value||99,perLead:+document.getElementById('p-pro-lead').value||29,window:+document.getElementById('p-pro-win').value||45},
+    elite:{monthly:+document.getElementById('p-elite-mo').value||199,perLead:+document.getElementById('p-elite-lead').value||19,window:+document.getElementById('p-elite-win').value||60}
+  };
+  localStorage.setItem('ssp_pricing',JSON.stringify(pricing));
+  var m=document.getElementById('pricing-msg');m.style.display='inline';setTimeout(function(){m.style.display='none'},3000);
 }
+
+function fmtTime(s){if(s<60)return s+'s';if(s<3600)return Math.floor(s/60)+'m';return Math.floor(s/3600)+'h '+Math.floor((s%3600)/60)+'m'}
+function fmtDate(d){if(!d)return'\u2014';return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
 </script>
 <!--email_off-->
 </body>
