@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SSP Admin Dashboard</title>
+<link rel="icon" href="/favicon.ico"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{--orange:#f05528;--orange2:#d94a20;--orange-light:rgba(240,85,40,.08);--navy:#0a1628;--navy2:#122240;--bg:#f8f7f4;--white:#ffffff;--border:#e5e4e0;--text1:#111318;--text2:#3d3f44;--text3:#6b6e76;--text4:#9ca0a8;--green:#1a8a4a;--green-light:#e6f9ed;--red:#e53e3e;--red-light:#fee2e2;--yellow:#d97706;--yellow-light:#fef3c7;--blue:#2563eb;--blue-light:#eff6ff;--radius:12px;--shadow:0 2px 12px rgba(0,0,0,.06)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text1);-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+
+.nav{background:var(--navy);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.nav-logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;color:#fff}
+.nav-logo .ls{color:var(--orange)}
+.nav-badge{background:var(--orange);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;margin-left:8px}
+
+.login-wrap{max-width:400px;margin:120px auto;text-align:center}
+.login-wrap h1{font-family:'Fraunces',serif;font-weight:800;font-size:28px;color:var(--navy);margin-bottom:8px}
+.login-wrap p{font-size:14px;color:var(--text3);margin-bottom:24px}
+.login-input{width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;margin-bottom:12px}
+.login-input:focus{outline:none;border-color:var(--orange)}
+.login-btn{width:100%;padding:12px;background:var(--orange);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
+.login-btn:hover{background:var(--orange2)}
+.login-error{color:var(--red);font-size:13px;margin-top:8px;display:none}
+
+.dash{max-width:1200px;margin:0 auto;padding:32px 24px 60px;display:none}
+.dash-header{margin-bottom:32px}
+.dash-header h1{font-family:'Fraunces',serif;font-weight:800;font-size:clamp(24px,4vw,32px);color:var(--navy)}
+.dash-header p{font-size:14px;color:var(--text3);margin-top:4px}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.stat-label{font-size:12px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-value{font-size:28px;font-weight:800;color:var(--navy)}
+.stat-sub{font-size:12px;color:var(--text3);margin-top:2px}
+
+.section{margin-bottom:32px}
+.section-title{font-family:'Fraunces',serif;font-weight:700;font-size:20px;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.section-title .count{background:var(--orange);color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px}
+
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:var(--bg)}
+th{padding:10px 14px;text-align:left;font-weight:600;color:var(--text4);text-transform:uppercase;font-size:11px;letter-spacing:.5px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text2)}
+tr:last-child td{border-bottom:none}
+tr:hover{background:rgba(240,85,40,.02)}
+
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px}
+.b-elite{background:var(--orange-light);color:var(--orange)}
+.b-pro{background:var(--blue-light);color:var(--blue)}
+.b-basic{background:var(--bg);color:var(--text3)}
+.b-paid{background:var(--green-light);color:var(--green)}
+.b-new{background:var(--orange-light);color:var(--orange)}
+.b-accepted{background:var(--green-light);color:var(--green)}
+.b-passed{background:var(--bg);color:var(--text4)}
+.b-emergency{background:var(--red-light);color:var(--red)}
+.b-soon{background:var(--yellow-light);color:var(--yellow)}
+.b-planning{background:var(--blue-light);color:var(--blue)}
+
+.name-cell{font-weight:600;color:var(--text1)}
+.sub-text{font-size:11px;color:var(--text4)}
+.money{font-weight:700;color:var(--navy)}
+
+.loading{text-align:center;padding:60px 20px}
+.loading-spinner{display:inline-block;width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.filter-btn{background:var(--white);border:1px solid var(--border);color:var(--text3);padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.filter-btn:hover{border-color:var(--orange);color:var(--orange)}
+.filter-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+
+.refresh-btn{background:var(--white);border:1px solid var(--border);color:var(--text2);padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.refresh-btn:hover{background:var(--bg)}
+
+@media(max-width:768px){
+  table{font-size:12px}
+  th,td{padding:8px 10px}
+  .stats{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!--email_off-->
+<nav class="nav">
+  <div style="display:flex;align-items:center">
+    <a href="/" class="nav-logo">
+      <svg width="24" height="28" viewBox="0 0 48 56" fill="none"><path d="M24 2C13 2 4 11 4 22c0 14 20 32 20 32s20-18 20-32C44 11 35 2 24 2z" fill="#f05528"/><circle cx="24" cy="20" r="12" fill="#fff"/><path d="M18 20l4.5 4.5 7.5-7.5" stroke="#f05528" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Select<span class="ls">Service</span>Pros</span>
+    </a>
+    <span class="nav-badge">ADMIN</span>
+  </div>
+</nav>
+
+<div class="login-wrap" id="login-wrap">
+  <h1>Admin Dashboard</h1>
+  <p>Enter the admin password to continue.</p>
+  <input class="login-input" type="password" id="pw" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()"/>
+  <button class="login-btn" onclick="doLogin()">Log In</button>
+  <p class="login-error" id="login-error">Invalid password</p>
+</div>
+
+<div class="dash" id="dashboard">
+  <div class="dash-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+    <div>
+      <h1>Business Overview</h1>
+      <p id="dash-time"></p>
+    </div>
+    <button class="refresh-btn" onclick="loadData()">Refresh</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Contractors</div>
+      <div class="stat-value" id="s-contractors">0</div>
+      <div class="stat-sub">active contractors</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Leads</div>
+      <div class="stat-value" id="s-leads">0</div>
+      <div class="stat-sub">all time</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Monthly MRR</div>
+      <div class="stat-value money" id="s-mrr">$0</div>
+      <div class="stat-sub">from memberships</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Lead Revenue</div>
+      <div class="stat-value money" id="s-lead-rev">$0</div>
+      <div class="stat-sub">from accepted leads</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Est. Revenue</div>
+      <div class="stat-value money" id="s-total" style="color:var(--green)">$0</div>
+      <div class="stat-sub">MRR + lead charges</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Contractors <span class="count" id="c-count">0</span></div>
+    <div class="card">
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr><th>Name</th><th>Company</th><th>Plan</th><th>Status</th><th>Leads</th><th>Accept %</th><th>Avg Response</th><th>Joined</th></tr>
+          </thead>
+          <tbody id="contractors-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Recent Leads <span class="count" id="l-count">0</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="filter-btn active" onclick="filterLeads('all',this)">All</button>
+      <button class="filter-btn" onclick="filterLeads('new',this)">New</button>
+      <button class="filter-btn" onclick="filterLeads('accepted',this)">Accepted</button>
+      <button class="filter-btn" onclick="filterLeads('passed',this)">Passed</button>
+    </div>
+    <div class="card">
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr><th>Service</th><th>Homeowner</th><th>ZIP</th><th>Urgency</th><th>Contractor</th><th>Status</th><th>Fee</th><th>Date</th></tr>
+          </thead>
+          <tbody id="leads-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var adminData=null;
+var leadFilter='all';
+
+function doLogin(){
+  var pw=document.getElementById('pw').value;
+  if(!pw){document.getElementById('login-error').style.display='block';return}
+  fetch('/api/admin-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})})
+    .then(function(r){return r.json()})
+    .then(function(data){
+      if(data.error){document.getElementById('login-error').style.display='block';return}
+      adminData=data;
+      document.getElementById('login-wrap').style.display='none';
+      document.getElementById('dashboard').style.display='block';
+      renderDashboard();
+    })
+    .catch(function(){document.getElementById('login-error').style.display='block'});
+}
+
+function loadData(){
+  fetch('/api/admin-data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:'ssp2025'})})
+    .then(function(r){return r.json()})
+    .then(function(data){
+      if(data.error) return;
+      adminData=data;
+      renderDashboard();
+    });
+}
+
+function renderDashboard(){
+  var d=adminData;
+  document.getElementById('dash-time').textContent='Last updated: '+new Date().toLocaleString();
+
+  document.getElementById('s-contractors').textContent=d.stats.totalContractors;
+  document.getElementById('s-leads').textContent=d.stats.totalLeads;
+  document.getElementById('s-mrr').textContent='$'+d.stats.totalMRR.toLocaleString();
+  document.getElementById('s-lead-rev').textContent='$'+Math.round(d.stats.totalLeadCharges).toLocaleString();
+  document.getElementById('s-total').textContent='$'+Math.round(d.stats.totalRevenue).toLocaleString();
+
+  renderContractors();
+  renderLeads();
+}
+
+function renderContractors(){
+  var cs=adminData.contractors;
+  document.getElementById('c-count').textContent=cs.length;
+
+  if(cs.length===0){
+    document.getElementById('contractors-table').innerHTML='<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">No contractors yet</td></tr>';
+    return;
+  }
+
+  var html='';
+  cs.forEach(function(c){
+    var tier=c.membership_tier||'Basic';
+    var tierClass=tier==='Elite'?'b-elite':tier==='Pro'?'b-pro':'b-basic';
+    var rt=c.avg_response_time>0?formatTime(c.avg_response_time):'\u2014';
+    html+='<tr>'
+      +'<td><div class="name-cell">'+(c.first_name||'')+' '+(c.last_name||'')+'</div><div class="sub-text">'+c.email+'</div></td>'
+      +'<td>'+(c.company_name||'\u2014')+'</td>'
+      +'<td><span class="badge '+tierClass+'">'+tier+'</span></td>'
+      +'<td><span class="badge b-paid">'+(c.status||'Paid')+'</span></td>'
+      +'<td>'+(c.lead_count||0)+'</td>'
+      +'<td>'+(c.acceptance_rate?c.acceptance_rate+'%':'\u2014')+'</td>'
+      +'<td>'+rt+'</td>'
+      +'<td><div class="sub-text">'+formatDate(c.created_at)+'</div></td>'
+      +'</tr>';
+  });
+  document.getElementById('contractors-table').innerHTML=html;
+}
+
+function renderLeads(){
+  var ls=adminData.leads;
+  var contractorMap={};
+  adminData.contractors.forEach(function(c){contractorMap[c.id]=c});
+
+  var filtered=ls;
+  if(leadFilter!=='all'){
+    filtered=ls.filter(function(l){
+      var s=(l.status||'').toLowerCase();
+      if(leadFilter==='new') return s==='new'||s==='pending';
+      return s===leadFilter;
+    });
+  }
+
+  document.getElementById('l-count').textContent=filtered.length;
+
+  if(filtered.length===0){
+    document.getElementById('leads-table').innerHTML='<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">No '+leadFilter+' leads</td></tr>';
+    return;
+  }
+
+  var html='';
+  filtered.forEach(function(l){
+    var st=(l.status||'pending').toLowerCase();
+    var stBadge=st==='new'||st==='pending'?'b-new':st==='accepted'?'b-accepted':'b-passed';
+    var urgBadge=!l.urgency?'':l.urgency.toLowerCase()==='emergency'?'b-emergency':l.urgency.toLowerCase()==='soon'?'b-soon':'b-planning';
+    var contractor=contractorMap[l.assigned_contractor_id];
+    var cName=contractor?(contractor.first_name+' '+(contractor.last_name||'')):'\u2014';
+    var fee=l.lead_fee?'$'+l.lead_fee:'\u2014';
+
+    html+='<tr>'
+      +'<td class="name-cell">'+(l.service_type||l.service_category||'\u2014')+'</td>'
+      +'<td>'+(l.homeowner_name||'\u2014')+'<div class="sub-text">'+(l.homeowner_phone||'')+'</div></td>'
+      +'<td>'+(l.homeowner_zip||'')+'</td>'
+      +'<td>'+(l.urgency?'<span class="badge '+urgBadge+'">'+l.urgency+'</span>':'\u2014')+'</td>'
+      +'<td>'+cName+'</td>'
+      +'<td><span class="badge '+stBadge+'">'+(l.status||'Pending')+'</span></td>'
+      +'<td class="money">'+fee+'</td>'
+      +'<td><div class="sub-text">'+formatDate(l.created_at)+'</div></td>'
+      +'</tr>';
+  });
+  document.getElementById('leads-table').innerHTML=html;
+}
+
+function filterLeads(filter,btn){
+  leadFilter=filter;
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active')});
+  btn.classList.add('active');
+  renderLeads();
+}
+
+function formatTime(seconds){
+  if(seconds<60) return seconds+'s';
+  if(seconds<3600) return Math.floor(seconds/60)+'m';
+  return Math.floor(seconds/3600)+'h '+Math.floor((seconds%3600)/60)+'m';
+}
+
+function formatDate(d){
+  if(!d) return '\u2014';
+  var dt=new Date(d);
+  return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+</script>
+<!--email_off-->
+</body>
+</html>
