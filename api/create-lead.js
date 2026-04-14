@@ -9,6 +9,9 @@ const GHL_WEBHOOK =
   "https://services.leadconnectorhq.com/hooks/a65106d8-9948-4122-9364-bddcc07aca5c";
 const CONTRACTOR_NOTIFY_WEBHOOK =
   "https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/jhKITwxqbN20tY3x5BqS";
+const HOMEOWNER_NOTIFY_WEBHOOK =
+  "https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/1nnmq9KJX7CzZI0tlYIw";
+
 
 
 // Tier priority for matching (highest priority first)
@@ -243,6 +246,31 @@ module.exports = async function handler(req, res) {
         });
       } catch (notifyError) {
         console.error("Contractor notification error (non-fatal):", notifyError.message);
+      }
+    }
+
+    
+    // --- Notify homeowner of lead received ---
+    if (email) {
+      try {
+        await fetch(HOMEOWNER_NOTIFY_WEBHOOK, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "homeowner_confirmation",
+            homeowner_name: name,
+            homeowner_email: email,
+            homeowner_phone: phone,
+            homeowner_zip: zip,
+            service_type: service,
+            service_category: category,
+            urgency: urgencyLabel,
+            details: details,
+            matched: !!assignedContractor,
+          }),
+        });
+      } catch (homeownerError) {
+        console.error("Homeowner notification error (non-fatal):", homeownerError.message);
       }
     }
 
