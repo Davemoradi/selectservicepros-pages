@@ -90,9 +90,9 @@ module.exports = async function handler(req, res) {
     var contractorsResult = await supabase
       .from("contractors")
       .select(
-        "id, first_name, last_name, email, membership_tier, service_categories, service_zips, payment_status"
+        "id, first_name, last_name, email, membership_tier, service_categories, service_zips, status"
       )
-      .in("payment_status", ["Paid", "Verified"]);
+      .in("status", ["Paid"]);
 
     var allContractors = contractorsResult.data || [];
 
