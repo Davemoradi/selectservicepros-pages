@@ -229,6 +229,7 @@ module.exports = async function handler(req, res) {
               " " +
               (assignedContractor.last_name || ""),
             contractor_email: assignedContractor.email,
+            contractor_id: assignedContractor.id,
             contractor_tier: assignedContractor.membership_tier || "Basic",
             lead_id: leadId,
             homeowner_name: name,
