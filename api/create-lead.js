@@ -212,6 +212,36 @@ module.exports = async function handler(req, res) {
       console.error("GHL webhook error (non-fatal):", ghlError.message);
     }
 
+    
+    // --- Notify contractor of new lead ---
+    if (assignedContractor && assignedContractor.email) {
+      try {
+        await fetch(GHL_WEBHOOK, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "contractor_notification",
+            contractor_name:
+              (assignedContractor.first_name || "") +
+              " " +
+              (assignedContractor.last_name || ""),
+            contractor_email: assignedContractor.email,
+            contractor_tier: assignedContractor.membership_tier || "Basic",
+            lead_id: leadId,
+            homeowner_name: name,
+            homeowner_zip: zip,
+            service_type: service,
+            service_category: category,
+            urgency: urgencyLabel,
+            details: details,
+            lead_fee: leadFee,
+          }),
+        });
+      } catch (notifyError) {
+        console.error("Contractor notification error (non-fatal):", notifyError.message);
+      }
+    }
+
     // --- Return success ---
     return res.status(200).json({
       success: true,
