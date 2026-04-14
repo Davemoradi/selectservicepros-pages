@@ -10,7 +10,7 @@ const GHL_WEBHOOK =
 const CONTRACTOR_NOTIFY_WEBHOOK =
   "https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/jhKITwxqbN20tY3x5BqS";
 const HOMEOWNER_NOTIFY_WEBHOOK =
-  "https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/1nnmq9KJX7CzZI0tlYIw";
+  "https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/c8b7ef11-035b-4266-9334-6043c1424208";
 
 
 
