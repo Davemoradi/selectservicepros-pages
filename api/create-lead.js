@@ -7,6 +7,9 @@ const SUPABASE_ANON_KEY =
 
 const GHL_WEBHOOK =
   "https://services.leadconnectorhq.com/hooks/a65106d8-9948-4122-9364-bddcc07aca5c";
+const CONTRACTOR_NOTIFY_WEBHOOK =
+  "https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/jhKITwxqbN20tY3x5BqS";
+
 
 // Tier priority for matching (highest priority first)
 const TIER_PRIORITY = { Elite: 1, Pro: 2, Basic: 3 };
@@ -216,7 +219,7 @@ module.exports = async function handler(req, res) {
     // --- Notify contractor of new lead ---
     if (assignedContractor && assignedContractor.email) {
       try {
-        await fetch(GHL_WEBHOOK, {
+        await fetch(CONTRACTOR_NOTIFY_WEBHOOK, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
