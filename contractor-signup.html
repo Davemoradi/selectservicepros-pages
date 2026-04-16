@@ -428,23 +428,7 @@ function submitForm(){
   sessionStorage.setItem('ssp_contractor',JSON.stringify(contractorData));
 
   // Send to GHL
-  fetch(GHL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-    name:fn+' '+ln,
-    firstName:fn,
-    lastName:ln,
-    phone:ph,
-    email:em,
-    zip:zip,
-    companyName:biz,
-    source:'SelectServicePros.com — Contractor Signup',
-    type:'contractor',
-    contractor_services:svcs,
-    contractor_service_categories:cats,
-    contractor_service_zips:zip,
-    contractor_status:'New',
-    tags:['contractor_status: New'],
-    lead_id:'SSP-PRO-'+Date.now()
-  })}).catch(function(e){console.error(e)});
+  /* removed: redundant client-side GHL webhook — handled server-side via /api/create-contractor */
 
   // Advance to step 2
   document.getElementById('si1').classList.remove('active');
@@ -594,23 +578,7 @@ function handleCheckoutComplete(){
   var saved=sessionStorage.getItem('ssp_contractor');
   if(saved){
     var d=JSON.parse(saved);
-    fetch(GHL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-      name:d.fn+' '+d.ln,
-      firstName:d.fn,
-      lastName:d.ln,
-      phone:d.ph,
-      email:d.em,
-      zip:d.zip,
-      companyName:d.biz,
-      source:'SelectServicePros.com — Payment Complete',
-      type:'contractor',
-      contractor_services:d.svcs,
-      contractor_service_categories:d.cats,
-      contractor_membership_tier:planName,
-      contractor_status:'Paid',
-      tags:['contractor_status: Paid','contractor_membership_tier: '+planName],
-      lead_id:'SSP-PAID-'+Date.now()
-    })}).catch(function(e){console.error(e)});
+    /* removed: redundant client-side GHL webhook — handled server-side via /api/create-contractor */
   }
 
   // Destroy checkout and show payment confirmation
@@ -755,27 +723,7 @@ async function submitProfile(){
   btn.style.opacity='0.6';
 
   // 1. Send profile data to GHL (update contact) — field names match GHL custom fields
-  fetch(GHL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-    name:fn+' '+ln,firstName:fn,lastName:ln,phone:ph,email:em,zip:zip,
-    companyName:biz,source:'SelectServicePros.com — Profile Complete',type:'contractor',
-    contractor_services:svcs,
-    contractor_service_categories:cats,
-    contractor_membership_tier:planName,
-    contractor_service_zips:zips,
-    contractor_status:(licenseData&&licenseData.expired)?'License Expired':licenseVerified?'Verified':'Pending Verification',
-    tags:[(licenseData&&licenseData.expired)?'contractor_status: License Expired':licenseVerified?'contractor_status: Verified':'contractor_status: Pending Verification'],
-    business_description:desc,
-    years_in_business:years,
-    number_of_employees:employees,
-    license_number:license,
-    license_type:licenseType,
-    license_verified:licenseVerified?'Yes':'No',
-    license_holder_name:(licenseData&&licenseData.name)?licenseData.name:'',
-    license_expiration_date:(licenseData&&(licenseData.expiration_date||licenseData.expirationDate||licenseData.expiry))?licenseData.expiration_date||licenseData.expirationDate||licenseData.expiry:'',
-    license_expired:(licenseData&&licenseData.expired)?'Yes':'No',
-    website_url:website,
-    lead_id:'SSP-PROFILE-'+Date.now()
-  })}).catch(function(e){console.error('GHL error:',e)});
+  /* removed: redundant client-side GHL webhook — handled server-side via /api/create-contractor */
 
   // 2. Create BD account via serverless function
   try{
@@ -841,23 +789,7 @@ function init(){
     // Send payment complete to GHL
     if(saved){
       var d=JSON.parse(saved);
-      fetch(GHL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-        name:d.fn+' '+d.ln,
-        firstName:d.fn,
-        lastName:d.ln,
-        phone:d.ph,
-        email:d.em,
-        zip:d.zip,
-        companyName:d.biz,
-        source:'SelectServicePros.com — Payment Complete',
-        type:'contractor',
-        contractor_services:d.svcs,
-        contractor_service_categories:d.cats,
-        contractor_membership_tier:planName,
-        contractor_status:'Paid',
-        tags:['contractor_status: Paid','contractor_membership_tier: '+planName],
-        lead_id:'SSP-PAID-'+Date.now()
-      })}).catch(function(e){console.error(e)});
+      /* removed: redundant client-side GHL webhook — handled server-side via /api/create-contractor */
     }
 
     // Update stepper — all steps done
@@ -907,13 +839,7 @@ window.addEventListener('hashchange',function(){
     // Send payment complete to GHL
     if(saved){
       var d=JSON.parse(saved);
-      fetch(GHL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-        name:d.fn+' '+d.ln,firstName:d.fn,lastName:d.ln,phone:d.ph,email:d.em,zip:d.zip,
-        companyName:d.biz,source:'SelectServicePros.com — Payment Complete',type:'contractor',
-        contractor_services:d.svcs,contractor_service_categories:d.cats,
-        contractor_membership_tier:planName,contractor_status:'Paid',tags:['contractor_status: Paid','contractor_membership_tier: '+planName],
-        lead_id:'SSP-PAID-'+Date.now()
-      })}).catch(function(e){console.error(e)});
+      /* removed: redundant client-side GHL webhook — handled server-side via /api/create-contractor */
     }
 
     // Update stepper
