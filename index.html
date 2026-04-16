@@ -121,6 +121,11 @@
 .blog-title{font-size:16px;font-weight:700;color:var(--text1);line-height:1.4;margin-bottom:8px;transition:color .2s}.blog-card:hover .blog-title{color:var(--orange)}
 .blog-excerpt{font-size:13px;color:var(--text3);line-height:1.6}
 @media(max-width:700px){.blog-grid{grid-template-columns:1fr;gap:16px}.blog-img{height:180px}}
+
+/* POPULAR SEARCHES — chip pill row */
+.popular-searches-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.popular-chip{display:inline-block;padding:10px 18px;background:var(--white,#fff);border:1px solid var(--border,#e5e5e5);border-radius:999px;color:var(--ink,#111318);text-decoration:none;font-size:14px;font-weight:500;transition:all 0.15s ease}
+.popular-chip:hover{background:var(--brand,#f05528);color:#fff;border-color:var(--brand,#f05528);transform:translateY(-1px)}
 </style>
 </head>
 <body>
@@ -128,7 +133,7 @@
 <div class="mobile-menu"><a href="#categories" onclick="this.parentElement.classList.remove('open')">Find Pros</a><a href="#how-it-works" onclick="this.parentElement.classList.remove('open')">How It Works</a><a href="contractor-signup.html" class="mobile-menu-cta">Join as a Pro</a></div>
 
 <section class="hero"><div class="hero-inner">
-<h1>Top-rated home pros in your area &mdash; matched in minutes.</em></h1>
+<h1>Top-rated home pros in your area &mdash; <span style="color:var(--brand,#f05528);text-decoration:underline;text-decoration-thickness:3px;text-underline-offset:6px">matched in minutes</span>.</em></h1>
 <p class="hero-sub">Get free quotes from licensed home service pros &mdash; fast, easy, and zero obligation.</p>
 <div class="search-bar" id="search-bar"><div class="search-field" style="flex:2"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="hero-service" placeholder="What do you need help with?" autocomplete="off" oninput="onSearchInput(this.value)" onfocus="onSearchInput(this.value)" onkeydown="onSearchKey(event)"/></div><div class="search-divider"></div><div class="search-field"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg><input type="text" id="hero-zip" placeholder="ZIP code" maxlength="5"/><button type="button" id="geo-btn" onclick="detectLocation()" title="Use my location" style="background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button></div><button type="button" class="search-btn" onclick="handleSearch()">Get Quotes</button><div id="sug-dd" class="sug-dd"></div></div>
 </div></section>
@@ -170,7 +175,7 @@
 
 <section class="blog-section"><div class="blog-inner"><div class="blog-header"><h2 class="reveal">Popular cost guides</h2></div>
 <div class="blog-grid">
-<div class="blog-card reveal stagger-1" onclick="selectCategory('HVAC')"><div class="blog-img-wrap"><img class="blog-img" src="https://images.unsplash.com/photo-1581578731565-bd0c0c09d7ba?w=600&h=400&fit=crop" alt="HVAC system" loading="lazy"/></div><div class="blog-body"><div class="blog-meta">HVAC &middot; Cost Guide</div><div class="blog-title">How Much Does AC Repair Cost? [2026 Data]</div><div class="blog-excerpt">Average AC repair costs range from $150 to $650 depending on the issue. Learn what affects pricing and how to save.</div></div></div>
+<div class="blog-card reveal stagger-1" onclick="selectCategory('HVAC')"><div class="blog-img-wrap"><img class="blog-img" src="https://images.unsplash.com/photo-1660330590022-9f4ff56b63f6?w=600&h=400&fit=crop" alt="HVAC system" loading="lazy"/></div><div class="blog-body"><div class="blog-meta">HVAC &middot; Cost Guide</div><div class="blog-title">How Much Does AC Repair Cost? [2026 Data]</div><div class="blog-excerpt">Average AC repair costs range from $150 to $650 depending on the issue. Learn what affects pricing and how to save.</div></div></div>
 <div class="blog-card reveal stagger-2" onclick="selectCategory('Plumbing')"><div class="blog-img-wrap"><img class="blog-img" src="https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=600&h=400&fit=crop" alt="Plumbing repair" loading="lazy"/></div><div class="blog-body"><div class="blog-meta">Plumbing &middot; Cost Guide</div><div class="blog-title">How Much Does a Water Heater Replacement Cost?</div><div class="blog-excerpt">A new water heater costs $800 to $3,500 installed. Compare tank vs. tankless options and find the best deal.</div></div></div>
 <div class="blog-card reveal stagger-3" onclick="selectCategory('Roofing')"><div class="blog-img-wrap"><img class="blog-img" src="https://images.unsplash.com/photo-1632759145351-1d592919f522?w=600&h=400&fit=crop" alt="Roofing work" loading="lazy"/></div><div class="blog-body"><div class="blog-meta">Roofing &middot; Cost Guide</div><div class="blog-title">How Much Does a New Roof Cost in Houston?</div><div class="blog-excerpt">Full roof replacement in Houston averages $8,000 to $15,000. See cost breakdowns by material and roof size.</div></div></div>
 </div></div></section>
