@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<!-- Google Places API key: set this to your actual key when ready -->
+<meta name="google-places-key" content=""/>
+<title>Get matched with a pro — SelectServicePros</title>
+<style>
+:root{
+  --brand:#f05528;
+  --brand-dark:#d4441f;
+  --ink:#111318;
+  --text2:#4a4f57;
+  --text4:#8a8f99;
+  --bg:#fafafa;
+  --white:#ffffff;
+  --border:#e5e5e5;
+  --max-w:640px;
+  --font-display:'Georgia','Times New Roman',serif;
+  --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:var(--font-body);color:var(--ink);background:var(--bg);min-height:100vh}
+body{display:flex;flex-direction:column}
+
+/* HEADER */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:var(--white);border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font-weight:700;font-size:18px}
+.logo-dot{width:28px;height:28px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+.logo span.orange{color:var(--brand)}
+.back-home{font-size:13px;color:var(--text2);text-decoration:none}
+.back-home:hover{color:var(--brand)}
+
+/* PROGRESS */
+.progress-wrap{background:var(--white);padding:14px 24px;border-bottom:1px solid var(--border)}
+.progress-inner{max-width:var(--max-w);margin:0 auto;display:flex;align-items:center;gap:12px}
+.progress-label{font-size:12px;color:var(--text4);text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
+.progress-bar{flex:1;height:6px;background:#eee;border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;background:var(--brand);border-radius:99px;transition:width 0.4s cubic-bezier(0.4,0,0.2,1);width:0%}
+
+/* STEP CONTAINER */
+.stage{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:40px 24px 80px}
+.stage-inner{width:100%;max-width:var(--max-w)}
+.step{display:none;animation:slideIn 0.35s cubic-bezier(0.4,0,0.2,1)}
+.step.active{display:block}
+@keyframes slideIn{
+  from{opacity:0;transform:translateX(20px)}
+  to{opacity:1;transform:translateX(0)}
+}
+
+/* STEP HEADERS */
+.step-eyebrow{font-size:12px;color:var(--brand);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin:0 0 12px}
+.step h1{font-family:var(--font-display);font-size:32px;font-weight:700;margin:0 0 10px;line-height:1.2;color:var(--ink)}
+.step-hint{color:var(--text2);font-size:15px;margin:0 0 28px;line-height:1.5}
+
+/* CATEGORY PILLS (step 1) */
+.cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px}
+.cat-btn{padding:18px 16px;background:var(--white);border:2px solid var(--border);border-radius:12px;text-align:left;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;transition:all 0.15s ease;display:flex;align-items:center;gap:10px}
+.cat-btn:hover{border-color:var(--brand);background:#fff7f3}
+.cat-btn.selected{border-color:var(--brand);background:#fff7f3;color:var(--brand)}
+.cat-icon{font-size:22px}
+
+/* INPUT FIELDS */
+.field{margin-bottom:20px}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.4px}
+.field input, .field textarea{width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:10px;font-size:16px;font-family:inherit;background:var(--white);color:var(--ink);transition:border-color 0.15s ease}
+.field input:focus, .field textarea:focus{outline:none;border-color:var(--brand)}
+.field textarea{resize:vertical;min-height:100px}
+.field .error{color:#d4441f;font-size:13px;margin-top:6px;display:none}
+.field.has-error input, .field.has-error textarea{border-color:#d4441f}
+.field.has-error .error{display:block}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.row-2{grid-template-columns:1fr}}
+
+/* ISSUE PILLS (step 3) */
+.pill-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.issue-pill{padding:10px 16px;background:var(--white);border:2px solid var(--border);border-radius:99px;font-size:14px;font-weight:500;color:var(--ink);cursor:pointer;transition:all 0.15s ease;font-family:inherit}
+.issue-pill:hover{border-color:var(--brand);background:#fff7f3}
+.issue-pill.selected{border-color:var(--brand);background:var(--brand);color:#fff}
+
+/* URGENCY */
+.urg-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+@media(max-width:480px){.urg-grid{grid-template-columns:1fr}}
+.urg-btn{padding:16px;background:var(--white);border:2px solid var(--border);border-radius:10px;text-align:left;cursor:pointer;transition:all 0.15s ease;font-family:inherit}
+.urg-btn:hover{border-color:var(--brand);background:#fff7f3}
+.urg-btn.selected{border-color:var(--brand);background:#fff7f3}
+.urg-btn strong{display:block;font-size:15px;color:var(--ink);margin-bottom:2px}
+.urg-btn span{font-size:13px;color:var(--text4)}
+.urg-btn.selected strong{color:var(--brand)}
+
+/* BUTTONS */
+.actions{display:flex;gap:10px;align-items:center;margin-top:32px}
+.btn{padding:14px 24px;border-radius:10px;font-weight:600;font-size:15px;cursor:pointer;border:none;font-family:inherit;transition:all 0.15s ease}
+.btn-primary{background:var(--brand);color:#fff;flex:1}
+.btn-primary:hover:not(:disabled){background:var(--brand-dark)}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--text2);padding:14px 16px}
+.btn-ghost:hover{color:var(--ink)}
+
+/* SUCCESS / CONFIRMATION */
+.success-card{background:var(--white);border-radius:16px;padding:40px 28px;text-align:center;border:1px solid var(--border)}
+.success-icon{width:64px;height:64px;margin:0 auto 20px;background:#e6f7ec;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px}
+.success-card h1{margin:0 0 12px;font-size:26px}
+.success-card p{color:var(--text2);line-height:1.5;margin:0 0 10px}
+
+/* SECURITY BADGE */
+.trust-row{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);font-size:12px;color:var(--text4)}
+.trust-row span{display:flex;align-items:center;gap:6px}
+.trust-row .dot{width:6px;height:6px;border-radius:50%;background:#22c55e}
+
+/* LOADING */
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* GOOGLE PLACES AUTOCOMPLETE DROPDOWN — style to match form */
+.pac-container{border-radius:10px;border:1px solid var(--border);box-shadow:0 10px 30px rgba(0,0,0,0.12);margin-top:4px;font-family:var(--font-body)}
+.pac-item{padding:10px 14px;cursor:pointer;border-top:1px solid #f0f0f0}
+.pac-item:first-child{border-top:none}
+.pac-item:hover, .pac-item-selected{background:#fff7f3}
+.pac-item-query{font-size:14px;color:var(--ink)}
+.pac-matched{font-weight:600;color:var(--brand)}
+.pac-icon{display:none}  /* hide the default map icon to keep things clean */
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="topbar">
+  <a href="/" class="logo">
+    <span class="logo-dot">✓</span>
+    Select<span class="orange">Service</span>Pros
+  </a>
+  <a href="/" class="back-home">← Back to home</a>
+</header>
+
+<!-- PROGRESS BAR -->
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <span class="progress-label">Step <span id="step-num">1</span> of 4</span>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+</div>
+
+<!-- STAGE -->
+<main class="stage">
+  <div class="stage-inner">
+
+    <!-- STEP 1: Service + ZIP -->
+    <section class="step active" data-step="1">
+      <p class="step-eyebrow">Let's get started</p>
+      <h1>What do you need help with?</h1>
+      <p class="step-hint">Pick a service category. We'll match you with licensed pros in your area.</p>
+      <div class="cat-grid" id="cat-grid"><!-- populated by JS --></div>
+      <div class="field" id="zip-field">
+        <label for="f-zip">Your ZIP code</label>
+        <input type="text" id="f-zip" inputmode="numeric" maxlength="5" placeholder="e.g. 77001" autocomplete="postal-code"/>
+        <div class="error">Please enter a valid 5-digit ZIP code.</div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="next-1" disabled>Continue →</button>
+      </div>
+    </section>
+
+    <!-- STEP 2: Contact info (progressive profiling happens here) -->
+    <section class="step" data-step="2">
+      <p class="step-eyebrow">Almost there</p>
+      <h1>Where can pros reach you?</h1>
+      <p class="step-hint">Pros will reach out directly with free quotes. No spam, ever.</p>
+      <div class="field">
+        <label for="f-name">Your name</label>
+        <input type="text" id="f-name" placeholder="Full name" autocomplete="name"/>
+        <div class="error">Please enter your name.</div>
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label for="f-phone">Phone</label>
+          <input type="tel" id="f-phone" placeholder="(555) 123-4567" autocomplete="tel" maxlength="14"/>
+          <div class="error">Please enter a valid phone number.</div>
+        </div>
+        <div class="field">
+          <label for="f-email">Email</label>
+          <input type="email" id="f-email" placeholder="you@email.com" autocomplete="email"/>
+          <div class="error">Please enter a valid email.</div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-address">Service address <span style="text-transform:none;color:var(--text4);font-weight:400">(optional)</span></label>
+        <input type="text" id="f-address" placeholder="Start typing your address..." autocomplete="street-address"/>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" data-back>← Back</button>
+        <button class="btn btn-primary" id="next-2">Continue →</button>
+      </div>
+      <div class="trust-row">
+        <span><span class="dot"></span>Licensed pros only</span>
+        <span><span class="dot"></span>100% free</span>
+        <span><span class="dot"></span>No spam</span>
+      </div>
+    </section>
+
+    <!-- STEP 3: Specific issue -->
+    <section class="step" data-step="3">
+      <p class="step-eyebrow"><span id="eyebrow-cat">Service</span></p>
+      <h1>What's the issue?</h1>
+      <p class="step-hint">Pick the option that best matches. You can add details in a moment.</p>
+      <div class="pill-grid" id="issue-pills"><!-- populated by JS based on category --></div>
+      <div class="actions">
+        <button class="btn btn-ghost" data-back>← Back</button>
+        <button class="btn btn-primary" id="next-3" disabled>Continue →</button>
+      </div>
+    </section>
+
+    <!-- STEP 4: Urgency + details -->
+    <section class="step" data-step="4">
+      <p class="step-eyebrow">Last step</p>
+      <h1>How soon do you need this?</h1>
+      <p class="step-hint">This helps pros prioritize your request.</p>
+      <div class="urg-grid" id="urg-grid">
+        <button class="urg-btn" data-urg="Emergency — today"><strong>Emergency</strong><span>Today</span></button>
+        <button class="urg-btn" data-urg="Within a few days"><strong>Soon</strong><span>Within a few days</span></button>
+        <button class="urg-btn" data-urg="Within 1-2 weeks"><strong>Planning</strong><span>Within 1-2 weeks</span></button>
+        <button class="urg-btn" data-urg="Flexible / no rush"><strong>Flexible</strong><span>No rush</span></button>
+      </div>
+      <div class="field">
+        <label for="f-details">Anything else? <span style="text-transform:none;color:var(--text4);font-weight:400">(optional)</span></label>
+        <textarea id="f-details" placeholder="Describe what's going on — the more detail, the better quote you'll get."></textarea>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" data-back>← Back</button>
+        <button class="btn btn-primary" id="submit-final" disabled>
+          <span id="submit-text">Get My Free Quotes →</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- SUCCESS -->
+    <section class="step" data-step="5">
+      <div class="success-card">
+        <div class="success-icon">✓</div>
+        <h1>You're all set!</h1>
+        <p>We've received your request and are matching you with a licensed <strong id="success-cat">pro</strong> in ZIP <strong id="success-zip">—</strong>.</p>
+        <p>A contractor will reach out to you directly within minutes. Keep an eye on your phone and email.</p>
+        <div style="margin-top:24px">
+          <a href="/" class="btn btn-primary" style="display:inline-block;text-decoration:none;padding:14px 28px">Back to home</a>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+// ============================================================
+//  CONFIG — categories + issues per category
+//  Data extracted verbatim from live window.CO on selectservicepros.com
+// ============================================================
+const CATEGORIES = [
+  { name: 'HVAC',             icon: '❄️' },
+  { name: 'Plumbing',         icon: '🚿' },
+  { name: 'Electrical',       icon: '⚡' },
+  { name: 'Roofing',          icon: '🏠' },
+  { name: 'Handyman',         icon: '🔧' },
+  { name: 'Appliance Repair', icon: '🔌' },
+  { name: 'Construction',     icon: '🏗️' },
+  { name: 'Pool & Spa',       icon: '🏊' },
+  { name: 'Windows & Doors',  icon: '🪟' },
+  { name: 'Painting',         icon: '🎨' }
+];
+
+const ISSUES = {
+  'HVAC': ['AC not cooling','AC blowing warm air','AC making noise','AC leaking water','No heat / furnace issue','Heat pump not working','AC replacement / new system','Furnace replacement','Duct cleaning or repair','Thermostat install / replace','Mini split install','Maintenance / tune-up','Other'],
+  'Plumbing': ['Leaky faucet or pipe','Clogged drain / slow drain','Water heater not working','Water heater replacement','Tankless water heater install','Toilet running / leaking','Garbage disposal issue','Sewer line backup','Sump pump issue','Gas line repair','Water pressure issue','Pipe repair / repiping','Other'],
+  'Electrical': ['Outlet or switch not working','Light fixture install','Recessed lighting install','Ceiling fan install','Panel / breaker upgrade','Wiring repair or upgrade','Generator install','EV charger install','Smoke / CO detector install','Landscape / outdoor lighting','Flickering or dimming lights','Other'],
+  'Roofing': ['Roof leak repair','Shingle repair / replacement','Full roof replacement','Flat roof repair','Storm / hail damage','Gutter install or repair','Gutter cleaning','Roof inspection','Skylight install or repair','Other'],
+  'Handyman': ['Drywall repair / patching','TV mounting','Furniture assembly','Shelf / curtain rod install','Door repair or adjustment','Fence / gate repair','Pressure washing','Caulking / weatherstripping','Deck repair','Tile / grout repair','Other'],
+  'Appliance Repair': ['Refrigerator not cooling','Washer not spinning / draining','Dryer not heating','Dishwasher not cleaning','Oven / stove not heating','Ice maker not working','Garbage disposal jammed','Other'],
+  'Construction': ['Kitchen remodel','Bathroom remodel','Flooring installation','Tile installation','Room addition','Basement finishing','Deck / patio build','Cabinet install / reface','Countertop installation','Other'],
+  'Pool & Spa': ['Pool cleaning / maintenance','Pool pump or filter repair','Pool leak detection','Pool heater repair','Pool resurfacing','Spa / hot tub service','Other'],
+  'Windows & Doors': ['Window replacement','Window repair','Door installation','Door repair','Sliding door repair','Storm door install','Screen repair / replace','Other'],
+  'Painting': ['Interior painting (full room)','Interior touch-up / accent wall','Exterior painting','Cabinet painting / refinishing','Deck / fence staining','Wallpaper removal','Popcorn ceiling removal','Other']
+};
+
+// ============================================================
+//  STATE
+// ============================================================
+const state = {
+  currentStep: 1,
+  totalSteps: 4,
+  category: null,
+  zip: '',
+  name: '',
+  phone: '',
+  email: '',
+  address: '',       // full formatted address (what user sees)
+  street: '',        // street + number
+  city: '',
+  stateRegion: '',   // 2-letter state (TX, CA, etc) — "state" is reserved word-ish
+  lat: null,
+  lng: null,
+  placeId: null,     // Google place_id
+  service: null,     // specific issue picked at step 3
+  urgency: null,
+  details: '',
+  leadId: null,      // set after partial capture at step 2
+  partialSent: false
+};
+
+// Google Places config — API key lives in a meta tag so you can swap it without code changes
+// In production: Vercel env var injects this at build time, or hardcode here
+const GOOGLE_PLACES_KEY_META = 'google-places-key';
+
+// ============================================================
+//  INIT
+// ============================================================
+function init() {
+  renderCategories();
+  wireStep1();
+  wireStep2();
+  wireStep4();
+  wireBackButtons();
+  updateProgress();
+  loadGooglePlaces();  // kicks off async load of Places API
+
+  // Check URL params for pre-filled category (e.g. coming from popular searches)
+  const params = new URLSearchParams(location.search);
+  if (params.get('service')) {
+    const preCat = findCategoryFromService(params.get('service'));
+    if (preCat) selectCategory(preCat);
+  }
+  if (params.get('zip')) {
+    document.getElementById('f-zip').value = params.get('zip');
+    state.zip = params.get('zip');
+    validateStep1();
+  }
+}
+
+// ============================================================
+//  GOOGLE PLACES AUTOCOMPLETE
+// ============================================================
+// Loads the Google Maps JS API asynchronously. If no key is present or the
+// load fails, the address field falls back to a plain text input — no UX break.
+function loadGooglePlaces() {
+  const keyMeta = document.querySelector('meta[name="' + GOOGLE_PLACES_KEY_META + '"]');
+  const key = keyMeta ? keyMeta.getAttribute('content') : '';
+  if (!key) {
+    console.log('[Places] No API key set — address field will be plain text');
+    return;
+  }
+  if (window.google && window.google.maps && window.google.maps.places) {
+    attachAutocomplete();
+    return;
+  }
+  window.__onGoogleLoaded = function() {
+    try { attachAutocomplete(); }
+    catch (e) { console.error('[Places] attach failed:', e); }
+  };
+  const s = document.createElement('script');
+  s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key)
+    + '&libraries=places&callback=__onGoogleLoaded&loading=async';
+  s.async = true;
+  s.defer = true;
+  s.onerror = () => console.error('[Places] failed to load Google Maps API');
+  document.head.appendChild(s);
+}
+
+function attachAutocomplete() {
+  const input = document.getElementById('f-address');
+  if (!input) return;
+  if (!window.google || !google.maps || !google.maps.places) return;
+  const ac = new google.maps.places.Autocomplete(input, {
+    types: ['address'],
+    componentRestrictions: { country: 'us' },
+    fields: ['address_components', 'formatted_address', 'geometry', 'place_id']
+  });
+  ac.addListener('place_changed', () => {
+    const place = ac.getPlace();
+    if (!place || !place.address_components) return;
+    const parts = parseAddressComponents(place.address_components);
+    state.address = place.formatted_address || input.value;
+    state.street = parts.street;
+    state.city = parts.city;
+    state.stateRegion = parts.state;
+    state.placeId = place.place_id || null;
+    if (place.geometry && place.geometry.location) {
+      state.lat = place.geometry.location.lat();
+      state.lng = place.geometry.location.lng();
+    }
+    // Auto-fill ZIP if they picked an address that includes one and we didn't already have one
+    if (parts.zip && parts.zip !== state.zip) {
+      const zipIn = document.getElementById('f-zip');
+      zipIn.value = parts.zip;
+      state.zip = parts.zip;
+      validateStep1();
+    }
+  });
+  // Prevent form submit on Enter while picking an address suggestion
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const hasSuggestions = document.querySelector('.pac-container .pac-item');
+      if (hasSuggestions) e.preventDefault();
+    }
+  });
+}
+
+function parseAddressComponents(components) {
+  const out = { street: '', city: '', state: '', zip: '' };
+  let streetNumber = '', route = '';
+  for (const c of components) {
+    if (c.types.includes('street_number')) streetNumber = c.long_name;
+    else if (c.types.includes('route')) route = c.long_name;
+    else if (c.types.includes('locality')) out.city = c.long_name;
+    else if (c.types.includes('sublocality') && !out.city) out.city = c.long_name;
+    else if (c.types.includes('administrative_area_level_1')) out.state = c.short_name;
+    else if (c.types.includes('postal_code')) out.zip = c.long_name;
+  }
+  out.street = [streetNumber, route].filter(Boolean).join(' ').trim();
+  return out;
+}
+
+function findCategoryFromService(svc) {
+  svc = svc.toLowerCase();
+  if (svc.includes('ac') || svc.includes('hvac') || svc.includes('furnace') || svc.includes('heat')) return 'HVAC';
+  if (svc.includes('plumb') || svc.includes('drain') || svc.includes('water heater') || svc.includes('leak')) return 'Plumbing';
+  if (svc.includes('electr') || svc.includes('panel') || svc.includes('outlet')) return 'Electrical';
+  if (svc.includes('roof')) return 'Roofing';
+  if (svc.includes('remodel') || svc.includes('kitchen') || svc.includes('bathroom')) return 'Construction';
+  if (svc.includes('window') || svc.includes('door')) return 'Windows & Doors';
+  if (svc.includes('pool') || svc.includes('spa')) return 'Pool & Spa';
+  if (svc.includes('paint')) return 'Painting';
+  if (svc.includes('appliance') || svc.includes('fridge') || svc.includes('washer') || svc.includes('dryer')) return 'Appliance Repair';
+  return null;
+}
+
+// ============================================================
+//  STEP 1 — service category + ZIP
+// ============================================================
+function renderCategories() {
+  const host = document.getElementById('cat-grid');
+  host.innerHTML = CATEGORIES.map(c =>
+    `<button class="cat-btn" data-cat="${c.name}"><span class="cat-icon">${c.icon}</span>${c.name}</button>`
+  ).join('');
+  host.addEventListener('click', (e) => {
+    const btn = e.target.closest('.cat-btn');
+    if (!btn) return;
+    selectCategory(btn.dataset.cat);
+  });
+}
+
+function selectCategory(cat) {
+  state.category = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.cat === cat);
+  });
+  validateStep1();
+}
+
+function wireStep1() {
+  const zipIn = document.getElementById('f-zip');
+  const zipField = document.getElementById('zip-field');
+  zipIn.addEventListener('input', () => {
+    zipIn.value = zipIn.value.replace(/\D/g, '').slice(0,5);
+    state.zip = zipIn.value;
+    zipField.classList.remove('has-error');
+    validateStep1();
+  });
+  document.getElementById('next-1').addEventListener('click', () => {
+    if (!state.category) return;
+    if (!/^\d{5}$/.test(state.zip)) {
+      zipField.classList.add('has-error');
+      return;
+    }
+    goToStep(2);
+  });
+}
+
+function validateStep1() {
+  const ok = state.category && /^\d{5}$/.test(state.zip);
+  document.getElementById('next-1').disabled = !ok;
+}
+
+// ============================================================
+//  STEP 2 — contact info + PARTIAL LEAD CAPTURE
+// ============================================================
+function wireStep2() {
+  ['f-name','f-phone','f-email'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('input', () => {
+      el.closest('.field').classList.remove('has-error');
+    });
+  });
+  // Phone auto-format on input: (713) 555-1234
+  const phoneEl = document.getElementById('f-phone');
+  phoneEl.addEventListener('input', (e) => {
+    const cursorAtEnd = phoneEl.selectionStart === phoneEl.value.length;
+    phoneEl.value = formatPhone(phoneEl.value);
+    if (cursorAtEnd) phoneEl.setSelectionRange(phoneEl.value.length, phoneEl.value.length);
+  });
+  document.getElementById('next-2').addEventListener('click', onStep2Submit);
+}
+
+function validEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+function validPhone(p) { return p.replace(/\D/g,'').length >= 10; }
+
+// Format a phone number as the user types: (713) 555-1234
+function formatPhone(raw) {
+  const d = raw.replace(/\D/g,'').slice(0,10);
+  if (d.length === 0) return '';
+  if (d.length < 4)  return '(' + d;
+  if (d.length < 7)  return '(' + d.slice(0,3) + ') ' + d.slice(3);
+  return '(' + d.slice(0,3) + ') ' + d.slice(3,6) + '-' + d.slice(6);
+}
+
+async function onStep2Submit() {
+  const nameEl = document.getElementById('f-name');
+  const phoneEl = document.getElementById('f-phone');
+  const emailEl = document.getElementById('f-email');
+  const addressEl = document.getElementById('f-address');
+  state.name = nameEl.value.trim();
+  state.phone = phoneEl.value.trim();
+  state.email = emailEl.value.trim();
+  state.address = addressEl.value.trim();
+
+  let hasError = false;
+  if (!state.name || state.name.length < 2) {
+    nameEl.closest('.field').classList.add('has-error');
+    hasError = true;
+  }
+  if (!validPhone(state.phone)) {
+    phoneEl.closest('.field').classList.add('has-error');
+    hasError = true;
+  }
+  if (!validEmail(state.email)) {
+    emailEl.closest('.field').classList.add('has-error');
+    hasError = true;
+  }
+  if (hasError) return;
+
+  const btn = document.getElementById('next-2');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Saving...';
+
+  // PARTIAL LEAD CAPTURE — fire /api/create-lead with the fields we have
+  // Even if user bails, we have enough to follow up
+  try {
+    await sendPartialLead();
+  } catch (e) {
+    console.error('Partial lead send failed:', e);
+    // Don't block progression — continue to step 3 anyway
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Continue →';
+  goToStep(3);
+  renderIssuesForCategory(state.category);
+}
+
+async function sendPartialLead() {
+  if (state.partialSent) return;
+  const payload = {
+    name: state.name,
+    phone: state.phone,
+    email: state.email,
+    zip: state.zip,
+    address: state.address,      // full formatted address (user-facing)
+    street: state.street,        // parsed components (from Google Places)
+    city: state.city,
+    state_region: state.stateRegion,
+    lat: state.lat,
+    lng: state.lng,
+    place_id: state.placeId,
+    service: '',                 // not yet picked — empty string rather than null
+    urgency: 'Within a few days', // safe default, will be overwritten
+    details: 'Partial submission — form in progress',
+    category: state.category,
+    partial: true                // flag so backend can handle if desired
+  };
+  const resp = await fetch('/api/create-lead', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  const data = await resp.json();
+  if (data && data.leadId) {
+    state.leadId = data.leadId;
+  }
+  state.partialSent = true;
+}
+
+// ============================================================
+//  STEP 3 — specific issue
+// ============================================================
+function renderIssuesForCategory(cat) {
+  document.getElementById('eyebrow-cat').textContent = cat;
+  const issues = ISSUES[cat] || [];
+  const host = document.getElementById('issue-pills');
+  host.innerHTML = issues.map(i => `<button class="issue-pill" data-issue="${i.replace(/"/g,'&quot;')}">${i}</button>`).join('');
+  host.onclick = (e) => {
+    const btn = e.target.closest('.issue-pill');
+    if (!btn) return;
+    document.querySelectorAll('.issue-pill').forEach(p => p.classList.remove('selected'));
+    btn.classList.add('selected');
+    state.service = btn.dataset.issue;
+    document.getElementById('next-3').disabled = false;
+  };
+  document.getElementById('next-3').disabled = true;
+  state.service = null;
+  // auto-advance on click (nice UX for pills)
+  document.getElementById('next-3').onclick = () => goToStep(4);
+}
+
+// ============================================================
+//  STEP 4 — urgency + details + final submit
+// ============================================================
+function wireStep4() {
+  document.getElementById('urg-grid').addEventListener('click', (e) => {
+    const btn = e.target.closest('.urg-btn');
+    if (!btn) return;
+    document.querySelectorAll('.urg-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    state.urgency = btn.dataset.urg;
+    document.getElementById('submit-final').disabled = false;
+  });
+  document.getElementById('f-details').addEventListener('input', (e) => {
+    state.details = e.target.value;
+  });
+  document.getElementById('submit-final').addEventListener('click', onFinalSubmit);
+}
+
+async function onFinalSubmit() {
+  if (!state.urgency) return;
+  const btn = document.getElementById('submit-final');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Submitting...';
+
+  const payload = {
+    name: state.name,
+    phone: state.phone,
+    email: state.email,
+    zip: state.zip,
+    address: state.address,      // full formatted address
+    street: state.street,
+    city: state.city,
+    state_region: state.stateRegion,
+    lat: state.lat,
+    lng: state.lng,
+    place_id: state.placeId,
+    service: state.service,
+    urgency: state.urgency,
+    details: state.details || '',
+    category: state.category,
+    leadId: state.leadId,        // pass the partial lead ID if we have one (backend may dedupe)
+    partial: false
+  };
+
+  try {
+    const resp = await fetch('/api/create-lead', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    // success — show confirmation screen
+    document.getElementById('success-cat').textContent = (state.category || 'pro').toLowerCase() + ' pro';
+    document.getElementById('success-zip').textContent = state.zip;
+    goToStep(5);
+  } catch (e) {
+    console.error('Final submit failed:', e);
+    btn.innerHTML = 'Try again';
+    btn.disabled = false;
+    alert('Something went wrong submitting your request. Please try again or call us.');
+  }
+}
+
+// ============================================================
+//  NAVIGATION
+// ============================================================
+function wireBackButtons() {
+  document.querySelectorAll('[data-back]').forEach(b => {
+    b.addEventListener('click', () => goToStep(state.currentStep - 1));
+  });
+}
+
+function goToStep(n) {
+  if (n < 1) return;
+  state.currentStep = n;
+  document.querySelectorAll('.step').forEach(s => {
+    s.classList.toggle('active', +s.dataset.step === n);
+  });
+  if (n <= state.totalSteps) {
+    document.getElementById('step-num').textContent = n;
+  }
+  updateProgress();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function updateProgress() {
+  const pct = Math.min(100, (state.currentStep / state.totalSteps) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+// ============================================================
+//  BOOT
+// ============================================================
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
