@@ -28,6 +28,24 @@ function mapUrgency(input) {
   return "Planning";
 }
 
+// --- Helper: build address field object from request body ---
+// Safely extracts structured address fields (all optional) from the form payload.
+// Returns only keys with defined values so we don't accidentally overwrite
+// existing columns with null on an UPDATE.
+function extractAddressFields(body) {
+  var out = {};
+  if (body.address !== undefined) out.homeowner_address = (body.address || "").trim() || null;
+  if (body.street !== undefined) out.homeowner_street = (body.street || "").trim() || null;
+  if (body.city !== undefined) out.homeowner_city = (body.city || "").trim() || null;
+  if (body.state_region !== undefined) out.homeowner_state = (body.state_region || "").trim() || null;
+  if (body.lat !== undefined && body.lat !== null && body.lat !== "")
+    out.homeowner_lat = Number(body.lat);
+  if (body.lng !== undefined && body.lng !== null && body.lng !== "")
+    out.homeowner_lng = Number(body.lng);
+  if (body.place_id !== undefined) out.place_id = (body.place_id || "").trim() || null;
+  return out;
+}
+
 module.exports = async function handler(req, res) {
   // CORS headers
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -53,7 +71,72 @@ module.exports = async function handler(req, res) {
     var urgency = body.urgency || "";
     var details = (body.details || "").trim();
 
-    // Validate required fields
+    // NEW: partial / leadId routing
+    var isPartial = body.partial === true;
+    var leadIdFromBody = (body.leadId || "").trim();
+
+    // Supabase client (used by all branches)
+    var supabaseKey = SUPABASE_SERVICE_KEY || SUPABASE_ANON_KEY;
+    var supabase = createClient(SUPABASE_URL, supabaseKey);
+
+    // ============================================================
+    // CASE A: Partial capture (Step 2 submission)
+    // ============================================================
+    // Minimum data check: need at least name + phone + zip to store anything useful.
+    // Email is not strictly required for a partial - some users may skip it.
+    if (isPartial) {
+      if (!name || !phone || !zip) {
+        return res.status(400).json({
+          success: false,
+          error: "Missing required fields for partial capture: name, phone, zip",
+        });
+      }
+
+      var partialData = Object.assign({
+        homeowner_name: name,
+        homeowner_phone: phone,
+        homeowner_email: email || null,
+        homeowner_zip: zip,
+        service_category: category || null,
+        // Issue/urgency/details come at Step 4 - leave null/placeholder
+        service_type: service || null,
+        urgency: null,
+        description: null,
+        status: "Partial",
+        partial: true,
+        source: "website",
+        paid: false,
+      }, extractAddressFields(body));
+
+      var partialResult = await supabase
+        .from("leads")
+        .insert([partialData])
+        .select("id")
+        .single();
+
+      if (partialResult.error) {
+        console.error("Partial lead insert error:", partialResult.error);
+        return res.status(500).json({
+          success: false,
+          error: "Failed to save partial lead: " + partialResult.error.message,
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        leadId: partialResult.data.id,
+        partial: true,
+        message: "Partial lead saved. Continue to finish the request.",
+      });
+    }
+
+    // ============================================================
+    // From here on: FINAL submission (partial=false or absent).
+    // Either Case B (has leadId, UPDATE existing partial) or
+    // Case C (no leadId, INSERT new row - legacy/direct submission).
+    // ============================================================
+
+    // Validate required fields for final submission
     if (!name || !phone || !zip || !service) {
       return res.status(400).json({
         success: false,
@@ -62,10 +145,6 @@ module.exports = async function handler(req, res) {
     }
 
     var urgencyLabel = mapUrgency(urgency);
-
-    // Use service role key for full access, fall back to anon key
-    var supabaseKey = SUPABASE_SERVICE_KEY || SUPABASE_ANON_KEY;
-    var supabase = createClient(SUPABASE_URL, supabaseKey);
 
     // --- Load pricing from platform_config ---
     var defaultPricing = {
@@ -89,7 +168,6 @@ module.exports = async function handler(req, res) {
     }
 
     // --- Find matching contractors ---
-    // Fetch all contractors who are paid/verified
     var contractorsResult = await supabase
       .from("contractors")
       .select(
@@ -99,13 +177,10 @@ module.exports = async function handler(req, res) {
 
     var allContractors = contractorsResult.data || [];
 
-    // Filter: contractor's service_categories must contain the category,
-    // AND contractor's service_zips must contain the zip
     var matches = allContractors.filter(function (c) {
       var cats = c.service_categories || "";
       var zips = c.service_zips || "";
 
-      // Handle both string and array formats
       var catMatch = false;
       if (category) {
         if (typeof cats === "string") {
@@ -116,7 +191,6 @@ module.exports = async function handler(req, res) {
           });
         }
       } else {
-        // No category specified, match all
         catMatch = true;
       }
 
@@ -132,18 +206,15 @@ module.exports = async function handler(req, res) {
       return catMatch && zipMatch;
     });
 
-    // Sort by tier priority: Elite first, then Pro, then Basic
     matches.sort(function (a, b) {
       var aPriority = TIER_PRIORITY[a.membership_tier] || 99;
       var bPriority = TIER_PRIORITY[b.membership_tier] || 99;
       return aPriority - bPriority;
     });
 
-    // Assign to top matching contractor
     var assignedContractor = matches.length > 0 ? matches[0] : null;
     var leadStatus = assignedContractor ? "New" : "Unmatched";
 
-    // Determine lead fee based on assigned contractor's tier
     var leadFee = 0;
     if (assignedContractor) {
       var tier = assignedContractor.membership_tier || "Basic";
@@ -151,8 +222,8 @@ module.exports = async function handler(req, res) {
       leadFee = tierPricing.perLead || 0;
     }
 
-    // --- Create lead in Supabase ---
-    var leadData = {
+    // Fields shared by both insert & update paths
+    var finalFields = Object.assign({
       homeowner_name: name,
       homeowner_phone: phone,
       homeowner_email: email || null,
@@ -167,23 +238,65 @@ module.exports = async function handler(req, res) {
       paid: false,
       source: "website",
       delivered_at: assignedContractor ? new Date().toISOString() : null,
-    };
+      partial: false, // Always flip to false on final submission
+    }, extractAddressFields(body));
 
-    var leadResult = await supabase
-      .from("leads")
-      .insert([leadData])
-      .select("id")
-      .single();
+    var leadId = null;
+    var leadRowUsedUpdate = false;
 
-    if (leadResult.error) {
-      console.error("Supabase lead insert error:", leadResult.error);
-      return res.status(500).json({
-        success: false,
-        error: "Failed to create lead: " + leadResult.error.message,
-      });
+    // ============================================================
+    // CASE B: UPDATE existing partial row (dedup path)
+    // ============================================================
+    if (leadIdFromBody) {
+      // Verify the referenced lead exists
+      var existingResult = await supabase
+        .from("leads")
+        .select("id, partial")
+        .eq("id", leadIdFromBody)
+        .single();
+
+      if (existingResult.data && existingResult.data.id) {
+        // Row exists - update it in place
+        var updateResult = await supabase
+          .from("leads")
+          .update(finalFields)
+          .eq("id", leadIdFromBody)
+          .select("id")
+          .single();
+
+        if (updateResult.error) {
+          console.error("Lead update error (will fall back to insert):", updateResult.error);
+          // Fall through to INSERT path below - never lose a lead
+        } else {
+          leadId = updateResult.data.id;
+          leadRowUsedUpdate = true;
+        }
+      } else {
+        // leadId provided but row not found - likely deleted or mangled.
+        // Fall back to Case C: insert a new row so we never lose the lead.
+        console.log("leadId " + leadIdFromBody + " not found - falling back to new insert");
+      }
     }
 
-    var leadId = leadResult.data.id;
+    // ============================================================
+    // CASE C: INSERT new row (no leadId, or Case B fallback)
+    // ============================================================
+    if (!leadId) {
+      var insertResult = await supabase
+        .from("leads")
+        .insert([finalFields])
+        .select("id")
+        .single();
+
+      if (insertResult.error) {
+        console.error("Supabase lead insert error:", insertResult.error);
+        return res.status(500).json({
+          success: false,
+          error: "Failed to create lead: " + insertResult.error.message,
+        });
+      }
+      leadId = insertResult.data.id;
+    }
 
     // --- Send to GHL webhook for CRM tracking ---
     try {
@@ -197,6 +310,9 @@ module.exports = async function handler(req, res) {
           phone: phone,
           email: email,
           zip: zip,
+          address: body.address || "",
+          city: body.city || "",
+          state: body.state_region || "",
           service: service,
           category: category,
           urgency: urgencyLabel,
@@ -211,14 +327,13 @@ module.exports = async function handler(req, res) {
             ? assignedContractor.email
             : null,
           lead_fee: leadFee,
+          updated_from_partial: leadRowUsedUpdate,
         }),
       });
     } catch (ghlError) {
-      // Don't fail the lead creation if GHL webhook fails
       console.error("GHL webhook error (non-fatal):", ghlError.message);
     }
 
-    
     // --- Notify contractor of new lead ---
     if (assignedContractor && assignedContractor.email) {
       try {
@@ -237,6 +352,7 @@ module.exports = async function handler(req, res) {
             lead_id: leadId,
             homeowner_name: name,
             homeowner_zip: zip,
+            homeowner_address: body.address || "",
             service_type: service,
             service_category: category,
             urgency: urgencyLabel,
@@ -249,7 +365,6 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    
     // --- Notify homeowner of lead received ---
     if (email) {
       try {
@@ -262,6 +377,7 @@ module.exports = async function handler(req, res) {
             homeowner_email: email,
             homeowner_phone: phone,
             homeowner_zip: zip,
+            homeowner_address: body.address || "",
             service_type: service,
             service_category: category,
             urgency: urgencyLabel,
@@ -280,6 +396,7 @@ module.exports = async function handler(req, res) {
       leadId: leadId,
       matched: !!assignedContractor,
       contractorCount: matches.length,
+      updatedFromPartial: leadRowUsedUpdate,
       message: assignedContractor
         ? "Lead created and matched to " +
           (assignedContractor.first_name || "") +
