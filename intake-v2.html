@@ -324,14 +324,32 @@ function init() {
 
   // Check URL params for pre-filled category (e.g. coming from popular searches)
   const params = new URLSearchParams(location.search);
-  if (params.get('service')) {
+  let hasCategoryPrefill = false;
+  let hasZipPrefill = false;
+
+  // Accept either ?service=X or ?category=X — service gets mapped to a category
+  if (params.get('category') && ISSUES[params.get('category')]) {
+    selectCategory(params.get('category'));
+    hasCategoryPrefill = true;
+  } else if (params.get('service')) {
     const preCat = findCategoryFromService(params.get('service'));
-    if (preCat) selectCategory(preCat);
+    if (preCat) {
+      selectCategory(preCat);
+      hasCategoryPrefill = true;
+    }
   }
-  if (params.get('zip')) {
+  if (params.get('zip') && /^\d{5}$/.test(params.get('zip'))) {
     document.getElementById('f-zip').value = params.get('zip');
     state.zip = params.get('zip');
     validateStep1();
+    hasZipPrefill = true;
+  }
+
+  // If we arrived with BOTH a category AND a valid ZIP (from homepage hero search),
+  // Step 1 is already complete — skip directly to Step 2 (contact info).
+  // This preserves progressive profiling: partial lead fires on Step 2 submit.
+  if (hasCategoryPrefill && hasZipPrefill) {
+    goToStep(2);
   }
 }
 
