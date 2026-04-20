@@ -173,7 +173,7 @@ module.exports = async function handler(req, res) {
       .select(
         "id, first_name, last_name, email, membership_tier, service_categories, service_zips, status"
       )
-      .in("status", ["Paid"]);
+      .in("status", ["Active"]);
 
     var allContractors = contractorsResult.data || [];
 

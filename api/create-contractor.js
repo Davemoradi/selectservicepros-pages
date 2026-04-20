@@ -81,7 +81,7 @@ module.exports = async (req, res) => {
       services: services || null,
       service_categories: serviceCategories || null,
       website_url: websiteUrl || null,
-      status: 'Paid',
+      status: 'Pending Profile',
       lead_count: 0,
       acceptance_rate: 0
     });
@@ -108,7 +108,7 @@ module.exports = async (req, res) => {
       contractor_service_categories: serviceCategories || '',
       contractor_service_zips: serviceZips || '',
       contractor_membership_tier: planName || 'Basic',
-      contractor_status: 'Paid',
+      contractor_status: 'Pending Profile',
       passwordResetUrl: passwordResetUrl,
       lead_id: 'SSP-PAID-' + Date.now()
     };
