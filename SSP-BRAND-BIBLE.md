@@ -7,7 +7,7 @@
 ## BRAND IDENTITY
 
 # Name: Select Service Pros (SSP)
-# Tagline: "Houston's Trusted Home Service Network"
+# Tagline: "Your Trusted Home Service Network"
 # Domain: selectservicepros.com
 # Parent company: Select Home Warranty (SHW)
 
