@@ -3,9 +3,12 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<meta name="google-places-key" content="AIzaSyCMSjpo0QVu5HX3fIrBirWV6dhVeTPP-aA"/>
+<!-- Google Places API key: set this to your actual key when ready -->
 <meta name="google-places-key" content=""/>
 <title>Get matched with a pro — SelectServicePros</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --brand:#f05528;
@@ -17,8 +20,7 @@
   --white:#ffffff;
   --border:#e5e5e5;
   --max-w:640px;
-  --font-display:'Georgia','Times New Roman',serif;
-  --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --font-body:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;font-family:var(--font-body);color:var(--ink);background:var(--bg);min-height:100vh}
@@ -26,8 +28,8 @@ body{display:flex;flex-direction:column}
 
 /* HEADER */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:var(--white);border-bottom:1px solid var(--border)}
-.logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font-weight:700;font-size:18px}
-.logo-dot{width:28px;height:28px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:700;font-size:18px;letter-spacing:-.01em}
+.logo-pin{width:28px;height:36px;flex-shrink:0}
 .logo span.orange{color:var(--brand)}
 .back-home{font-size:13px;color:var(--text2);text-decoration:none}
 .back-home:hover{color:var(--brand)}
@@ -51,14 +53,14 @@ body{display:flex;flex-direction:column}
 
 /* STEP HEADERS */
 .step-eyebrow{font-size:12px;color:var(--brand);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin:0 0 12px}
-.step h1{font-family:var(--font-display);font-size:32px;font-weight:700;margin:0 0 10px;line-height:1.2;color:var(--ink)}
+.step h1{font-size:30px;font-weight:700;margin:0 0 10px;line-height:1.15;color:var(--ink);letter-spacing:-.02em}
 .step-hint{color:var(--text2);font-size:15px;margin:0 0 28px;line-height:1.5}
 
 /* CATEGORY PILLS (step 1) */
 .cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:24px}
-.cat-btn{padding:18px 16px;background:var(--white);border:2px solid var(--border);border-radius:12px;text-align:left;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;transition:all 0.15s ease;display:flex;align-items:center;gap:10px}
-.cat-btn:hover{border-color:var(--brand);background:#fff7f3}
-.cat-btn.selected{border-color:var(--brand);background:#fff7f3;color:var(--brand)}
+.cat-btn{padding:18px 16px;background:var(--white);border:2px solid var(--border);border-radius:12px;text-align:left;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;transition:all 0.15s ease;display:flex;align-items:center;gap:10px;font-family:inherit}
+.cat-btn:hover{border-color:var(--brand);background:#fff7f3;transform:translateY(-1px)}
+.cat-btn.selected{border-color:var(--brand);background:#fff7f3;color:var(--brand);box-shadow:0 0 0 3px rgba(240,85,40,.12)}
 .cat-icon{font-size:22px}
 
 /* INPUT FIELDS */
@@ -128,7 +130,11 @@ body{display:flex;flex-direction:column}
 <!-- HEADER -->
 <header class="topbar">
   <a href="/" class="logo">
-    <span class="logo-dot">✓</span>
+    <svg class="logo-pin" viewBox="0 0 28 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M14 0C6.27 0 0 6.27 0 14c0 10.5 14 22 14 22s14-11.5 14-22C28 6.27 21.73 0 14 0z" fill="#f05528"/>
+      <circle cx="14" cy="14" r="7.5" fill="#ffffff"/>
+      <path d="M10.5 14l2.5 2.5 4.5-5" stroke="#f05528" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
     Select<span class="orange">Service</span>Pros
   </a>
   <a href="/" class="back-home">← Back to home</a>
@@ -471,6 +477,7 @@ function selectCategory(cat) {
     b.classList.toggle('selected', b.dataset.cat === cat);
   });
   validateStep1();
+  maybeAutoAdvanceStep1();
 }
 
 function wireStep1() {
@@ -481,6 +488,7 @@ function wireStep1() {
     state.zip = zipIn.value;
     zipField.classList.remove('has-error');
     validateStep1();
+    maybeAutoAdvanceStep1();
   });
   document.getElementById('next-1').addEventListener('click', () => {
     if (!state.category) return;
@@ -490,6 +498,22 @@ function wireStep1() {
     }
     goToStep(2);
   });
+}
+
+// Auto-advance once category picked AND ZIP is 5 digits.
+// Only fires on step 1 (avoid re-firing if user navigates back).
+// Small delay so the "selected" state visually lands before transition.
+let _step1AutoAdvanceTimer = null;
+function maybeAutoAdvanceStep1() {
+  if (state.currentStep !== 1) return;
+  if (!state.category) return;
+  if (!/^\d{5}$/.test(state.zip)) return;
+  clearTimeout(_step1AutoAdvanceTimer);
+  _step1AutoAdvanceTimer = setTimeout(() => {
+    if (state.currentStep === 1 && state.category && /^\d{5}$/.test(state.zip)) {
+      goToStep(2);
+    }
+  }, 350);
 }
 
 function validateStep1() {
@@ -621,10 +645,15 @@ function renderIssuesForCategory(cat) {
     btn.classList.add('selected');
     state.service = btn.dataset.issue;
     document.getElementById('next-3').disabled = false;
+    // Auto-advance after a brief pause so the user sees their selection highlight.
+    setTimeout(() => {
+      if (state.currentStep === 3 && state.service === btn.dataset.issue) {
+        goToStep(4);
+      }
+    }, 400);
   };
   document.getElementById('next-3').disabled = true;
   state.service = null;
-  // auto-advance on click (nice UX for pills)
   document.getElementById('next-3').onclick = () => goToStep(4);
 }
 

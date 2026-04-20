@@ -85,7 +85,7 @@ CREATE POLICY "Contractors update own folder" ON storage.objects
 <link rel="icon" href="/favicon.ico"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
 :root{
   --orange:#f05528; --orange2:#d94a20; --orange-soft:rgba(240,85,40,.08); --orange-tint:#fdece5;
@@ -159,7 +159,7 @@ body[data-nav="sidebar"] .shell-main{padding-top:24px}
 
 /* ===== HEADER / GREETING ===== */
 .page-header{padding:32px 0 20px}
-.page-header h1{font-family:'Fraunces',serif;font-weight:700;font-size:clamp(26px,3.2vw,34px);color:var(--navy);letter-spacing:-.015em;line-height:1.1}
+.page-header h1{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(26px,3.2vw,34px);color:var(--navy);letter-spacing:-.025em;line-height:1.1}
 .page-header .sub{font-size:14px;color:var(--text3);margin-top:6px}
 .page-header .row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
 
@@ -174,7 +174,7 @@ body[data-nav="sidebar"] .shell-main{padding-top:24px}
 .stat{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden}
 .stat-label{font-size:11px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
 .stat-label svg{opacity:.7}
-.stat-value{font-family:'Fraunces',serif;font-weight:600;font-size:30px;color:var(--navy);line-height:1;letter-spacing:-.02em}
+.stat-value{font-family:'DM Sans',sans-serif;font-weight:600;font-size:30px;color:var(--navy);line-height:1;letter-spacing:-.02em}
 .stat-sub{font-size:12px;color:var(--text3);margin-top:6px;display:flex;align-items:center;gap:4px}
 .stat-delta{font-size:11px;font-weight:700;padding:1px 6px;border-radius:999px;background:var(--green-soft);color:var(--green)}
 .stat-delta.down{background:var(--red-soft);color:var(--red)}
@@ -186,7 +186,7 @@ body[data-nav="sidebar"] .shell-main{padding-top:24px}
 /* ===== SECTION TITLES ===== */
 .section{margin-bottom:28px}
 .section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
-.section-title{font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--navy);letter-spacing:-.01em}
+.section-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:20px;color:var(--navy);letter-spacing:-.02em}
 .section-link{font-size:13px;font-weight:600;color:var(--orange);cursor:pointer}
 .section-link:hover{color:var(--orange2)}
 
@@ -213,12 +213,12 @@ body[data-nav="sidebar"] .shell-main{padding-top:24px}
 .wiz-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:10px}
 .wiz-eyebrow .pulse{width:8px;height:8px;background:var(--orange);border-radius:50%;box-shadow:0 0 0 0 rgba(240,85,40,.6);animation:pulse 1.8s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(240,85,40,.55)}70%{box-shadow:0 0 0 10px rgba(240,85,40,0)}100%{box-shadow:0 0 0 0 rgba(240,85,40,0)}}
-.wiz-title{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(22px,2.8vw,30px);letter-spacing:-.01em;line-height:1.15;max-width:640px}
+.wiz-title{font-family:'DM Sans',sans-serif;font-weight:800;font-size:clamp(22px,2.8vw,30px);letter-spacing:-.025em;line-height:1.1;max-width:640px}
 .wiz-subtitle{font-size:14px;color:rgba(255,255,255,.72);margin-top:8px;max-width:580px}
 .wiz-progress{margin-top:22px;display:flex;align-items:center;gap:14px;position:relative;z-index:1}
 .wiz-bar{flex:1;height:10px;background:rgba(255,255,255,.1);border-radius:999px;overflow:hidden;position:relative}
 .wiz-bar-fill{position:absolute;inset:0;width:0;background:linear-gradient(90deg,var(--orange) 0%,#ff7a4d 100%);border-radius:999px;transition:width .6s var(--ease);box-shadow:0 0 20px rgba(240,85,40,.4)}
-.wiz-pct{font-family:'Fraunces',serif;font-weight:600;font-size:22px;color:#fff;min-width:54px;text-align:right}
+.wiz-pct{font-family:'DM Sans',sans-serif;font-weight:600;font-size:22px;color:#fff;min-width:54px;text-align:right}
 
 .wizard-body{display:grid;grid-template-columns:260px 1fr;min-height:420px}
 .wiz-steps{border-right:1px solid var(--border);padding:18px 10px;background:#fafaf7;overflow-y:auto}
@@ -242,7 +242,7 @@ body[data-nav="sidebar"] .shell-main{padding-top:24px}
 .wiz-content{padding:30px 34px;display:flex;flex-direction:column}
 .wiz-content-head{margin-bottom:20px}
 .wiz-tag{font-size:11px;font-weight:700;color:var(--orange);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
-.wiz-h{font-family:'Fraunces',serif;font-weight:600;font-size:24px;color:var(--navy);letter-spacing:-.01em;line-height:1.2}
+.wiz-h{font-family:'DM Sans',sans-serif;font-weight:700;font-size:24px;color:var(--navy);letter-spacing:-.02em;line-height:1.2}
 .wiz-d{font-size:14px;color:var(--text3);margin-top:4px;max-width:520px}
 
 .field{margin-bottom:16px}
@@ -329,14 +329,14 @@ body[data-nav="sidebar"] .shell-main{padding-top:24px}
 .fact-lbl{font-size:11px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
 .fact-val{font-weight:500;color:var(--text1)}
 .fact a{color:var(--orange);font-weight:600}
-.phone-big{font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--green);letter-spacing:-.01em}
+.phone-big{font-family:'DM Sans',sans-serif;font-weight:600;font-size:20px;color:var(--green);letter-spacing:-.01em}
 
 /* ===== BILLING ===== */
 .plan-card{position:relative;background:linear-gradient(135deg,var(--navy) 0%,#18304f 100%);color:#fff;border-radius:var(--radius-lg);padding:28px;overflow:hidden}
 .plan-card::before{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(240,85,40,.22) 0%,transparent 70%)}
 .plan-card-inner{position:relative;z-index:1}
 .plan-eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:8px}
-.plan-name-big{font-family:'Fraunces',serif;font-weight:600;font-size:32px;letter-spacing:-.02em}
+.plan-name-big{font-family:'DM Sans',sans-serif;font-weight:800;font-size:32px;letter-spacing:-.025em}
 .plan-price-big{font-size:14px;color:rgba(255,255,255,.75);margin-top:4px}
 .plan-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
 .plan-btn{padding:10px 16px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;backdrop-filter:blur(8px)}
@@ -348,7 +348,7 @@ body[data-nav="sidebar"] .shell-main{padding-top:24px}
 .tier{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;transition:.2s var(--ease)}
 .tier.current{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-soft)}
 .tier.current::before{content:"Current";position:absolute;top:-9px;right:14px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:999px;letter-spacing:.05em;text-transform:uppercase}
-.tier-name{font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--navy)}
+.tier-name{font-family:'DM Sans',sans-serif;font-weight:600;font-size:20px;color:var(--navy)}
 .tier-price{font-size:13px;color:var(--text3);margin-top:4px}
 .tier-ul{list-style:none;margin:14px 0 16px;padding:0;font-size:13px;color:var(--text2)}
 .tier-ul li{display:flex;align-items:center;gap:8px;padding:4px 0}
@@ -357,7 +357,7 @@ body[data-nav="sidebar"] .shell-main{padding-top:24px}
 .billing-break{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
 .break-item{background:var(--bg);border-radius:10px;padding:16px}
 .break-lbl{font-size:11px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.06em}
-.break-val{font-family:'Fraunces',serif;font-weight:600;font-size:26px;color:var(--navy);letter-spacing:-.01em;margin-top:4px}
+.break-val{font-family:'DM Sans',sans-serif;font-weight:800;font-size:26px;color:var(--navy);letter-spacing:-.02em;margin-top:4px}
 .break-sub{font-size:12px;color:var(--text3);margin-top:2px}
 
 /* ===== SETTINGS toggles ===== */
@@ -371,13 +371,13 @@ body[data-nav="sidebar"] .shell-main{padding-top:24px}
 .switch.on::after{left:20px}
 
 .danger-zone{background:#fff5f5;border:1px solid var(--red-soft);border-radius:var(--radius);padding:20px;margin-top:20px}
-.danger-zone h3{font-family:'Fraunces',serif;font-weight:600;color:var(--red);font-size:18px}
+.danger-zone h3{font-family:'DM Sans',sans-serif;font-weight:600;color:var(--red);font-size:18px}
 .danger-zone p{font-size:13px;color:var(--text2);margin-top:4px;margin-bottom:14px}
 
 /* ===== EMPTY STATE ===== */
 .empty{text-align:center;padding:56px 20px}
 .empty svg{margin:0 auto 16px}
-.empty h3{font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--navy);margin-bottom:6px}
+.empty h3{font-family:'DM Sans',sans-serif;font-weight:700;font-size:20px;color:var(--navy);margin-bottom:6px}
 .empty p{font-size:14px;color:var(--text3);max-width:360px;margin:0 auto 18px;line-height:1.5}
 
 /* ===== TOAST ===== */
@@ -484,7 +484,7 @@ body.show-tweaks .tweaks{display:block}
 .modal{background:var(--white);border-radius:16px;box-shadow:var(--shadow-lg);width:100%;max-width:680px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;animation:modalpop .24s var(--ease)}
 @keyframes modalpop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
 .modal-head{display:flex;justify-content:space-between;align-items:flex-start;padding:20px 24px;border-bottom:1px solid var(--border);gap:12px}
-.modal-title{font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--navy);letter-spacing:-.01em}
+.modal-title{font-family:'DM Sans',sans-serif;font-weight:700;font-size:20px;color:var(--navy);letter-spacing:-.02em}
 .modal-sub{font-size:12.5px;color:var(--text3);margin-top:4px}
 .modal-scroll{flex:1;overflow-y:auto;padding:22px 24px;background:var(--bg);position:relative;max-height:42vh;min-height:200px;border-bottom:1px solid var(--border)}
 .agree-text{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text2);line-height:1.65;white-space:pre-wrap;word-wrap:break-word}
@@ -534,7 +534,7 @@ body.show-tweaks .tweaks{display:block}
 .lic-card{border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;background:#fcfcfa;transition:border-color .15s,background .15s}
 .lic-card:hover{border-color:#d9d6cf}
 .lic-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
-.lic-card-trade{font-family:'Fraunces',serif;font-weight:600;font-size:17px;color:var(--navy);letter-spacing:-.01em}
+.lic-card-trade{font-family:'DM Sans',sans-serif;font-weight:600;font-size:17px;color:var(--navy);letter-spacing:-.01em}
 .lic-card-type{color:var(--text4);font-weight:400;font-family:'DM Sans',sans-serif;font-size:13px}
 .lic-card-meta{font-size:12px;color:var(--text4);margin-top:3px;font-variant-numeric:tabular-nums}
 .lic-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.01em;white-space:nowrap}
@@ -1240,7 +1240,7 @@ function overviewHTML(){
         <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
           <div style="flex-shrink:0">${reviewIllustration()}</div>
           <div style="flex:1;min-width:240px">
-            <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:22px;color:var(--navy);letter-spacing:-.01em">We're reviewing your info</h3>
+            <h3 style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:22px;color:var(--navy);letter-spacing:-.02em">We're reviewing your info</h3>
             <p style="color:var(--text3);margin-top:6px;font-size:14px;line-height:1.55;max-width:520px">Your license and insurance documents are being checked against state registries. This almost always takes under one business day. You'll get an email when you're live.</p>
             <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
               <button class="btn btn-ghost" onclick="setTab('profile')">Review your info</button>
@@ -1316,7 +1316,7 @@ function wizardDoneHTML(){
   return `
     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:360px;padding:20px">
       ${readyIllustration()}
-      <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:26px;color:var(--navy);margin-top:18px;letter-spacing:-.01em">Looking good${(state.profile.firstName||'').trim() ? ', '+state.profile.firstName.trim() : ''}.</h3>
+      <h3 style="font-family:'DM Sans',sans-serif;font-weight:800;font-size:26px;color:var(--navy);margin-top:18px;letter-spacing:-.025em">Looking good${(state.profile.firstName||'').trim() ? ', '+state.profile.firstName.trim() : ''}.</h3>
       <p style="font-size:14px;color:var(--text3);max-width:420px;margin-top:8px;line-height:1.55">Your profile and credentials are complete. Hit submit and we'll verify with the state and get you live — usually within one business day.</p>
       <button class="btn btn-primary btn-lg" style="margin-top:22px" onclick="submitForReview()">Submit for review</button>
     </div>
@@ -1663,7 +1663,7 @@ function stepLicenses(){
     ${licensedSelected.map(trade=>`
       <div class="card pad" style="margin-bottom:14px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-          <div style="font-family:'Fraunces',serif;font-weight:600;font-size:18px;color:var(--navy)">${trade} license</div>
+          <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:18px;color:var(--navy);letter-spacing:-.01em">${trade} license</div>
           ${licenseForTrade(trade) && licenseForTrade(trade).number && licenseForTrade(trade).file
             ? `<span class="lic-pill lic-pending">Pending verification</span>`
             : `<span class="lic-pill lic-needed">Incomplete</span>`}
@@ -2903,7 +2903,7 @@ function showFatalError(msg){
   document.body.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px;background:#faf9f6">
       <div style="max-width:440px;text-align:center;font-family:'DM Sans',sans-serif">
-        <div style="font-family:'Fraunces',serif;font-size:28px;color:#0a1628;margin-bottom:10px">Something's off</div>
+        <div style="font-family:'DM Sans',sans-serif;font-size:28px;color:#0a1628;margin-bottom:10px">Something's off</div>
         <p style="color:#4b5563;font-size:15px;line-height:1.5;margin-bottom:20px">${msg}</p>
         <a href="mailto:support@selectservicepros.com" style="display:inline-block;padding:10px 18px;border-radius:10px;background:#0a1628;color:#fff;text-decoration:none;font-weight:600;font-size:14px">Contact support</a>
       </div>
