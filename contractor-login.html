@@ -1,318 +1,186 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Contractor Login — SelectServicePros</title>
-<meta name="description" content="Log in to your Select Service Pros contractor dashboard. Manage leads, profile, and billing."/>
-<link rel="icon" href="/favicon.ico"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@700;800&display=swap" rel="stylesheet"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contractor sign in · Select Service Pros</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
-:root{--orange:#f05528;--orange2:#d94a20;--navy:#0a1628;--bg:#f8f7f4;--white:#ffffff;--border:#e5e4e0;--text1:#111318;--text2:#3d3f44;--text3:#6b6e76;--green:#1a8a4a;--green-light:#e6f9ed;--red:#e53e3e;--red-light:#fee;--radius:12px;--shadow:0 2px 12px rgba(0,0,0,.06)}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text1);-webkit-font-smoothing:antialiased;min-height:100vh}
-a{text-decoration:none;color:inherit}
+  :root{
+    --orange:#f05528; --orange2:#d94a20; --orange-soft:rgba(240,85,40,.08);
+    --navy:#0a1628; --navy2:#122240;
+    --bg:#f8f7f4; --white:#ffffff; --border:#e5e4e0; --border-strong:#d8d6d0;
+    --text1:#0a1628; --text2:#3a4654; --text3:#697484; --text4:#9aa3af;
+    --green:#1a8a4a; --red:#e53e3e; --red-soft:#fee2e2;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text1);font-family:'DM Sans',system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:var(--orange);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{min-height:100vh;display:grid;grid-template-columns:1fr;align-items:center;justify-items:center;padding:32px 20px}
+  @media(min-width:960px){
+    .wrap{grid-template-columns:1fr 1fr;gap:0;padding:0}
+    .hero{height:100vh}
+  }
+  /* ---- LEFT: hero panel ---- */
+  .hero{background:linear-gradient(180deg,var(--navy) 0%,var(--navy2) 100%);color:#fff;padding:48px;display:flex;flex-direction:column;justify-content:space-between;width:100%;height:100%}
+  .hero .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;letter-spacing:.02em}
+  .hero .brand-mark{width:32px;height:36px;display:grid;place-items:center}
+  .hero h1{font-family:'Fraunces',serif;font-weight:500;font-size:44px;line-height:1.1;margin:0 0 16px;letter-spacing:-.01em}
+  .hero p{color:rgba(255,255,255,.7);font-size:16px;max-width:440px;margin:0}
+  .hero-body{max-width:460px}
+  .hero-foot{color:rgba(255,255,255,.5);font-size:13px}
+  .checklist{margin:28px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px}
+  .checklist li{display:flex;gap:12px;align-items:flex-start;font-size:14px;color:rgba(255,255,255,.85)}
+  .checklist svg{flex-shrink:0;margin-top:3px}
+  /* ---- RIGHT: form panel ---- */
+  .form-col{width:100%;max-width:420px;padding:0 8px}
+  @media(min-width:960px){ .form-col{padding:48px} }
+  .card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:36px 32px;box-shadow:0 1px 2px rgba(10,22,40,.04)}
+  h2{font-family:'Fraunces',serif;font-weight:500;font-size:28px;margin:0 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--text3);font-size:14px;margin:0 0 24px}
 
-/* NAV */
-.nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.nav-logo{display:flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif;font-weight:800;font-size:18px}
-.nav-logo .lo{color:var(--navy)}
-.nav-logo .ls{color:var(--orange)}
-.nav-links{display:flex;gap:20px;align-items:center}
-.nav-links a{font-size:14px;font-weight:600;color:var(--text2)}
-.nav-links a:hover{color:var(--orange)}
-.nav-links .nav-cta{background:var(--orange);color:#fff;padding:8px 18px;border-radius:8px;font-weight:700}
-.nav-links .nav-cta:hover{background:var(--orange2)}
-
-/* LOGIN LAYOUT */
-.login-wrap{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 64px);padding:40px 24px}
-.login-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:48px 40px;max-width:420px;width:100%;box-shadow:var(--shadow)}
-.login-card h1{font-family:'Fraunces',serif;font-weight:800;font-size:28px;color:var(--navy);margin-bottom:8px;text-align:center}
-.login-card .sub{font-size:14px;color:var(--text3);text-align:center;margin-bottom:32px}
-
-/* FORM */
-.fg{margin-bottom:20px}
-.fl{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px}
-.fi{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
-.fi:focus{border-color:var(--orange)}
-
-.btn{width:100%;padding:14px;border:none;border-radius:8px;font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .2s}
-.btn-primary{background:var(--orange);color:#fff}
-.btn-primary:hover{background:var(--orange2)}
-.btn-primary:disabled{opacity:.6;cursor:not-allowed}
-
-.login-footer{text-align:center;margin-top:20px;font-size:13px;color:var(--text3)}
-.login-footer a{color:var(--orange);font-weight:600}
-.login-footer a:hover{text-decoration:underline}
-
-/* MESSAGES */
-.msg{padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:20px;display:none}
-.msg-error{background:var(--red-light);color:var(--red);border:1px solid #fcc}
-.msg-success{background:var(--green-light);color:var(--green);border:1px solid #bbf7d0}
-.msg.show{display:block}
-
-/* TABS */
-.login-tabs{display:flex;gap:0;margin-bottom:28px;border-bottom:2px solid var(--border)}
-.login-tab{flex:1;padding:10px 0;text-align:center;font-size:14px;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
-.login-tab.active{color:var(--orange);border-bottom-color:var(--orange)}
-
-/* SPINNER */
-.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:8px}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* PASSWORD TOGGLE */
-.pw-wrap{position:relative}
-.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;font-weight:600}
-
-@media(max-width:480px){
-  .login-card{padding:32px 24px}
-}
+  .field{margin-bottom:14px}
+  label{display:block;font-size:12.5px;font-weight:500;color:var(--text2);margin-bottom:6px;letter-spacing:.01em}
+  .input{width:100%;border:1px solid var(--border-strong);border-radius:9px;padding:10px 12px;font:inherit;font-size:14.5px;background:var(--white);transition:border-color .15s,box-shadow .15s}
+  .input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-soft)}
+  .row{display:flex;gap:10px}
+  .row .field{flex:1}
+  .btn{width:100%;border:0;background:var(--navy);color:#fff;padding:12px 16px;border-radius:10px;font:inherit;font-weight:600;font-size:14.5px;cursor:pointer;transition:background .15s;margin-top:4px}
+  .btn:hover{background:var(--navy2)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-primary{background:var(--orange)}
+  .btn-primary:hover{background:var(--orange2)}
+  .meta{text-align:center;margin-top:16px;font-size:13px;color:var(--text3)}
+  .meta a{font-weight:500}
+  .alert{background:var(--red-soft);border:1px solid #fbb8b8;color:#8b1e1e;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none}
+  .alert.show{display:block}
+  .success{background:#e6f9ed;border:1px solid #b7e8c8;color:#125e33}
+  .forgot{display:flex;justify-content:flex-end;margin-top:-8px;margin-bottom:14px}
+  .forgot button{background:transparent;border:0;color:var(--text3);font:inherit;font-size:12.5px;cursor:pointer;padding:0}
+  .forgot button:hover{color:var(--orange);text-decoration:underline}
+  .divider{height:1px;background:var(--border);margin:18px 0}
+  footer{text-align:center;color:var(--text4);font-size:12px;margin-top:24px}
+  footer a{color:var(--text4)}
+  /* show/hide panes */
+  .pane{display:block}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav class="nav">
-  <a href="/" class="nav-logo">
-    <svg width="28" height="33" viewBox="0 0 48 56" fill="none"><path d="M24 2C13 2 4 11 4 22c0 14 20 32 20 32s20-18 20-32C44 11 35 2 24 2z" fill="#f05528"/><circle cx="24" cy="20" r="12" fill="#fff"/><path d="M18 20l4.5 4.5 7.5-7.5" stroke="#f05528" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <span><span class="lo">Select</span><span class="ls">Service</span><span class="lo">Pros</span></span>
-  </a>
-  <div class="nav-links">
-    <a href="/">← Home</a>
-    <a href="/contractor-signup.html" class="nav-cta">Get Started</a>
+<div class="wrap">
+
+  <!-- Left hero -->
+  <div class="hero">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"><svg width="28" height="32" viewBox="0 0 48 56" fill="none"><path d="M24 2C13 2 4 11 4 22c0 14 20 32 20 32s20-18 20-32C44 11 35 2 24 2z" fill="#f05528"/><circle cx="24" cy="20" r="12" fill="#fff"/><path d="M18 20l4.5 4.5 7.5-7.5" stroke="#f05528" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Select Service Pros</div>
+    <div class="hero-body">
+      <h1>Contractor Portal</h1>
+      <p>Exclusive local leads delivered the moment a homeowner requests service. You quote, you schedule, you keep 100% of what you earn.</p>
+      <ul class="checklist">
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f05528" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Exclusive leads in your service ZIPs — not blasted to 10 competitors
+        </li>
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f05528" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Simple per-lead pricing — no commissions on the jobs you win
+        </li>
+        <li>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f05528" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          You own the customer — quote, invoice, and collect directly
+        </li>
+      </ul>
+    </div>
+    <div class="hero-foot">© Select Service Pros</div>
   </div>
-</nav>
 
-<div class="login-wrap">
-  <div class="login-card">
-    <!-- LOGO -->
-    <div style="text-align:center;margin-bottom:24px">
-      <svg width="48" height="56" viewBox="0 0 48 56" fill="none"><path d="M24 2C13 2 4 11 4 22c0 14 20 32 20 32s20-18 20-32C44 11 35 2 24 2z" fill="#f05528"/><circle cx="24" cy="20" r="12" fill="#fff"/><path d="M18 20l4.5 4.5 7.5-7.5" stroke="#f05528" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </div>
+  <!-- Right form -->
+  <div class="form-col">
+    <div class="card">
+      <h2 id="title">Welcome back</h2>
+      <p class="sub" id="subtitle">Sign in to your contractor account.</p>
 
-    <!-- TABS -->
-    <div class="login-tabs">
-      <div class="login-tab active" onclick="showTab('login')">Log In</div>
-      <div class="login-tab" onclick="showTab('reset')">Reset Password</div>
-    </div>
+      <div id="alert" class="alert"></div>
 
-    <!-- MESSAGES -->
-    <div class="msg msg-error" id="msg-error"></div>
-    <div class="msg msg-success" id="msg-success"></div>
-
-    <!-- LOGIN FORM -->
-    <div id="tab-login">
-      <div class="fg">
-        <label class="fl">Email address</label>
-        <input class="fi" type="email" id="login-email" placeholder="you@company.com" autocomplete="email"/>
-      </div>
-      <div class="fg">
-        <label class="fl">Password</label>
-        <div class="pw-wrap">
-          <input class="fi" type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password"/>
-          <button type="button" class="pw-toggle" onclick="togglePw()">Show</button>
+      <!-- SIGN IN (sign-in only; new accounts come from contractor-signup.html) -->
+      <form id="pane-signin" onsubmit="event.preventDefault(); doSignIn();">
+        <div class="field">
+          <label for="si-email">Email</label>
+          <input class="input" id="si-email" type="email" autocomplete="email" required>
         </div>
-      </div>
-      <button type="button" class="btn btn-primary" id="login-btn" onclick="doLogin()">Log In</button>
-      <div class="login-footer" style="margin-top:24px">
-        <p>Don't have an account? <a href="/contractor-signup.html">Sign up here</a></p>
-      </div>
-    </div>
+        <div class="field">
+          <label for="si-password">Password</label>
+          <input class="input" id="si-password" type="password" autocomplete="current-password" required>
+        </div>
+        <div class="forgot">
+          <button type="button" onclick="doForgotPassword()">Forgot password?</button>
+        </div>
+        <button class="btn btn-primary" id="si-btn" type="submit">Sign in</button>
+        <p class="meta">New to Select Service Pros? <a href="contractor-signup.html">Join the network</a></p>
+      </form>
 
-    <!-- RESET PASSWORD FORM -->
-    <div id="tab-reset" style="display:none">
-      <p style="font-size:14px;color:var(--text2);margin-bottom:20px">Enter your email and we'll send you a link to reset your password.</p>
-      <div class="fg">
-        <label class="fl">Email address</label>
-        <input class="fi" type="email" id="reset-email" placeholder="you@company.com" autocomplete="email"/>
-      </div>
-      <button type="button" class="btn btn-primary" id="reset-btn" onclick="doReset()">Send Reset Link</button>
-      <div class="login-footer" style="margin-top:24px">
-        <p>Remember your password? <a href="#" onclick="showTab('login');return false">Log in</a></p>
-      </div>
     </div>
-
-    <!-- SET NEW PASSWORD (shown when user clicks recovery link) -->
-    <div id="tab-set-password" style="display:none">
-      <h1 style="font-size:22px">Set Your Password</h1>
-      <p style="font-size:14px;color:var(--text2);margin-bottom:24px;text-align:center">Choose a password for your contractor account.</p>
-      <div class="fg">
-        <label class="fl">New password</label>
-        <input class="fi" type="password" id="new-password" placeholder="Minimum 6 characters" autocomplete="new-password"/>
-      </div>
-      <div class="fg">
-        <label class="fl">Confirm password</label>
-        <input class="fi" type="password" id="confirm-password" placeholder="Re-enter your password" autocomplete="new-password"/>
-      </div>
-      <button type="button" class="btn btn-primary" id="set-pw-btn" onclick="doSetPassword()">Set Password & Log In</button>
-    </div>
+    <footer>
+      Need help? Email <a href="/cdn-cgi/l/email-protection#43303633332c31370330262f262037302631352a202633312c306d202c2e"><span class="__cf_email__" data-cfemail="cab9bfbabaa5b8be8ab9afa6afa9beb9afb8bca3a9afbab8a5b9e4a9a5a7">[email&#160;protected]</span></a>
+    </footer>
   </div>
+
 </div>
 
-<!-- SUPABASE CLIENT -->
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // Same project as the dashboard.
+  const SUPABASE_URL = 'https://kasqtxwbsmjlisbnebku.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imthc3F0eHdic21qbGlzYm5lYmt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzkxODgsImV4cCI6MjA5MTQxNTE4OH0.QEiRMQYZlOEgk1FzOV-L3TMRjgC046ymziSE7RNO8Yg';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script>
-var SUPABASE_URL='https://kasqtxwbsmjlisbnebku.supabase.co';
-var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imthc3F0eHdic21qbGlzYm5lYmt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzkxODgsImV4cCI6MjA5MTQxNTE4OH0.QEiRMQYZlOEgk1FzOV-L3TMRjgC046ymziSE7RNO8Yg';
+  // If already signed in, bounce straight to the dashboard.
+  (async () => {
+    const { data:{ session } } = await sb.auth.getSession();
+    if(session) window.location.href = 'contractor-dashboard.html';
+  })();
 
-var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  // --- alerts ---
+  function showAlert(msg, kind='error'){
+    const a = document.getElementById('alert');
+    a.className = 'alert show' + (kind==='success' ? ' success' : '');
+    a.textContent = msg;
+  }
+  function hideAlert(){ document.getElementById('alert').classList.remove('show'); }
 
-// ═══ TAB SWITCHING ═══
-function showTab(tab){
-  document.getElementById('tab-login').style.display=tab==='login'?'block':'none';
-  document.getElementById('tab-reset').style.display=tab==='reset'?'block':'none';
-  document.getElementById('tab-set-password').style.display=tab==='set-password'?'block':'none';
-  document.querySelectorAll('.login-tab').forEach(function(t,i){
-    t.classList.toggle('active',i===(tab==='login'?0:1));
-  });
-  clearMessages();
-}
-
-function clearMessages(){
-  document.getElementById('msg-error').classList.remove('show');
-  document.getElementById('msg-success').classList.remove('show');
-}
-function showError(msg){
-  var el=document.getElementById('msg-error');
-  el.textContent=msg;el.classList.add('show');
-  document.getElementById('msg-success').classList.remove('show');
-}
-function showSuccess(msg){
-  var el=document.getElementById('msg-success');
-  el.textContent=msg;el.classList.add('show');
-  document.getElementById('msg-error').classList.remove('show');
-}
-
-// ═══ PASSWORD TOGGLE ═══
-function togglePw(){
-  var inp=document.getElementById('login-password');
-  var btn=inp.nextElementSibling;
-  if(inp.type==='password'){inp.type='text';btn.textContent='Hide'}
-  else{inp.type='password';btn.textContent='Show'}
-}
-
-// ═══ LOGIN ═══
-async function doLogin(){
-  var email=document.getElementById('login-email').value.trim();
-  var password=document.getElementById('login-password').value;
-  if(!email||!password){showError('Please enter your email and password.');return}
-
-  var btn=document.getElementById('login-btn');
-  btn.innerHTML='<span class="spinner"></span>Logging in...';btn.disabled=true;
-
-  var result=await sb.auth.signInWithPassword({email:email,password:password});
-
-  if(result.error){
-    btn.textContent='Log In';btn.disabled=false;
-    if(result.error.message.indexOf('Invalid login')!==-1||result.error.message.indexOf('invalid')!==-1){
-      showError('Invalid email or password. Please try again.');
-    }else if(result.error.message.indexOf('Email not confirmed')!==-1){
-      showError('Please check your email and verify your account before logging in.');
-    }else{
-      showError(result.error.message);
+  // --- sign in ---
+  async function doSignIn(){
+    hideAlert();
+    const email = document.getElementById('si-email').value.trim();
+    const password = document.getElementById('si-password').value;
+    const btn = document.getElementById('si-btn');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    try {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if(error){ showAlert(error.message || 'Unable to sign in.'); return; }
+      window.location.href = 'contractor-dashboard.html';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Sign in';
     }
-    return;
   }
 
-  // Success — redirect to dashboard
-  showSuccess('Login successful! Redirecting...');
-  setTimeout(function(){
-    window.location.href='/contractor-dashboard.html';
-  },500);
-}
-
-// ═══ RESET PASSWORD ═══
-async function doReset(){
-  var email=document.getElementById('reset-email').value.trim();
-  if(!email){showError('Please enter your email address.');return}
-
-  var btn=document.getElementById('reset-btn');
-  btn.innerHTML='<span class="spinner"></span>Sending...';btn.disabled=true;
-
-  var result=await sb.auth.resetPasswordForEmail(email,{
-    redirectTo:window.location.origin+'/contractor-login.html'
-  });
-
-  btn.textContent='Send Reset Link';btn.disabled=false;
-
-  if(result.error){
-    showError(result.error.message);
-  }else{
-    showSuccess('Check your email! We sent a password reset link to '+email+'.');
+  // --- forgot password ---
+  async function doForgotPassword(){
+    const email = document.getElementById('si-email').value.trim();
+    if(!email){ showAlert('Enter your email above, then click Forgot password.'); return; }
+    try {
+      const { error } = await sb.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/reset-password.html',
+      });
+      if(error){ showAlert(error.message); return; }
+      showAlert(`Password reset link sent to ${email}.`, 'success');
+    } catch(e){
+      console.error(e); showAlert('Could not send reset link.');
+    }
   }
-}
-
-// ═══ SET NEW PASSWORD (from recovery link) ═══
-async function doSetPassword(){
-  var pw=document.getElementById('new-password').value;
-  var pw2=document.getElementById('confirm-password').value;
-  if(!pw||pw.length<6){showError('Password must be at least 6 characters.');return}
-  if(pw!==pw2){showError('Passwords do not match.');return}
-
-  var btn=document.getElementById('set-pw-btn');
-  btn.innerHTML='<span class="spinner"></span>Setting password...';btn.disabled=true;
-
-  var result=await sb.auth.updateUser({password:pw});
-
-  if(result.error){
-    btn.textContent='Set Password & Log In';btn.disabled=false;
-    showError(result.error.message);
-  }else{
-    showSuccess('Password set successfully! Redirecting to dashboard...');
-    setTimeout(function(){
-      window.location.href='/contractor-dashboard.html';
-    },1000);
-  }
-}
-
-// ═══ HANDLE AUTH CALLBACK (recovery link, email verification) ═══
-async function handleAuthCallback(){
-  var hash=window.location.hash;
-  var params=new URLSearchParams(hash.replace('#',''));
-
-  // Check for recovery token in hash (Supabase sends #access_token=...&type=recovery)
-  var type=params.get('type');
-  var accessToken=params.get('access_token');
-  var refreshToken=params.get('refresh_token');
-
-  if(type==='recovery'&&accessToken){
-    // Set the session from the recovery tokens
-    await sb.auth.setSession({access_token:accessToken,refresh_token:refreshToken});
-    // Show set password form
-    document.querySelector('.login-tabs').style.display='none';
-    showTab('set-password');
-    document.getElementById('tab-set-password').style.display='block';
-    return;
-  }
-
-  if(type==='signup'||type==='email_change'){
-    showSuccess('Email verified successfully! You can now log in.');
-    return;
-  }
-
-  // Check if already logged in
-  var session=await sb.auth.getSession();
-  if(session.data.session){
-    window.location.href='/contractor-dashboard.html';
-  }
-}
-
-// Enter key support
-document.addEventListener('keydown',function(e){
-  if(e.key==='Enter'){
-    if(document.getElementById('tab-login').style.display!=='none'){doLogin()}
-    else if(document.getElementById('tab-reset').style.display!=='none'){doReset()}
-    else if(document.getElementById('tab-set-password').style.display!=='none'){doSetPassword()}
-  }
-});
-
-// Run on page load
-handleAuthCallback();
 </script>
 
-</body>
-</html>
-!--/email_off-->
 </body>
 </html>

@@ -1,459 +1,3016 @@
 <!DOCTYPE html>
+<!--
+============================================================
+SUPABASE MIGRATION — RUN ONCE IN SQL EDITOR BEFORE DEPLOYING
+============================================================
+
+-- 1) New columns on existing contractors table
+ALTER TABLE contractors
+  ADD COLUMN IF NOT EXISTS state text,
+  ADD COLUMN IF NOT EXISTS num_technicians int,
+  ADD COLUMN IF NOT EXISTS num_vehicles int,
+  ADD COLUMN IF NOT EXISTS business_hours jsonb,
+  ADD COLUMN IF NOT EXISTS scheduling_system text,
+  ADD COLUMN IF NOT EXISTS phone_answered_by text,
+  ADD COLUMN IF NOT EXISTS payment_methods text[],
+  ADD COLUMN IF NOT EXISTS services_detail jsonb,
+  ADD COLUMN IF NOT EXISTS insurance_carrier text,
+  ADD COLUMN IF NOT EXISTS insurance_policy_number text,
+  ADD COLUMN IF NOT EXISTS insurance_expiration date,
+  ADD COLUMN IF NOT EXISTS insurance_doc_url text,
+  ADD COLUMN IF NOT EXISTS insurance_verified bool DEFAULT false,
+  ADD COLUMN IF NOT EXISTS insurance_verified_at timestamptz,
+  ADD COLUMN IF NOT EXISTS agreement_accepted_at timestamptz,
+  ADD COLUMN IF NOT EXISTS agreement_accepted_ip text,
+  ADD COLUMN IF NOT EXISTS agreement_version text,
+  ADD COLUMN IF NOT EXISTS agreement_signed_name text,
+  ADD COLUMN IF NOT EXISTS number_of_employees text;
+
+-- 2) New contractor_licenses table
+CREATE TABLE IF NOT EXISTS contractor_licenses (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  contractor_id uuid REFERENCES contractors(id) ON DELETE CASCADE,
+  trade_category text,
+  license_type text,
+  license_state text,
+  license_number text,
+  expiration_date date,
+  document_url text,
+  verified bool DEFAULT false,
+  verified_at timestamptz,
+  verified_by text,
+  notes text,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_contractor_licenses_contractor
+  ON contractor_licenses(contractor_id);
+
+-- 3) RLS: contractors can only see/edit their own licenses
+ALTER TABLE contractor_licenses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Contractors manage own licenses" ON contractor_licenses
+  FOR ALL
+  USING (contractor_id IN (SELECT id FROM contractors WHERE auth_id = auth.uid()))
+  WITH CHECK (contractor_id IN (SELECT id FROM contractors WHERE auth_id = auth.uid()));
+
+-- 4) Supabase Storage bucket + RLS
+INSERT INTO storage.buckets (id, name, public)
+  VALUES ('contractor-docs', 'contractor-docs', true)
+  ON CONFLICT (id) DO NOTHING;
+
+CREATE POLICY "Contractors upload to own folder" ON storage.objects
+  FOR INSERT
+  WITH CHECK (
+    bucket_id = 'contractor-docs'
+    AND (storage.foldername(name))[1] IN (SELECT id::text FROM contractors WHERE auth_id = auth.uid())
+  );
+CREATE POLICY "Contractors read own folder" ON storage.objects
+  FOR SELECT
+  USING (
+    bucket_id = 'contractor-docs'
+    AND (storage.foldername(name))[1] IN (SELECT id::text FROM contractors WHERE auth_id = auth.uid())
+  );
+CREATE POLICY "Contractors update own folder" ON storage.objects
+  FOR UPDATE
+  USING (
+    bucket_id = 'contractor-docs'
+    AND (storage.foldername(name))[1] IN (SELECT id::text FROM contractors WHERE auth_id = auth.uid())
+  );
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Contractor Dashboard &mdash; Select Service Pros</title>
+<title>Contractor Dashboard — Select Service Pros</title>
 <link rel="icon" href="/favicon.ico"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@700;800&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&display=swap" rel="stylesheet"/>
 <style>
-:root{--orange:#f05528;--orange2:#d94a20;--orange-light:rgba(240,85,40,.08);--navy:#0a1628;--navy2:#122240;--bg:#f8f7f4;--white:#ffffff;--border:#e5e4e0;--text1:#111318;--text2:#3d3f44;--text3:#6b6e76;--text4:#9ca0a8;--green:#1a8a4a;--green-light:#e6f9ed;--red:#e53e3e;--red-light:#fee2e2;--yellow:#d97706;--yellow-light:#fef3c7;--blue:#2563eb;--blue-light:#eff6ff;--radius:12px;--shadow:0 2px 12px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08)}
+:root{
+  --orange:#f05528; --orange2:#d94a20; --orange-soft:rgba(240,85,40,.08); --orange-tint:#fdece5;
+  --navy:#0a1628; --navy2:#122240; --navy-soft:rgba(10,22,40,.06);
+  --bg:#f8f7f4; --white:#ffffff; --border:#e5e4e0; --border-strong:#d8d6d0;
+  --text1:#111318; --text2:#3d3f44; --text3:#6b6e76; --text4:#9ca0a8;
+  --green:#1a8a4a; --green-soft:#e6f9ed; --red:#e53e3e; --red-soft:#fee2e2;
+  --yellow:#d97706; --yellow-soft:#fef3c7; --blue:#2563eb; --blue-soft:#eff6ff;
+  --radius:12px; --radius-sm:8px; --radius-lg:18px;
+  --shadow-sm:0 1px 2px rgba(10,22,40,.04), 0 1px 3px rgba(10,22,40,.03);
+  --shadow:0 2px 8px rgba(10,22,40,.04), 0 4px 16px rgba(10,22,40,.04);
+  --shadow-md:0 4px 14px rgba(10,22,40,.06), 0 10px 30px rgba(10,22,40,.06);
+  --shadow-lg:0 10px 30px rgba(10,22,40,.08), 0 20px 60px rgba(10,22,40,.08);
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text1);-webkit-font-smoothing:antialiased}
+html,body{height:100%}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text1);-webkit-font-smoothing:antialiased;line-height:1.45}
 a{text-decoration:none;color:inherit}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+input,select,textarea{font-family:inherit;font-size:14px;color:var(--text1)}
+::selection{background:var(--orange-tint);color:var(--navy)}
 
-.nav{background:var(--navy);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.nav-logo{display:flex;align-items:center;gap:10px;font-family:'DM Sans',sans-serif;font-weight:800;font-size:17px;color:#fff}
+/* ===== TOP NAV ===== */
+.nav{background:var(--navy);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 rgba(255,255,255,.04)}
+.nav-logo{display:flex;align-items:center;gap:10px;color:#fff;font-weight:800;font-size:17px;letter-spacing:-.01em}
 .nav-logo .ls{color:var(--orange)}
-.nav-right{display:flex;align-items:center;gap:16px}
-.nav-user{font-size:13px;color:rgba(255,255,255,.7);font-weight:500}
-.nav-logout{background:rgba(255,255,255,.12);color:#fff;border:none;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
-.nav-logout:hover{background:rgba(255,255,255,.2)}
+.nav-right{display:flex;align-items:center;gap:14px}
+.nav-contractor{display:flex;align-items:center;gap:10px;padding:6px 10px 6px 6px;background:rgba(255,255,255,.06);border-radius:999px}
+.nav-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--orange),#f38961);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.nav-name{color:#fff;font-size:13px;font-weight:600;line-height:1}
+.nav-meta{display:flex;gap:6px;margin-top:3px}
+.tier-badge{font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em;background:linear-gradient(180deg,#f4c44a,#d39a21);color:#3a2700}
+.tier-badge.basic{background:rgba(255,255,255,.18);color:#fff}
+.tier-badge.pro{background:linear-gradient(180deg,#9ec8f5,#5e92d0);color:#0a1628}
+.tier-badge.elite{background:linear-gradient(180deg,#f4c44a,#d39a21);color:#3a2700}
+.status-pill{font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;letter-spacing:.02em}
+.status-pill.pending{background:rgba(217,119,6,.2);color:#fbd38d}
+.status-pill.review{background:rgba(37,99,235,.22);color:#a5c4f7}
+.status-pill.active{background:rgba(26,138,74,.22);color:#7ad99f}
+.nav-logout{color:rgba(255,255,255,.75);font-size:13px;font-weight:600;padding:8px 12px;border-radius:8px;transition:.15s var(--ease)}
+.nav-logout:hover{background:rgba(255,255,255,.08);color:#fff}
 
-.dash{max-width:1100px;margin:0 auto;padding:32px 24px 60px}
-.dash-header{margin-bottom:32px}
-.dash-header h1{font-family:'Fraunces',serif;font-weight:800;font-size:clamp(24px,4vw,32px);color:var(--navy)}
-.dash-header p{font-size:14px;color:var(--text3);margin-top:4px}
+/* ===== LAYOUT WRAP ===== */
+.shell{display:flex;min-height:calc(100vh - 60px)}
+.sidebar{display:none;width:240px;flex-shrink:0;background:var(--white);border-right:1px solid var(--border);padding:24px 14px;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto}
+body[data-nav="sidebar"] .sidebar{display:block}
+body[data-nav="sidebar"] .tabs-top{display:none}
+body[data-nav="sidebar"] .shell-main{padding-top:24px}
+.sidebar-link{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;transition:.15s var(--ease);margin-bottom:2px}
+.sidebar-link:hover{background:var(--bg);color:var(--text1)}
+.sidebar-link.active{background:var(--navy);color:#fff}
+.sidebar-link svg{flex-shrink:0;opacity:.85}
+.sidebar-link .dot{margin-left:auto;width:6px;height:6px;border-radius:50%;background:var(--orange);opacity:0;transition:.15s}
+.sidebar-link.has-badge .dot{opacity:1}
+.sidebar-group{font-size:11px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.08em;padding:14px 12px 6px}
 
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px}
-.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
-.stat-label{font-size:12px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.stat-value{font-size:28px;font-weight:800;color:var(--navy)}
-.stat-sub{font-size:12px;color:var(--text3);margin-top:2px}
+.shell-main{flex:1;min-width:0}
+.page{max-width:1160px;margin:0 auto;padding:0 24px 80px}
 
-.section{margin-bottom:32px}
-.section-title{font-family:'Fraunces',serif;font-weight:700;font-size:20px;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:10px}
-.section-title .count{background:var(--orange);color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px}
+/* ===== TOP TABS ===== */
+.tabs-top{position:sticky;top:60px;background:var(--bg);z-index:50;padding:0 24px;border-bottom:1px solid var(--border)}
+.tabs-top-inner{max-width:1160px;margin:0 auto;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.tabs-top-inner::-webkit-scrollbar{display:none}
+.tab{position:relative;padding:18px 16px 16px;font-size:14px;font-weight:600;color:var(--text3);white-space:nowrap;cursor:pointer;transition:color .15s var(--ease)}
+.tab:hover{color:var(--text1)}
+.tab.active{color:var(--navy)}
+.tab.active::after{content:"";position:absolute;left:12px;right:12px;bottom:-1px;height:2px;background:var(--orange);border-radius:2px 2px 0 0}
+.tab .count{display:inline-block;background:var(--navy);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;margin-left:6px;vertical-align:1px}
+.tab .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--orange);margin-left:6px;vertical-align:2px}
 
-.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);margin-bottom:16px}
+/* ===== HEADER / GREETING ===== */
+.page-header{padding:32px 0 20px}
+.page-header h1{font-family:'Fraunces',serif;font-weight:700;font-size:clamp(26px,3.2vw,34px);color:var(--navy);letter-spacing:-.015em;line-height:1.1}
+.page-header .sub{font-size:14px;color:var(--text3);margin-top:6px}
+.page-header .row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
 
-.lead-card{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
-.lead-info{flex:1;min-width:200px}
-.lead-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.lead-service{font-size:16px;font-weight:700;color:var(--navy)}
-.lead-urgency{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.3px}
-.urgency-emergency{background:var(--red-light);color:var(--red)}
-.urgency-soon{background:var(--yellow-light);color:var(--yellow)}
-.urgency-planning{background:var(--blue-light);color:var(--blue)}
-.lead-detail{font-size:13px;color:var(--text2);margin-top:4px}
-.lead-phone{font-size:13px;color:var(--green);font-weight:600;margin-top:4px}
-.lead-time{font-size:12px;color:var(--text4);margin-top:6px}
-.lead-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;min-width:130px}
-.lead-fee{font-size:14px;font-weight:700;color:var(--text1)}
-.lead-fee-note{font-size:11px;color:var(--text4)}
-.lead-actions{display:flex;gap:8px;align-items:center}
-.lead-accept{background:var(--green);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
-.lead-accept:hover{background:#158a3e}
-.lead-pass{background:var(--bg);color:var(--text2);border:1px solid var(--border);padding:8px 18px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
-.lead-pass:hover{background:#e9e8e4}
-.lead-badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;margin-top:8px}
-.badge-new,.badge-pending{background:var(--orange-light);color:var(--orange)}
-.badge-accepted{background:var(--green-light);color:var(--green)}
-.badge-passed{background:var(--bg);color:var(--text4)}
-.badge-expired{background:var(--yellow-light);color:var(--yellow)}
+/* ===== CARDS ===== */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+.card.pad{padding:22px}
+.card.hover{transition:.2s var(--ease)}
+.card.hover:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
 
-.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.profile-field{font-size:14px}
-.profile-label{font-size:12px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
-.profile-value{color:var(--text1);font-weight:500}
+/* ===== STATS ===== */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px}
+.stat{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden}
+.stat-label{font-size:11px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.stat-label svg{opacity:.7}
+.stat-value{font-family:'Fraunces',serif;font-weight:600;font-size:30px;color:var(--navy);line-height:1;letter-spacing:-.02em}
+.stat-sub{font-size:12px;color:var(--text3);margin-top:6px;display:flex;align-items:center;gap:4px}
+.stat-delta{font-size:11px;font-weight:700;padding:1px 6px;border-radius:999px;background:var(--green-soft);color:var(--green)}
+.stat-delta.down{background:var(--red-soft);color:var(--red)}
+.stat.accent{background:linear-gradient(135deg,var(--navy) 0%,#162a4a 100%);border:none;color:#fff}
+.stat.accent .stat-label{color:rgba(255,255,255,.55)}
+.stat.accent .stat-value{color:#fff}
+.stat.accent .stat-sub{color:rgba(255,255,255,.65)}
 
-.billing-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
-.billing-item{background:var(--bg);border-radius:8px;padding:16px}
-.billing-label{font-size:12px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.billing-value{font-size:22px;font-weight:800;color:var(--navy)}
-.billing-note{font-size:12px;color:var(--text3);margin-top:2px}
+/* ===== SECTION TITLES ===== */
+.section{margin-bottom:28px}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
+.section-title{font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--navy);letter-spacing:-.01em}
+.section-link{font-size:13px;font-weight:600;color:var(--orange);cursor:pointer}
+.section-link:hover{color:var(--orange2)}
 
-.plan-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
-.plan-name{font-size:20px;font-weight:800;color:var(--orange)}
-.plan-price{font-size:14px;color:var(--text2);margin-top:2px}
-.plan-status{display:inline-block;background:var(--green-light);color:var(--green);font-size:12px;font-weight:700;padding:4px 10px;border-radius:6px}
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:.15s var(--ease);white-space:nowrap;border:1px solid transparent}
+.btn-primary{background:var(--orange);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--orange2);box-shadow:0 4px 12px rgba(240,85,40,.25)}
+.btn-primary:disabled{background:var(--border-strong);color:var(--text4);cursor:not-allowed;box-shadow:none}
+.btn-navy{background:var(--navy);color:#fff}
+.btn-navy:hover:not(:disabled){background:var(--navy2)}
+.btn-ghost{background:var(--white);color:var(--text2);border-color:var(--border-strong)}
+.btn-ghost:hover:not(:disabled){background:var(--bg);border-color:var(--text4);color:var(--text1)}
+.btn-danger{background:var(--white);color:var(--red);border-color:#f3bcbc}
+.btn-danger:hover:not(:disabled){background:var(--red);color:#fff;border-color:var(--red)}
+.btn-sm{padding:7px 12px;font-size:13px;border-radius:8px}
+.btn-lg{padding:14px 24px;font-size:15px}
+.btn:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
 
-.empty{text-align:center;padding:40px 20px;color:var(--text3)}
-.empty-icon{font-size:48px;margin-bottom:12px}
-.empty-title{font-size:16px;font-weight:700;color:var(--text2);margin-bottom:4px}
-.empty-sub{font-size:13px}
+/* ===== STEPPER WIZARD (Pending Profile banner) ===== */
+.wizard{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);overflow:hidden;position:relative}
+.wizard-top{background:linear-gradient(135deg,var(--navy) 0%,#18304f 60%,#1f3a5e 100%);color:#fff;padding:28px 32px 26px;position:relative;overflow:hidden}
+.wizard-top::before{content:"";position:absolute;right:-80px;top:-80px;width:280px;height:280px;background:radial-gradient(circle,rgba(240,85,40,.18) 0%,transparent 70%)}
+.wizard-top::after{content:"";position:absolute;right:40px;bottom:-40px;width:120px;height:120px;border:1px solid rgba(255,255,255,.07);border-radius:50%}
+.wiz-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:10px}
+.wiz-eyebrow .pulse{width:8px;height:8px;background:var(--orange);border-radius:50%;box-shadow:0 0 0 0 rgba(240,85,40,.6);animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(240,85,40,.55)}70%{box-shadow:0 0 0 10px rgba(240,85,40,0)}100%{box-shadow:0 0 0 0 rgba(240,85,40,0)}}
+.wiz-title{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(22px,2.8vw,30px);letter-spacing:-.01em;line-height:1.15;max-width:640px}
+.wiz-subtitle{font-size:14px;color:rgba(255,255,255,.72);margin-top:8px;max-width:580px}
+.wiz-progress{margin-top:22px;display:flex;align-items:center;gap:14px;position:relative;z-index:1}
+.wiz-bar{flex:1;height:10px;background:rgba(255,255,255,.1);border-radius:999px;overflow:hidden;position:relative}
+.wiz-bar-fill{position:absolute;inset:0;width:0;background:linear-gradient(90deg,var(--orange) 0%,#ff7a4d 100%);border-radius:999px;transition:width .6s var(--ease);box-shadow:0 0 20px rgba(240,85,40,.4)}
+.wiz-pct{font-family:'Fraunces',serif;font-weight:600;font-size:22px;color:#fff;min-width:54px;text-align:right}
 
-.loading{text-align:center;padding:60px 20px}
-.loading-spinner{display:inline-block;width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-size:14px;color:var(--text3);margin-top:12px}
+.wizard-body{display:grid;grid-template-columns:260px 1fr;min-height:420px}
+.wiz-steps{border-right:1px solid var(--border);padding:18px 10px;background:#fafaf7;overflow-y:auto}
+.wiz-step{display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:10px;cursor:pointer;transition:.15s var(--ease);margin-bottom:2px}
+.wiz-step:hover{background:var(--white)}
+.wiz-step.active{background:var(--white);box-shadow:var(--shadow-sm);border:1px solid var(--border)}
+.wiz-step-ico{width:26px;height:26px;border-radius:50%;border:2px solid var(--border-strong);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--white);transition:.2s var(--ease);margin-top:1px}
+.wiz-step.done .wiz-step-ico{background:var(--green);border-color:var(--green)}
+.wiz-step.done .wiz-step-ico svg{color:#fff;opacity:1}
+.wiz-step-ico svg{opacity:0;transition:.2s}
+.wiz-step.active .wiz-step-ico{border-color:var(--orange)}
+.wiz-step-num{font-size:11px;font-weight:700;color:var(--text4)}
+.wiz-step.done .wiz-step-num{display:none}
+.wiz-step-txt{flex:1;min-width:0}
+.wiz-step-title{font-size:13px;font-weight:600;color:var(--text1);line-height:1.3}
+.wiz-step.done .wiz-step-title{color:var(--text3);text-decoration:line-through;text-decoration-color:var(--border-strong)}
+.wiz-step-sub{font-size:11px;color:var(--text4);margin-top:2px}
+.wiz-step-current{width:3px;background:var(--orange);border-radius:2px;align-self:stretch;margin:-2px 0;opacity:0;transition:.15s}
+.wiz-step.active .wiz-step-current{opacity:1}
 
-.filter-btn{background:var(--white);border:1px solid var(--border);color:var(--text3);padding:7px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
-.filter-btn:hover{border-color:var(--orange);color:var(--orange)}
-.filter-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.wiz-content{padding:30px 34px;display:flex;flex-direction:column}
+.wiz-content-head{margin-bottom:20px}
+.wiz-tag{font-size:11px;font-weight:700;color:var(--orange);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.wiz-h{font-family:'Fraunces',serif;font-weight:600;font-size:24px;color:var(--navy);letter-spacing:-.01em;line-height:1.2}
+.wiz-d{font-size:14px;color:var(--text3);margin-top:4px;max-width:520px}
 
-@media(max-width:600px){
-  .profile-grid{grid-template-columns:1fr}
-  .billing-grid{grid-template-columns:1fr}
-  .lead-card{flex-direction:column}
-  .lead-right{width:100%;flex-direction:row;justify-content:space-between;align-items:center}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;letter-spacing:.01em}
+.field .hint{font-size:11px;color:var(--text4);margin-top:5px}
+.input,.textarea,.select{width:100%;padding:10px 12px;background:var(--white);border:1px solid var(--border-strong);border-radius:10px;font-size:14px;color:var(--text1);transition:.15s var(--ease);font-family:inherit}
+.input:focus,.textarea:focus,.select:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-soft)}
+.textarea{min-height:84px;resize:vertical;line-height:1.5}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-row-3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}
+
+/* category / zip pills */
+.pill-picker{display:flex;flex-wrap:wrap;gap:6px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;background:var(--white);border:1px solid var(--border-strong);border-radius:999px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:.15s var(--ease)}
+.pill:hover{border-color:var(--text4);color:var(--text1)}
+.pill.selected{background:var(--navy);border-color:var(--navy);color:#fff}
+.pill.zip{background:var(--orange-soft);border-color:transparent;color:var(--orange2);font-weight:600}
+.pill .x{width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;opacity:.6}
+.pill:hover .x{opacity:1}
+.zip-input{display:flex;gap:8px}
+.zip-input .input{max-width:160px}
+
+/* file upload */
+.uploader{border:1.5px dashed var(--border-strong);border-radius:12px;padding:20px;background:var(--bg);text-align:center;transition:.15s var(--ease);cursor:pointer;position:relative}
+.uploader:hover{border-color:var(--orange);background:var(--orange-soft)}
+.uploader.has-file{border-style:solid;border-color:var(--green);background:#f3fbf5;text-align:left;padding:14px}
+.uploader-ico{width:36px;height:36px;margin:0 auto 8px;background:var(--white);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text3)}
+.uploader-title{font-size:13px;font-weight:600;color:var(--text2)}
+.uploader-sub{font-size:11px;color:var(--text4);margin-top:3px}
+.file-row{display:flex;align-items:center;gap:12px}
+.file-thumb{width:44px;height:44px;border-radius:8px;background:var(--white);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--green);flex-shrink:0}
+.file-info{flex:1;min-width:0}
+.file-name{font-size:13px;font-weight:600;color:var(--text1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.file-actions{display:flex;gap:6px;flex-shrink:0}
+.icon-btn{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text3);transition:.15s}
+.icon-btn:hover{background:var(--white);color:var(--text1)}
+
+.wiz-foot{margin-top:auto;padding-top:20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.wiz-foot .muted{font-size:12px;color:var(--text4)}
+
+/* ===== LEADS ===== */
+.filters{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.chip{padding:7px 14px;background:var(--white);border:1px solid var(--border);border-radius:999px;font-size:13px;font-weight:600;color:var(--text3);cursor:pointer;transition:.15s var(--ease);display:inline-flex;align-items:center;gap:6px}
+.chip:hover{border-color:var(--text4);color:var(--text1)}
+.chip.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.chip .c{font-size:11px;padding:0 6px;border-radius:999px;background:var(--border);color:var(--text3);font-weight:700;min-width:18px;text-align:center}
+.chip.active .c{background:rgba(255,255,255,.18);color:#fff}
+.search{flex:1;min-width:200px;max-width:280px;display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--white);border:1px solid var(--border);border-radius:999px;color:var(--text3)}
+.search:focus-within{border-color:var(--orange);color:var(--text1);box-shadow:0 0 0 3px var(--orange-soft)}
+.search input{flex:1;border:none;outline:none;font-size:13px;background:transparent}
+
+.leads-list{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.lead-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:16px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+.lead-row:last-child{border-bottom:none}
+.lead-row:hover{background:#fafaf7}
+.lead-row.expanded{background:#fafaf7}
+.lead-ico{width:40px;height:40px;border-radius:10px;background:var(--orange-soft);color:var(--orange);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lead-main{min-width:0}
+.lead-head-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lead-svc{font-size:14px;font-weight:700;color:var(--navy)}
+.lead-sub{font-size:12.5px;color:var(--text3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.urg{font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}
+.urg.emergency{background:var(--red-soft);color:var(--red)}
+.urg.soon{background:var(--yellow-soft);color:var(--yellow)}
+.urg.planning{background:var(--blue-soft);color:var(--blue)}
+.lead-meta{text-align:right;font-size:12px}
+.lead-fee{font-weight:700;color:var(--text1)}
+.lead-time{color:var(--text4);margin-top:2px}
+.lead-cta{display:flex;gap:6px;align-items:center}
+.lead-status{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px}
+.s-new{background:var(--orange-tint);color:var(--orange2)}
+.s-accepted{background:var(--green-soft);color:var(--green)}
+.s-passed{background:var(--bg);color:var(--text4)}
+.s-expired{background:var(--yellow-soft);color:var(--yellow)}
+
+.lead-expand{display:none;padding:0 18px 20px 74px;border-bottom:1px solid var(--border);background:#fafaf7;animation:slidedown .25s var(--ease)}
+.lead-row.expanded + .lead-expand{display:block}
+@keyframes slidedown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.lead-detail-grid{display:grid;grid-template-columns:2fr 1fr;gap:24px;padding-top:10px}
+.lead-desc{font-size:13.5px;color:var(--text2);line-height:1.55}
+.lead-facts{display:flex;flex-direction:column;gap:10px}
+.fact{display:flex;align-items:flex-start;gap:10px;font-size:13px}
+.fact-lbl{font-size:11px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.fact-val{font-weight:500;color:var(--text1)}
+.fact a{color:var(--orange);font-weight:600}
+.phone-big{font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--green);letter-spacing:-.01em}
+
+/* ===== BILLING ===== */
+.plan-card{position:relative;background:linear-gradient(135deg,var(--navy) 0%,#18304f 100%);color:#fff;border-radius:var(--radius-lg);padding:28px;overflow:hidden}
+.plan-card::before{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(240,85,40,.22) 0%,transparent 70%)}
+.plan-card-inner{position:relative;z-index:1}
+.plan-eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:8px}
+.plan-name-big{font-family:'Fraunces',serif;font-weight:600;font-size:32px;letter-spacing:-.02em}
+.plan-price-big{font-size:14px;color:rgba(255,255,255,.75);margin-top:4px}
+.plan-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.plan-btn{padding:10px 16px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;backdrop-filter:blur(8px)}
+.plan-btn:hover{background:rgba(255,255,255,.18)}
+.plan-btn.primary{background:var(--orange);border-color:transparent}
+.plan-btn.primary:hover{background:var(--orange2)}
+
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.tier{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;transition:.2s var(--ease)}
+.tier.current{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-soft)}
+.tier.current::before{content:"Current";position:absolute;top:-9px;right:14px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:999px;letter-spacing:.05em;text-transform:uppercase}
+.tier-name{font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--navy)}
+.tier-price{font-size:13px;color:var(--text3);margin-top:4px}
+.tier-ul{list-style:none;margin:14px 0 16px;padding:0;font-size:13px;color:var(--text2)}
+.tier-ul li{display:flex;align-items:center;gap:8px;padding:4px 0}
+.tier-ul li svg{color:var(--green);flex-shrink:0}
+
+.billing-break{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.break-item{background:var(--bg);border-radius:10px;padding:16px}
+.break-lbl{font-size:11px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.06em}
+.break-val{font-family:'Fraunces',serif;font-weight:600;font-size:26px;color:var(--navy);letter-spacing:-.01em;margin-top:4px}
+.break-sub{font-size:12px;color:var(--text3);margin-top:2px}
+
+/* ===== SETTINGS toggles ===== */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-info h4{font-size:14px;font-weight:600;color:var(--text1)}
+.toggle-info p{font-size:12.5px;color:var(--text3);margin-top:2px}
+.switch{position:relative;width:40px;height:22px;background:var(--border-strong);border-radius:999px;cursor:pointer;transition:.2s var(--ease);flex-shrink:0}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s var(--ease);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch.on{background:var(--green)}
+.switch.on::after{left:20px}
+
+.danger-zone{background:#fff5f5;border:1px solid var(--red-soft);border-radius:var(--radius);padding:20px;margin-top:20px}
+.danger-zone h3{font-family:'Fraunces',serif;font-weight:600;color:var(--red);font-size:18px}
+.danger-zone p{font-size:13px;color:var(--text2);margin-top:4px;margin-bottom:14px}
+
+/* ===== EMPTY STATE ===== */
+.empty{text-align:center;padding:56px 20px}
+.empty svg{margin:0 auto 16px}
+.empty h3{font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--navy);margin-bottom:6px}
+.empty p{font-size:14px;color:var(--text3);max-width:360px;margin:0 auto 18px;line-height:1.5}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);background:var(--navy);color:#fff;padding:10px 18px;border-radius:12px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:12px;font-size:14px;font-weight:500;z-index:1000;transition:transform .3s var(--ease);max-width:92vw}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--green)}
+.toast.error{background:var(--red)}
+.toast .undo{margin-left:8px;padding:4px 10px;background:rgba(255,255,255,.15);border-radius:6px;font-weight:700;font-size:12.5px;cursor:pointer;text-transform:uppercase;letter-spacing:.04em}
+.toast .undo:hover{background:rgba(255,255,255,.25)}
+.toast .close{opacity:.7;cursor:pointer;margin-left:4px}
+.toast .close:hover{opacity:1}
+
+/* ===== TABS CONTENT FADE ===== */
+.tab-panel{animation:fadein .25s var(--ease)}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== BANNER VARIANTS ===== */
+body[data-banner="hero"] .wizard{min-height:72vh}
+body[data-banner="hero"] .wizard-top{padding:48px 48px 40px}
+body[data-banner="hero"] .wiz-title{font-size:clamp(28px,4vw,40px)}
+body[data-banner="card"] .wizard-body{display:block}
+body[data-banner="card"] .wiz-steps{border-right:none;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(2,1fr);gap:2px;padding:10px}
+body[data-banner="card"] .wiz-content{display:none}
+body[data-banner="card"] .wiz-top-cta{display:inline-flex}
+.wiz-top-cta{display:none;margin-top:22px;position:relative;z-index:1}
+
+/* ===== SAVE INDICATOR ===== */
+.save-indicator{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--text4);opacity:0;transition:.2s;margin-left:10px;vertical-align:3px}
+.save-indicator.show{opacity:1}
+.save-indicator.saving{color:var(--text3)}
+.save-indicator.saved{color:var(--green)}
+.save-indicator .dot-anim{width:6px;height:6px;background:currentColor;border-radius:50%}
+.save-indicator.saving .dot-anim{animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.3}}
+
+/* ===== TWEAKS PANEL ===== */
+.tweaks{position:fixed;bottom:20px;right:20px;width:300px;background:var(--white);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);z-index:200;overflow:hidden;display:none}
+body.show-tweaks .tweaks{display:block}
+.tweaks-head{padding:12px 16px;background:var(--navy);color:#fff;font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center;letter-spacing:.02em}
+.tweaks-head .close{cursor:pointer;opacity:.7}
+.tweaks-head .close:hover{opacity:1}
+.tweaks-body{padding:16px;max-height:60vh;overflow-y:auto}
+.tweak{margin-bottom:14px}
+.tweak-lbl{font-size:11px;font-weight:700;color:var(--text4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.tweak-options{display:flex;gap:4px;background:var(--bg);padding:3px;border-radius:8px}
+.tweak-options button{flex:1;padding:6px 8px;font-size:12px;font-weight:600;color:var(--text3);border-radius:6px;transition:.15s}
+.tweak-options button.on{background:var(--white);color:var(--navy);box-shadow:var(--shadow-sm)}
+.tweak-options button:hover:not(.on){color:var(--text1)}
+.slider-wrap{display:flex;align-items:center;gap:10px}
+.slider-wrap input[type=range]{flex:1;accent-color:var(--orange)}
+.slider-wrap .val{font-size:12px;font-weight:700;color:var(--navy);min-width:34px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* ===== CATEGORY ACCORDION ===== */
+.cat-accordion{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--white)}
+.cat-row{border-bottom:1px solid var(--border);transition:background .15s}
+.cat-row:last-child{border-bottom:none}
+.cat-row.selected{background:#fcfbf9}
+.cat-row.open{background:var(--bg)}
+.cat-head{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:14px;padding:14px 16px;cursor:pointer;user-select:none}
+.cat-head:hover{background:var(--bg)}
+.cat-check{display:flex;align-items:center;cursor:pointer}
+.cat-check input{width:18px;height:18px;accent-color:var(--orange);cursor:pointer}
+.cat-name{font-size:15px;font-weight:600;color:var(--navy)}
+.cat-meta{font-size:12px;color:var(--text4);font-weight:500}
+.cat-row.selected .cat-meta{color:var(--orange);font-weight:600}
+.cat-chev{color:var(--text3);transition:transform .2s var(--ease)}
+.cat-row.open .cat-chev{transform:rotate(180deg)}
+.cat-body{padding:8px 16px 18px 48px;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px;animation:slidedown .2s var(--ease)}
+.cat-hint{grid-column:1/-1;font-size:13px;color:var(--text4);font-style:italic;padding:4px 0}
+.sub-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--text2);transition:.12s var(--ease)}
+.sub-item:hover{background:var(--white)}
+.sub-item input{accent-color:var(--orange);cursor:pointer}
+.sub-item.on{color:var(--text1);font-weight:500}
+
+/* ===== HOURS TABLE ===== */
+.hours-table{border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.hours-row{display:grid;grid-template-columns:60px 140px 1fr auto;align-items:center;gap:14px;padding:12px 14px;border-bottom:1px solid var(--border);transition:.15s}
+.hours-row:last-child{border-bottom:none}
+.hours-row.closed{background:#fafaf7}
+.hours-row.closed .hr-times,.hours-row.closed .hr-day{opacity:.5}
+.hr-day{font-size:13px;font-weight:700;color:var(--navy)}
+.hr-toggle{display:flex;align-items:center;gap:10px}
+.hr-status{font-size:12px;font-weight:600;color:var(--text3);min-width:44px}
+.switch.sm{width:32px;height:18px}
+.switch.sm::after{width:14px;height:14px}
+.switch.sm.on::after{left:16px}
+.hr-times{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.input.time{max-width:120px;padding:7px 10px;font-size:13px}
+.input.time:disabled{background:var(--bg);color:var(--text4);cursor:not-allowed}
+.hr-sep{font-size:12px;color:var(--text4)}
+.hr-247{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;padding:6px 10px;border-radius:8px;border:1px solid var(--border)}
+.hr-247:hover{background:var(--bg)}
+.hr-247 input{accent-color:var(--orange)}
+
+/* ===== RADIO GRID ===== */
+.radio-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px}
+.radio-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border-strong);border-radius:10px;cursor:pointer;font-size:13px;color:var(--text2);transition:.15s var(--ease);background:var(--white)}
+.radio-item:hover{border-color:var(--text4);color:var(--text1)}
+.radio-item.on{border-color:var(--orange);background:var(--orange-soft);color:var(--orange2);font-weight:600}
+.radio-item input{accent-color:var(--orange)}
+
+/* ===== MODAL ===== */
+.modal-bg{position:fixed;inset:0;background:rgba(10,22,40,.55);backdrop-filter:blur(3px);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadein .2s var(--ease)}
+.modal{background:var(--white);border-radius:16px;box-shadow:var(--shadow-lg);width:100%;max-width:680px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;animation:modalpop .24s var(--ease)}
+@keyframes modalpop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-head{display:flex;justify-content:space-between;align-items:flex-start;padding:20px 24px;border-bottom:1px solid var(--border);gap:12px}
+.modal-title{font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--navy);letter-spacing:-.01em}
+.modal-sub{font-size:12.5px;color:var(--text3);margin-top:4px}
+.modal-scroll{flex:1;overflow-y:auto;padding:22px 24px;background:var(--bg);position:relative;max-height:42vh;min-height:200px;border-bottom:1px solid var(--border)}
+.agree-text{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text2);line-height:1.65;white-space:pre-wrap;word-wrap:break-word}
+.agree-scroll-hint{position:sticky;bottom:0;left:0;right:0;background:linear-gradient(to top,var(--bg) 50%,transparent);text-align:center;font-size:11px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.08em;padding:18px 0 4px;margin:0 -24px -22px}
+.modal-foot{padding:18px 24px;display:flex;flex-direction:column;gap:12px}
+.check-row{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--text2);cursor:pointer;line-height:1.45}
+.check-row input{accent-color:var(--orange);margin-top:2px;cursor:pointer;width:16px;height:16px;flex-shrink:0}
+.check-row input:disabled{cursor:not-allowed;opacity:.4}
+.check-row input:disabled + span{color:var(--text4)}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}
+
+/* ===== MOBILE ===== */
+@media(max-width:860px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .wizard-body{grid-template-columns:1fr}
+  .wiz-steps{border-right:none;border-bottom:1px solid var(--border);max-height:180px}
+  .wiz-content{padding:22px}
+  .tiers{grid-template-columns:1fr}
+  .billing-break{grid-template-columns:1fr}
+  .lead-row{grid-template-columns:auto 1fr;gap:12px;padding:12px 14px}
+  .lead-row .lead-meta{grid-column:2;text-align:left;display:flex;gap:10px;align-items:center}
+  .lead-row .lead-cta{grid-column:1/-1;justify-content:flex-end;padding-top:4px}
+  .lead-expand{padding-left:14px}
+  .lead-detail-grid{grid-template-columns:1fr}
+  body[data-nav="sidebar"] .sidebar{display:none}
+  body[data-nav="sidebar"] .tabs-top{display:block}
+  .tweaks{right:10px;left:10px;width:auto;bottom:10px}
+  .hours-row{grid-template-columns:60px 120px 1fr;gap:10px}
+  .hr-247{grid-column:1/-1;justify-self:start}
+  .cat-body{padding-left:20px;grid-template-columns:1fr 1fr}
+  .modal{max-height:94vh}
+  .modal-scroll{max-height:38vh}
+}
+@media(max-width:560px){
   .stats{grid-template-columns:1fr 1fr}
+  .field-row,.field-row-3{grid-template-columns:1fr}
+  .plan-name-big{font-size:26px}
+  .page{padding:0 16px 60px}
+  .tabs-top{padding:0 16px}
+  .nav{padding:0 14px}
+  .nav-contractor .nav-name{display:none}
+  .tier-badge,.status-pill{font-size:9px}
+}
+
+/* ===== CREDENTIALS ===== */
+.licenses-list{display:flex;flex-direction:column;gap:14px}
+.lic-card{border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;background:#fcfcfa;transition:border-color .15s,background .15s}
+.lic-card:hover{border-color:#d9d6cf}
+.lic-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.lic-card-trade{font-family:'Fraunces',serif;font-weight:600;font-size:17px;color:var(--navy);letter-spacing:-.01em}
+.lic-card-type{color:var(--text4);font-weight:400;font-family:'DM Sans',sans-serif;font-size:13px}
+.lic-card-meta{font-size:12px;color:var(--text4);margin-top:3px;font-variant-numeric:tabular-nums}
+.lic-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.01em;white-space:nowrap}
+.lic-pill.lic-verified{background:var(--green-soft);color:var(--green)}
+.lic-pill.lic-pending{background:#fff4e0;color:#a65d10}
+.lic-pill.lic-needed{background:#f3f2ee;color:var(--text3)}
+.add-license-wrap{position:relative}
+.add-license-select{width:auto;min-width:180px;padding:8px 30px 8px 12px;font-size:13px;font-weight:500;color:var(--navy);background-color:#fff;cursor:pointer}
+.empty-inline{padding:24px 18px;text-align:center;border:1px dashed var(--border);border-radius:10px;background:#fafaf7}
+.empty-inline p{font-size:14px;color:var(--text3);margin:0}
+@media(max-width:560px){
+  .lic-card{padding:14px 15px}
+  .add-license-select{min-width:0;width:100%}
 }
 </style>
 </head>
-<body>
+<body data-banner="stepper" data-nav="sidebar" data-loading="true">
 
-
+<!-- ============ TOP NAV ============ -->
 <nav class="nav">
-  <a href="/" class="nav-logo">
-    <svg width="24" height="28" viewBox="0 0 48 56" fill="none"><path d="M24 2C13 2 4 11 4 22c0 14 20 32 20 32s20-18 20-32C44 11 35 2 24 2z" fill="#f05528"/><circle cx="24" cy="20" r="12" fill="#fff"/><path d="M18 20l4.5 4.5 7.5-7.5" stroke="#f05528" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <a href="#" class="nav-logo">
+    <svg width="22" height="26" viewBox="0 0 48 56" fill="none" aria-hidden="true">
+      <path d="M24 2C13 2 4 11 4 22c0 14 20 32 20 32s20-18 20-32C44 11 35 2 24 2z" fill="#f05528"/>
+      <circle cx="24" cy="20" r="12" fill="#fff"/>
+      <path d="M18 20l4.5 4.5 7.5-7.5" stroke="#f05528" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
     <span>Select<span class="ls">Service</span>Pros</span>
   </a>
   <div class="nav-right">
-    <span class="nav-user" id="nav-user"></span>
-    <button class="nav-logout" onclick="doLogout()">Log Out</button>
+    <div class="nav-contractor">
+      <div class="nav-avatar" id="navAvatar">··</div>
+      <div>
+        <div class="nav-name" id="navName">—</div>
+        <div class="nav-meta">
+          <span class="tier-badge pro" id="navTier">Pro</span>
+          <span class="status-pill pending" id="navStatus">Pending Profile</span>
+        </div>
+      </div>
+    </div>
+    <button class="nav-logout" onclick="logout()">Log out</button>
   </div>
 </nav>
 
-<div class="dash" id="loading-state">
-  <div class="loading">
-    <div class="loading-spinner"></div>
-    <p class="loading-text">Loading your dashboard...</p>
+<!-- ============ SIDEBAR (alt nav) ============ -->
+<div class="shell">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="shell-main">
+
+    <!-- ============ TOP TABS ============ -->
+    <div class="tabs-top" id="tabsTop">
+      <div class="tabs-top-inner" id="tabsInner"></div>
+    </div>
+
+    <main class="page" id="mainPage"></main>
   </div>
 </div>
 
-<div class="dash" id="dashboard" style="display:none">
+<!-- ============ MODAL HOST ============ -->
+<div id="modalHost"></div>
 
-  <div class="dash-header">
-    <h1 id="dash-greeting">Welcome back!</h1>
-    <p id="dash-sub">Here's your lead activity and account overview.</p>
-  </div>
-
-  <div class="stats">
-    <div class="stat-card">
-      <div class="stat-label">Total Leads</div>
-      <div class="stat-value" id="stat-leads">0</div>
-      <div class="stat-sub">lifetime received</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Accepted</div>
-      <div class="stat-value" id="stat-accepted">0</div>
-      <div class="stat-sub">leads accepted</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Acceptance Rate</div>
-      <div class="stat-value" id="stat-rate">&mdash;</div>
-      <div class="stat-sub">of leads accepted</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Avg Response</div>
-      <div class="stat-value" id="stat-response">&mdash;</div>
-      <div class="stat-sub">time to respond</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Plan</div>
-      <div class="stat-value" id="stat-plan" style="color:var(--orange)">&mdash;</div>
-      <div class="stat-sub" id="stat-plan-status"></div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Recent Leads <span class="count" id="lead-count">0</span></div>
-    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap" id="lead-filters">
-      <button class="filter-btn active" onclick="filterLeads('all')">All</button>
-      <button class="filter-btn" onclick="filterLeads('new')">New</button>
-      <button class="filter-btn" onclick="filterLeads('accepted')">Accepted</button>
-      <button class="filter-btn" onclick="filterLeads('passed')">Passed</button>
-    </div>
-    <div id="leads-list">
-      <div class="card empty">
-        <div class="empty-icon">&#128203;</div>
-        <div class="empty-title">No leads yet</div>
-        <div class="empty-sub">When homeowners in your area request service, you'll see their leads here.</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Plan &amp; Billing</div>
-    <div class="card">
-      <div class="billing-grid" id="billing-grid"></div>
-      <div class="plan-row" id="plan-row"></div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Your Profile</div>
-    <div class="card">
-      <div class="profile-grid" id="profile-grid"></div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Service Areas</div>
-    <div class="card">
-      <div id="service-areas"></div>
-    </div>
-  </div>
-
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <svg id="toastIco" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span id="toastMsg">Saved</span>
+  <span class="undo" id="toastUndo" style="display:none" onclick="undoLast()">Undo</span>
+  <span class="close" onclick="hideToast()">×</span>
 </div>
 
+<!-- ============ SUPABASE CLIENT ============ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script>
-var SUPABASE_URL='https://kasqtxwbsmjlisbnebku.supabase.co';
-var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imthc3F0eHdic21qbGlzYm5lYmt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzkxODgsImV4cCI6MjA5MTQxNTE4OH0.QEiRMQYZlOEgk1FzOV-L3TMRjgC046ymziSE7RNO8Yg';
-var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-var contractor=null;
-var leads=[];
-var currentFilter='all';
 
-var PLAN_PRICING={
-  Basic:{monthly:49,perLead:39},
-  Pro:{monthly:99,perLead:29},
-  Elite:{monthly:199,perLead:19}
+<!-- ============ JS ============ -->
+<script>
+// ==================== SUPABASE ====================
+const SUPABASE_URL = 'https://kasqtxwbsmjlisbnebku.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imthc3F0eHdic21qbGlzYm5lYmt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzkxODgsImV4cCI6MjA5MTQxNTE4OH0.QEiRMQYZlOEgk1FzOV-L3TMRjgC046ymziSE7RNO8Yg';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Fired on webhook trigger when contractor submits for review.
+const GHL_REVIEW_WEBHOOK = 'https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/pE4n0vYz4liHlmJuvi6T';
+
+// ---------- STATE ----------
+// UI-level defaults. The prototype's tweak panel used to mutate these at
+// runtime; in production they're fixed and the demo controls are gone.
+const UI_DEFAULTS = {
+  banner: 'stepper',  // 'stepper' | 'hero' | 'card'
+  nav: 'sidebar',     // 'top' | 'sidebar'
 };
 
-// Load pricing from Supabase on page load
-(function(){
-  fetch('/api/save-pricing',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'read'})})
-    .then(function(r){return r.json()}).then(function(d){
-      if(d.success&&d.pricing){
-        var p=d.pricing;
-        if(p.basic) PLAN_PRICING.Basic={monthly:p.basic.monthly||49,perLead:p.basic.perLead||39};
-        if(p.pro) PLAN_PRICING.Pro={monthly:p.pro.monthly||99,perLead:p.pro.perLead||29};
-        if(p.elite) PLAN_PRICING.Elite={monthly:p.elite.monthly||199,perLead:p.elite.perLead||19};
-      }
-    }).catch(function(){});
-})();
+const state = {
+  ...UI_DEFAULTS,
+  // session / backend
+  contractorId: null,
+  authUser: null,
+  tierBadge: 'Basic',
+  state: 'pending',        // 'pending' | 'review' | 'active' (mapped from DB status)
+  pct: 0,                  // derived from completion later
+  leadsVolume: 'many',     // not tweaked anymore — leads tab reads from state.leads
+  leads: [],               // loaded from Supabase
 
-async function init(){
-  var session=await sb.auth.getSession();
-  if(!session.data.session){
-    window.location.href='/contractor-login.html';
-    return;
-  }
-  var user=session.data.session.user;
-  document.getElementById('nav-user').textContent=user.email;
+  // ui
+  activeTab: 'overview',
+  currentStep: 0,
+  expandedLead: null,
+  leadFilter: 'all',
+  searchQuery: '',
 
-  var result=await sb.from('contractors').select('*').eq('auth_id',user.id).single();
-  if(result.error||!result.data){
-    document.getElementById('loading-state').innerHTML='<div class="loading"><p class="loading-text">Setting up your dashboard... If this takes too long, please <a href="mailto:support@selectservicepros.com" style="color:var(--orange)">contact support</a>.</p></div>';
-    return;
-  }
-  contractor=result.data;
-  await renderDashboard();
+  // profile (populated by loadContractor)
+  categories: new Set(),
+  servicesDetail: {},
+  expandedCategory: null,
+  zips: [],
+  profile: {
+    firstName:'', lastName:'', company:'', description:'',
+    years:'', employees:'', phone:'', email:'', website:'', state:'',
+  },
+  operations: {
+    technicians:'', vehicles:'',
+    hours: defaultHours(),
+    scheduling:'', phoneAnswered:'',
+    payments: new Set(),
+  },
+  credentials: {
+    insurance:{ carrier:'', policy:'', exp:'', file:'', verified:false },
+    licenses:[],
+  },
+  notifs:{email:true,sms:true,digest:false},
+  agreement:{
+    open:false, scrolledEnd:false, readAgreed:false, authorized:false, typedName:'',
+  },
+  history:[],
+};
+
+function defaultHours(){
+  return {
+    Mon:{open:true, from:'08:00', to:'17:00', open24:false},
+    Tue:{open:true, from:'08:00', to:'17:00', open24:false},
+    Wed:{open:true, from:'08:00', to:'17:00', open24:false},
+    Thu:{open:true, from:'08:00', to:'17:00', open24:false},
+    Fri:{open:true, from:'08:00', to:'17:00', open24:false},
+    Sat:{open:false, from:'09:00', to:'15:00', open24:false},
+    Sun:{open:false, from:'09:00', to:'15:00', open24:false},
+  };
 }
 
-async function renderDashboard(){
-  var c=contractor;
-  document.getElementById('loading-state').style.display='none';
-  document.getElementById('dashboard').style.display='block';
+// ---------- LICENSING ----------
+// Three trades require a verified license on file to receive leads.
+const LICENSED_TRADES = ['HVAC','Plumbing','Electrical'];
+// All others are insurance-only.
+const UNLICENSED_TRADES = ['Roofing','Handyman','Appliance Repair','Painting','Windows & Doors','Construction / Remodeling','Pool & Spa'];
 
-  document.getElementById('dash-greeting').textContent='Welcome back, '+(c.first_name||'')+'!';
-  document.getElementById('dash-sub').textContent=c.company_name||'Your contractor dashboard';
+// Generic, state-agnostic license type options.
+const LICENSE_TYPES = [
+  'State Electrical License (Master)',
+  'State Electrical License (Journeyman)',
+  'State Plumbing License (Master)',
+  'State Plumbing License (Journeyman)',
+  'State HVAC / Mechanical License',
+  'City / County License',
+  'EPA Section 608 (refrigerant)',
+  'Other',
+];
 
-  // Load leads first so we can compute stats from them
-  await loadLeads();
+// US states + DC, 2-letter codes.
+const US_STATES = [
+  ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],
+  ['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['DC','District of Columbia'],
+  ['FL','Florida'],['GA','Georgia'],['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],
+  ['IN','Indiana'],['IA','Iowa'],['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],
+  ['ME','Maine'],['MD','Maryland'],['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],
+  ['MS','Mississippi'],['MO','Missouri'],['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],
+  ['NH','New Hampshire'],['NJ','New Jersey'],['NM','New Mexico'],['NY','New York'],
+  ['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],['OK','Oklahoma'],['OR','Oregon'],
+  ['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],['SD','South Dakota'],
+  ['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],['VA','Virginia'],
+  ['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming'],
+];
 
-  // Compute stats from leads
-  var totalLeads=leads.length;
-  var accepted=leads.filter(function(l){return l.status==='Accepted'}).length;
-  var rate=totalLeads>0?Math.round((accepted/totalLeads)*100):0;
-  var totalCharges=leads.filter(function(l){return l.status==='Accepted'&&l.lead_fee}).reduce(function(sum,l){return sum+(parseFloat(l.lead_fee)||0)},0);
+// ---------- SUB-SERVICES ----------
+const SUB_SERVICES = {
+  'HVAC':['Central AC','Mini-splits / ductless','Furnaces','Heat pumps','Boilers','Ductwork','Thermostats','Air quality','Commercial HVAC'],
+  'Plumbing':['Water heaters (tank)','Tankless water heaters','Drain cleaning','Sewer / main line','Leak detection','Gas lines','Repipe','Toilets & fixtures','Garbage disposals','Sump pumps','Backflow prevention'],
+  'Electrical':['Panel upgrades','Outlets / switches / wiring','Lighting','Ceiling fans','EV chargers','Generators','Smoke / CO detectors','Surge protection','Troubleshooting'],
+  'Roofing':['Shingle (asphalt)','Metal','Tile','Flat / low-slope','Repair','Full replacement','Storm damage','Gutters','Skylights'],
+  'Appliance Repair':['Refrigerators','Clothes washers','Clothes dryers','Dishwashers','Ovens / ranges','Microwaves (built-in)','Garbage disposals','Wine coolers / ice machines'],
+  'Handyman':['Drywall / paint touch-up','Furniture assembly','TV mounting','Door repair','Fence repair','Pressure washing','Deck repair','Tile / grout repair','Caulking'],
+  'Construction / Remodeling':['Kitchen remodel','Bathroom remodel','Flooring','Tile','Room additions','Basement finishing','Decks / patios','Cabinets / countertops'],
+  'Painting':['Interior','Exterior','Cabinet refinishing','Deck / fence staining','Wallpaper removal','Popcorn ceiling removal'],
+  'Pool & Spa':['Pool cleaning','Pool equipment','Pool leak detection','Pool resurfacing','Spa / hot tub service'],
+  'Windows & Doors':['Window replacement','Window repair','Door installation','Sliding door repair','Storm doors','Screens'],
+};
+const PAYMENT_OPTIONS = ['Visa','MasterCard','Amex','Discover','Check','Cash','Zelle','Venmo','CashApp','ACH','Financing'];
+const SCHEDULING_OPTIONS = ['ServiceTitan','Housecall Pro','Jobber','FieldEdge','Workiz','Google Calendar','Paper','Other','None'];
+const PHONE_ANSWERED_OPTIONS = ['Owner','Office manager','Dispatcher','Answering service','Call forwarding','Voicemail only'];
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-  // Avg response time from leads that have response_time_seconds
-  var responded=leads.filter(function(l){return l.response_time_seconds>0});
-  var avgResponse=responded.length>0?Math.round(responded.reduce(function(sum,l){return sum+l.response_time_seconds},0)/responded.length):0;
+// ---------- AGREEMENT ----------
+const AGREEMENT_VERSION = 'v1';
+const AGREEMENT_TEXT = `# SELECTSERVICEPROS — CONTRACTOR SERVICE AGREEMENT
 
-  document.getElementById('stat-leads').textContent=totalLeads||c.lead_count||'0';
-  document.getElementById('stat-accepted').textContent=accepted;
-  document.getElementById('stat-rate').textContent=totalLeads>0?rate+'%':'\u2014';
-  document.getElementById('stat-response').textContent=avgResponse>0?formatTime(avgResponse):'\u2014';
-  document.getElementById('stat-plan').textContent=c.membership_tier||'\u2014';
-  document.getElementById('stat-plan-status').textContent=c.status==='Verified'?'Active \u2713':c.status||'';
+This Contractor Service Agreement ("Agreement") is entered into between SelectServicePros ("SSP," "Platform," "we," "us") and the contractor accepting this Agreement ("Contractor," "you") effective as of the date Contractor electronically accepts this Agreement (the "Effective Date"). The parties agree as follows:
 
-  // Profile
-  var fields=[
-    {l:'Company',v:c.company_name},
-    {l:'Name',v:(c.first_name||'')+' '+(c.last_name||'')},
-    {l:'Email',v:c.email},
-    {l:'Phone',v:c.phone},
-    {l:'Services',v:c.service_categories},
-    {l:'License',v:c.license_number?(c.license_number+(c.license_verified?' \u2713 Verified':' \u2014 Pending')):'Not provided'},
-    {l:'Years in Business',v:c.years_in_business},
-    {l:'Employees',v:c.number_of_employees},
-    {l:'Website',v:c.website_url?'<a href="'+c.website_url+'" target="_blank" style="color:var(--orange)">'+c.website_url+'</a>':'\u2014'},
-    {l:'Description',v:c.business_description||'\u2014'}
-  ];
-  var html='';
-  fields.forEach(function(f){
-    html+='<div class="profile-field"><div class="profile-label">'+f.l+'</div><div class="profile-value">'+(f.v||'\u2014')+'</div></div>';
-  });
-  document.getElementById('profile-grid').innerHTML=html;
+## 1. Nature of the Platform and Relationship
 
-  // Plan & Billing
-  var tier=c.membership_tier||'Basic';
-  var pricing=PLAN_PRICING[tier]||PLAN_PRICING.Basic;
+a) SSP operates an online marketplace that connects homeowners seeking home services with licensed contractors. SSP is **not** a service provider, contractor, or agent for either party, does not perform or supervise services, and is not a party to any service contract between Contractor and a homeowner.
 
-  document.getElementById('billing-grid').innerHTML=
-    '<div class="billing-item"><div class="billing-label">Monthly Fee</div><div class="billing-value">$'+pricing.monthly+'</div><div class="billing-note">'+tier+' plan</div></div>'
-    +'<div class="billing-item"><div class="billing-label">Lead Charges</div><div class="billing-value">$'+totalCharges.toFixed(0)+'</div><div class="billing-note">'+accepted+' accepted leads @ $'+pricing.perLead+'/ea</div></div>'
-    +'<div class="billing-item"><div class="billing-label">Est. Total</div><div class="billing-value">$'+(pricing.monthly+totalCharges).toFixed(0)+'</div><div class="billing-note">this billing period</div></div>';
+b) Contractor is, at all times, an independent business operating on its own account. Nothing in this Agreement creates an employer/employee, joint venture, partnership, agency, or franchise relationship between the parties. Neither party has authority to bind, commit, or incur liability on behalf of the other.
 
-  document.getElementById('plan-row').innerHTML=
-    '<div><div class="plan-name">'+tier+' Plan</div><div class="plan-price">$'+pricing.monthly+'/mo + $'+pricing.perLead+' per accepted lead</div></div>'
-    +'<div class="plan-status">Active</div>';
+c) Contractor is solely responsible for all aspects of the services Contractor performs for homeowners, including pricing, scope of work, scheduling, workmanship, warranties, customer communications, and collection of payment from the homeowner.
 
-  // Service areas
-  var zips=c.service_zips||c.zip_code||'';
-  if(zips){
-    var zipArr=zips.split(',').map(function(z){return z.trim()}).filter(Boolean);
-    var zipHtml=zipArr.map(function(z){return '<span style="display:inline-block;background:var(--bg);border:1px solid var(--border);padding:4px 10px;border-radius:6px;font-size:13px;font-weight:600;margin:4px 4px 4px 0">'+z+'</span>'}).join('');
-    document.getElementById('service-areas').innerHTML=zipHtml;
-  }else{
-    document.getElementById('service-areas').innerHTML='<p style="font-size:14px;color:var(--text3)">No service areas set yet.</p>';
+d) SSP's role is limited to: (i) providing a platform to receive and present lead information; (ii) collecting membership and per-lead fees from Contractor; (iii) operating and supporting the platform. SSP makes no representations or warranties about the volume, quality, or conversion rate of leads.
+
+## 2. Contractor Obligations — General
+
+a) Contractor shall ensure that its officers, owners, employees, independent contractor technicians, and authorized subcontractors who perform services sourced through SSP (collectively, "Contractor Associates") understand Contractor's obligations under this Agreement and agree to comply with and be bound by such obligations. Contractor is fully responsible for the acts and omissions of its Contractor Associates.
+
+b) Contractor shall provide and pay for all labor, materials, transportation, insurance, equipment, taxes, and permits necessary to perform any services Contractor undertakes for a homeowner.
+
+c) Contractor shall at all times represent itself — not SSP — in communications with homeowners. Contractor shall not make any representation, direct or implied, that SSP employs, supervises, warrants, or stands behind Contractor or Contractor's work.
+
+d) Contractor, upon request by SSP or as required by law, shall provide evidence of biennial criminal background checks for all Contractor Associates whose duties require entry into a homeowner's residence. If any Contractor Associate fails such a check, Contractor shall prohibit that person from performing services for any homeowner sourced through SSP.
+
+e) In the event a homeowner harms or threatens to cause harm to Contractor, a Contractor Associate, or SSP, Contractor will promptly report such harm or threat to SSP and, to the extent serious, to local law enforcement officials.
+
+## 3. Leads — Use and Ownership
+
+a) A "Lead" means a homeowner inquiry that SSP routes to Contractor through the platform, including the homeowner's name, contact information, service request, and any other details provided by the homeowner.
+
+b) Lead information is provided to Contractor for the sole purpose of responding to and, if retained, servicing the specific inquiry referenced in the Lead. Contractor shall not use Lead information for any other purpose.
+
+c) Contractor shall not: (i) resell, share, transfer, or disclose Lead information to any third party; (ii) add a homeowner to a marketing database, email list, SMS list, or call list based on information obtained through a Lead; (iii) use Lead information to contact the homeowner about services unrelated to the original inquiry.
+
+d) A homeowner who retains Contractor through a Lead becomes a customer of Contractor. Subsequent, independently initiated contact from that homeowner to Contractor is not restricted by this Agreement, provided that Contractor did not solicit the homeowner in violation of Section 4.
+
+## 4. Non-Circumvention
+
+a) For the duration of this Agreement and for twenty-four (24) months after its termination, Contractor agrees not to: (i) solicit or encourage any homeowner sourced through SSP to bypass the platform on any future inquiry; (ii) offer incentives, discounts, or inducements to homeowners to contract outside the platform on leads that originated through the platform; (iii) use any mechanism designed to avoid the per-lead fee structure.
+
+b) Contractor acknowledges that SSP invests substantial resources in acquiring homeowner traffic and that circumvention directly harms SSP. In the event of a material breach of this section, SSP may, in addition to any other remedies: (i) immediately suspend or terminate Contractor's membership; (ii) invoice Contractor for the per-lead fee that would have been charged if the lead had flowed through the platform; (iii) pursue all legal and equitable remedies.
+
+## 5. Compliance with Laws
+
+Contractor agrees to conduct itself, and to require its Contractor Associates to conduct themselves, in strict compliance with all applicable federal, state, and local laws, rules, and regulations, including without limitation building codes, consumer protection laws, telemarketing laws (TCPA, state DNC registries), fair trade practices, environmental and hazardous waste laws, anti-discrimination laws, and public safety regulations. Contractor's or any Contractor Associate's failure to comply with any applicable law constitutes a material breach of this Agreement, and SSP may immediately suspend or terminate the Agreement upon such a breach.
+
+## 6. Licensing, Permits, and Certifications
+
+a) Contractor shall at all times obtain and maintain in good standing all licenses, certifications, bonds, and permits required by applicable federal, state, and local laws and regulations for the services Contractor performs.
+
+b) For any service requiring a permit by law, Contractor is solely responsible for obtaining the permit in the homeowner's name or Contractor's name as appropriate and for complying with all inspection requirements.
+
+c) Contractor shall provide SSP with current copies of all applicable licenses and certifications: (i) upon request; (ii) within fifteen (15) days of any change in status, renewal, or name; and (iii) annually, regardless of whether any change has occurred.
+
+d) Contractor shall immediately provide SSP with written notice of any change in license or certification status, including suspension, revocation, cancellation, lapse, disciplinary action, or change of scope or name.
+
+e) Contractor represents and warrants that: (i) all licenses and certifications are held in the proper name of the individual and/or entity signing this Agreement; (ii) Contractor's form of business is properly set forth in its SSP account; and (iii) the name on Contractor's licenses and certifications is consistent with the name under which Contractor enters into this Agreement.
+
+f) Failure to maintain any required license or certification is a material breach and grounds for immediate suspension or termination.
+
+## 7. Insurance
+
+a) Contractor shall maintain the following insurance coverages at all times during the term of this Agreement with limits no less than indicated:
+
+i. **General Liability:** Commercial general liability insurance with limits of not less than $250,000 per occurrence and $500,000 in the aggregate. Coverage shall include contractual liability, independent contractor, property damage, bodily injury, products and completed operations, and premises coverage. Coverage shall name SelectServicePros and its subsidiaries, parent, and affiliated companies as additional insured (including completed operations).
+
+ii. **Automobile Liability:** Coverage for owned, hired, and non-owned vehicles (listed and rated for business use) with minimum limits of $250,000 per person, $500,000 per occurrence for bodily injury, and $100,000 for property damage. SSP and its subsidiaries, parent, and affiliated companies shall be named as additional insured.
+
+iii. **Workers' Compensation:** Coverage shall include occupational disease and employer's liability coverage at statutory limits for workers' compensation and employer's liability at a minimum limit of $250,000 each, where Contractor has employees.
+
+b) All Contractor insurance shall be: (i) endorsed as primary coverage listing SSP coverage as excess insurance; (ii) occurrence-based; (iii) non-contributory with SSP's own insurance; and (iv) provided by carriers with an A.M. Best rating of at least A-.
+
+c) Contractor waives all rights, including subrogation, against SSP and its agents, directors, employees, subsidiaries, parent, and affiliated companies for damages covered by Contractor's insurance.
+
+d) Contractor shall supply SSP with a current certificate of insurance at the time of onboarding and upon each renewal, amendment, modification, cancellation, termination, or replacement of any required coverage.
+
+e) SSP does not represent that the coverage and limits required under this Section 7 will necessarily be adequate to protect Contractor.
+
+f) All certificates of insurance shall provide for at least thirty (30) days written notice to SSP prior to the cancellation or material change of any insurance referred to in this Section 7.
+
+g) Failure to maintain the required insurance coverage is a material breach and grounds for immediate suspension or termination.
+
+## 8. Membership Tiers, Fees, and Payment
+
+a) Contractor selects a membership tier at signup (Basic, Pro, or Elite, or any other tier SSP may offer from time to time). Each tier carries a monthly membership fee and a per-accepted-lead fee, as displayed at the time of signup and in Contractor's dashboard.
+
+b) Monthly membership fees are billed in advance and are non-refundable except as required by applicable law.
+
+c) Per-lead fees are charged when Contractor accepts a Lead through the platform. A Lead is "accepted" when Contractor affirmatively clicks "Accept" or takes equivalent action through the platform.
+
+d) SSP may adjust fees prospectively upon thirty (30) days' notice. Continued use of the platform after a fee change constitutes acceptance of the new fees. Fee changes do not retroactively apply to already-charged periods or already-accepted Leads.
+
+e) All fees are collected through the payment processor(s) designated by SSP (currently Stripe). Contractor authorizes SSP and its payment processor to charge the payment method on file for all amounts due.
+
+f) If a charge fails or is reversed, SSP may suspend Contractor's account until the amount is paid. Fees in collection may accrue interest at the lesser of 1.5% per month or the maximum allowed by law, plus reasonable collection costs.
+
+g) Contractor is responsible for all taxes arising from Contractor's business, including income, self-employment, sales, use, employment, withholding, and unemployment taxes. SSP does not withhold or remit taxes on Contractor's behalf.
+
+## 9. Workmanship and Customer Relationship
+
+a) Contractor is solely responsible for the quality of all work performed for homeowners. Contractor represents that all services will be performed in a skillful, workmanlike manner and in compliance with all applicable laws, codes, and industry standards.
+
+b) Contractor shall provide its own warranty terms to homeowners. SSP does not warrant Contractor's work and is not a party to any warranty Contractor provides.
+
+c) Contractor shall resolve all customer disputes and complaints in good faith and in a timely manner. SSP may, but is not obligated to, mediate disputes.
+
+d) Repeated verified complaints (defined as three or more substantiated complaints in any rolling 90-day period, as reasonably determined by SSP) may result in suspension or termination.
+
+## 10. Professionalism and Brand
+
+a) Contractor shall represent SSP's platform in a professional manner and shall not make any written or oral representation, direct or implied, to any homeowner that is or could reasonably be construed to be negative or defamatory toward SSP, its business, or its homeowners.
+
+b) Contractor shall not use SSP's name, logo, trademarks, service marks, or other intellectual property in Contractor's own marketing or materials without SSP's prior written consent, except to identify Contractor as a member of the SSP network in a manner consistent with SSP's brand guidelines.
+
+c) Contractor Associates who enter a homeowner's residence shall maintain a professional appearance and conduct. SSP may request and Contractor shall provide, upon request, a photograph representing Contractor's company uniforms and service vehicles.
+
+## 11. Confidential Information and Data Protection
+
+a) "Confidential Information" includes: (i) trade secrets and proprietary information of SSP, including platform features, data, pricing structures, and business operations not publicly disclosed; and (ii) homeowner personal information obtained through Leads, including but not limited to name, address, phone number, email, service details, and any other information the homeowner provides.
+
+b) Contractor shall not use or disclose any Confidential Information for any purpose other than performing services under this Agreement. Homeowner personal information shall be used only as permitted under Section 3.
+
+c) Contractor shall implement and maintain commercially reasonable security controls to protect Confidential Information from unauthorized access, loss, destruction, disclosure, or use. Contractor shall not allow persons outside the United States to access Confidential Information without SSP's prior written consent.
+
+d) Contractor shall immediately notify SSP of any security breach or unauthorized disclosure of Confidential Information.
+
+e) Contractor's obligations under this Section survive termination of this Agreement for a period of five (5) years, or indefinitely with respect to information that qualifies as a trade secret under applicable law.
+
+## 12. Term, Renewal, Termination, and Effects of Termination
+
+a) This Agreement commences on the Effective Date and continues on a month-to-month basis corresponding to Contractor's billing cycle, renewing automatically each month unless terminated as set forth below.
+
+b) Either party may terminate this Agreement at any time by providing written notice (including through the platform's account settings). Termination takes effect at the end of the then-current billing period. Contractor is responsible for all fees accrued through the termination date.
+
+c) SSP may suspend or terminate this Agreement immediately, without prior notice, for: (i) material breach of Sections 3, 4, 5, 6, 7, or 9; (ii) failure to pay fees when due; (iii) Contractor's insolvency, bankruptcy, or cessation of business; (iv) conduct that, in SSP's reasonable judgment, harms homeowners, SSP, or the platform's reputation.
+
+d) For non-material breaches, SSP will provide Contractor with written notice and a ten (10) day opportunity to cure. Failure to cure within that period is grounds for termination.
+
+e) Upon termination: (i) Contractor's access to the platform ends; (ii) Contractor shall cease using any SSP intellectual property; (iii) obligations that by their nature survive termination (including Sections 3, 4, 11, 14, and 16) continue; (iv) outstanding fees remain due; (v) membership fees already paid are not refunded except as required by law.
+
+f) Contractor shall immediately notify SSP of Contractor's insolvency, bankruptcy, or material financial instability.
+
+## 13. Subcontractors and Independent Contractor Technicians
+
+Contractor may use subcontractors or independent contractor technicians to perform services for homeowners sourced through SSP, provided that: (i) Contractor ensures each subcontractor complies with all applicable provisions of this Agreement, including insurance, licensing, background checks, confidentiality, and workmanship obligations; (ii) Contractor remains fully responsible for the acts and omissions of its subcontractors; (iii) any such use does not relieve Contractor of any obligation under this Agreement.
+
+## 14. Intellectual Property
+
+a) SSP retains all right, title, and interest in the platform, including its software, design, content, trademarks, service marks, and logos.
+
+b) Contractor retains all right, title, and interest in Contractor's business name, trademarks, and original marketing materials.
+
+c) Neither party shall use the other party's trademarks, service marks, logos, or other commercial and promotional materials without the other party's prior written consent, except as expressly permitted by this Agreement.
+
+d) If Contractor submits photographs, testimonials, business descriptions, or other content to the platform, Contractor grants SSP a non-exclusive, royalty-free, worldwide license to use, display, and distribute that content for purposes of operating and promoting the platform.
+
+## 15. Representations and Warranties
+
+Contractor represents and warrants that: (a) Contractor has full legal authority to enter into this Agreement; (b) Contractor's performance under this Agreement will not violate any other agreement to which Contractor is a party; (c) all information Contractor provides to SSP during onboarding and thereafter is true, accurate, and complete; (d) Contractor and all Contractor Associates are legally authorized to work in the United States and to provide the services Contractor offers; (e) Contractor will provide services in compliance with all applicable laws.
+
+## 16. Indemnification
+
+a) To the fullest extent permitted by law, Contractor agrees to indemnify, hold harmless, and defend, at Contractor's sole expense (including reasonable attorneys' fees and court costs), SSP, its subsidiaries, parent, affiliated companies, and the agents, directors, officers, and employees of each (collectively, "Indemnitees") against any and all actions, investigations, claims, losses, liabilities, judgments, settlements, and damages alleged to have been caused, directly or indirectly, by: (i) the acts or omissions of Contractor or any Contractor Associate; (ii) any service Contractor performs for a homeowner, whether sourced through SSP or otherwise; (iii) any breach of this Agreement by Contractor; (iv) any claim by a homeowner, employee, subcontractor, or third party arising out of Contractor's business.
+
+b) If the resolution of any indemnifiable claim is reasonably expected to have a significant adverse effect on SSP, or if Contractor fails to assume the defense within fifteen (15) days after receipt of notice, SSP may elect to control the defense, compromise, or settlement of such claim at Contractor's sole cost, risk, and expense.
+
+## 17. Disclaimer of Warranties by SSP; Limitation of Liability
+
+a) THE PLATFORM IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS. SSP MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, LEAD QUALITY, LEAD VOLUME, OR CONVERSION RATES.
+
+b) TO THE MAXIMUM EXTENT PERMITTED BY LAW, SSP'S TOTAL AGGREGATE LIABILITY TO CONTRACTOR UNDER THIS AGREEMENT, FOR ANY CAUSE WHATSOEVER, SHALL NOT EXCEED THE TOTAL AMOUNT OF FEES PAID BY CONTRACTOR TO SSP IN THE THREE (3) MONTHS IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO THE CLAIM.
+
+c) IN NO EVENT SHALL SSP BE LIABLE FOR ANY INDIRECT, INCIDENTAL, CONSEQUENTIAL, SPECIAL, OR PUNITIVE DAMAGES, INCLUDING LOST PROFITS, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+## 18. Assignment
+
+Contractor shall not assign or transfer any of its rights, duties, or obligations under this Agreement without SSP's prior written consent. SSP may assign or transfer this Agreement, in whole or in part, as it deems appropriate, including in connection with a merger, acquisition, or sale of all or substantially all of its assets.
+
+## 19. Notices
+
+Any notice or other written communication under this Agreement is deemed given: (i) three (3) days after deposit in the U.S. Mail, postage prepaid; (ii) when sent by email to the email address on file for the receiving party (with date/time noted); (iii) on the next business day if sent overnight by priority courier; or (iv) when personally delivered to an authorized representative. Contractor shall keep its email address and contact information current in its SSP account.
+
+## 20. Governing Law and Dispute Resolution
+
+a) This Agreement is governed by the laws of the State of Texas, without regard to its conflict-of-laws principles.
+
+b) Any dispute arising out of or relating to this Agreement shall be resolved in the state or federal courts located in Harris County, Texas, and the parties consent to the exclusive jurisdiction and venue of such courts. *(Lawyer note: consider whether to require mandatory arbitration via AAA Commercial Rules instead of litigation. SSP preference TBD.)*
+
+c) To the extent permitted by law, both parties waive any right to a trial by jury in any proceeding arising out of or relating to this Agreement.
+
+## 21. Miscellaneous
+
+a) **Entire Agreement.** This Agreement, together with any addenda and the terms displayed at the time of signup, constitutes the entire understanding between the parties and supersedes all prior agreements, negotiations, proposals, and communications.
+
+b) **Modification.** SSP may modify this Agreement by posting a new version and notifying Contractor by email or through the platform. Material changes take effect thirty (30) days after notice. Contractor's continued use of the platform after the effective date constitutes acceptance of the modified Agreement. Contractor may terminate the Agreement if it does not accept a material modification.
+
+c) **Severability.** If any provision of this Agreement is held invalid or unenforceable, the remaining provisions shall remain in full force and effect.
+
+d) **No Waiver.** SSP's failure to exercise any right under this Agreement does not constitute a waiver of that right.
+
+e) **Electronic Acceptance.** This Agreement may be accepted electronically. Contractor agrees that its electronic acceptance has the same legal effect as a handwritten signature.
+
+f) **Recording.** For quality assurance, training, and dispute resolution purposes, SSP may record calls between SSP and Contractor, and Contractor authorizes such recordings.
+
+g) **Force Majeure.** Neither party is liable for failure or delay in performance caused by circumstances beyond its reasonable control, including but not limited to acts of God, government action, natural disaster, pandemic, internet outage, or third-party service failure.
+
+h) **Survival.** Provisions that by their nature are intended to survive termination (including Sections 3, 4, 9, 11, 14, 16, 17, and 20) will survive termination of this Agreement.
+
+---
+
+## Acceptance
+
+By clicking "I Accept" and typing Contractor's full legal name below, Contractor acknowledges and agrees:
+
+- Contractor has read and understood this Agreement in its entirety;
+- Contractor has had the opportunity to consult legal counsel before accepting;
+- Contractor is authorized to sign this Agreement on behalf of Contractor's business;
+- Contractor agrees to be legally bound by this Agreement;
+- Contractor's electronic signature constitutes a valid and binding signature.
+
+**Agreement Version:** v1
+**Effective Date:** Date of electronic acceptance
+**Record:** SSP captures and stores the accepting party's typed name, timestamp, IP address, user agent, and agreement version at the moment of acceptance.`;
+
+// ---------- STEPS (wizard) ----------
+const STEPS = [
+  {key:'description', title:'Business description', sub:'Tell homeowners who you are', check:()=>state.profile.description?.length>40},
+  {key:'years', title:'Years in business', sub:'Experience matters', check:()=>state.profile.years>0},
+  {key:'categories', title:'Service categories', sub:'What you handle', check:()=>{
+    if(state.categories.size===0) return false;
+    for(const c of state.categories){
+      if((state.servicesDetail[c]||[]).length===0) return false;
+      // Licensed trades: must have a complete license record for that trade.
+      if(LICENSED_TRADES.includes(c) && !licenseForTrade(c)) return false;
+    }
+    return true;
+  }},
+  {key:'zips', title:'Service areas', sub:'ZIPs you cover', check:()=>state.zips.length>0},
+  {key:'operations', title:'Operations', sub:'Hours, team, payments', check:()=>state.operations.technicians>0 && state.operations.phoneAnswered && state.operations.payments.size>0 && DAYS.some(d=>state.operations.hours[d].open||state.operations.hours[d].open24)},
+  {key:'licenses', title:'Trade licenses', sub:LICENSED_TRADES.join(', ')+' only', check:()=>{
+    const licensedSelected = [...state.categories].filter(c=>LICENSED_TRADES.includes(c));
+    if(licensedSelected.length===0) return true; // no licensed trades selected -> auto-complete
+    return licensedSelected.every(c=>{
+      const l = licenseForTrade(c);
+      return l && l.number && l.type && l.state && l.exp && l.file;
+    });
+  }},
+  {key:'insurance', title:'Insurance', sub:'Carrier, policy, expiration, COI', check:()=>{
+    const i = state.credentials.insurance;
+    return i.carrier && i.policy && i.exp && i.file;
+  }},
+];
+
+const CATEGORIES = [...LICENSED_TRADES, ...UNLICENSED_TRADES];
+
+// ---------- LICENSE HELPERS ----------
+function licenseForTrade(trade){
+  return state.credentials.licenses.find(l=>l.trade===trade);
+}
+function daysUntil(dateStr){
+  if(!dateStr) return null;
+  const then = new Date(dateStr).getTime();
+  if(isNaN(then)) return null;
+  return Math.floor((then - Date.now())/(1000*60*60*24));
+}
+function expiryBadge(dateStr){
+  // Returns a small inline badge HTML for expiry urgency (or empty string).
+  const d = daysUntil(dateStr);
+  if(d===null) return '';
+  if(d < 0) return `<span class="exp-badge exp-expired">Expired</span>`;
+  if(d <= 30) return `<span class="exp-badge exp-soon">Expires in ${d} day${d===1?'':'s'}</span>`;
+  if(d <= 60) return `<span class="exp-badge exp-warn">Expires in ${d} days</span>`;
+  return '';
+}
+function addLicenseForTrade(trade){
+  if(licenseForTrade(trade)) return;
+  const defaultType = trade==='HVAC' ? 'State HVAC / Mechanical License'
+    : trade==='Plumbing' ? 'State Plumbing License (Master)'
+    : trade==='Electrical' ? 'State Electrical License (Master)'
+    : 'Other';
+  const licState = state.profile.state || '';
+  // Optimistic local row; swap in the real UUID once the insert returns.
+  const tempId = 'tmp_'+Date.now();
+  const local = {
+    id: tempId, trade, type: defaultType, state: licState,
+    number:'', exp:'', file:'', verified:false, verifiedAt:null, notes:'',
+  };
+  state.credentials.licenses.push(local);
+  if(!state.contractorId) return;
+  (async ()=>{
+    try {
+      const { data, error } = await sb.from('contractor_licenses').insert({
+        contractor_id: state.contractorId,
+        trade_category: trade,
+        license_type: defaultType,
+        license_state: licState,
+      }).select().single();
+      if(error){ console.error('addLicense failed', error); return; }
+      local.id = data.id;
+      render();
+    } catch(e){ console.error(e); }
+  })();
+}
+function removeLicense(id){
+  const l = state.credentials.licenses.find(x=>x.id===id);
+  if(!l) return;
+  state.credentials.licenses = state.credentials.licenses.filter(x=>x.id!==id);
+  if(l.trade && state.categories.has(l.trade) && LICENSED_TRADES.includes(l.trade)){
+    state.categories.delete(l.trade);
+    delete state.servicesDetail[l.trade];
   }
+  if(!String(id).startsWith('tmp_')){
+    sb.from('contractor_licenses').delete().eq('id', id)
+      .then(({error})=>{ if(error) console.error('removeLicense failed', error); });
+  }
+  // Persist services set since we may have dropped a category.
+  markSaving();
+}
+
+// ---------- LEADS ----------
+// Loaded from Supabase via loadLeads(). Each row has the shape returned by
+// the `leads` table; UI-side helpers map DB fields to display fields.
+// Kept as an alias to state.leads for the existing call sites that still
+// reference LEADS_POOL.
+function leadsPool(){ return state.leads; }
+
+// ---------- TABS ----------
+const TABS = [
+  {key:'overview', label:'Overview', icon:iconHome},
+  {key:'leads', label:'Leads', icon:iconInbox, count:()=>state.leads.filter(l=>l.status==='new').length, badge:()=>state.state==='active'},
+  {key:'profile', label:'Profile', icon:iconUser},
+  {key:'operations', label:'Operations', icon:iconClock},
+  {key:'credentials', label:'Credentials', icon:iconShield},
+  {key:'billing', label:'Billing & Plan', icon:iconCard},
+  {key:'settings', label:'Settings', icon:iconGear},
+];
+
+// ---------- HELPERS ----------
+function iconHome(){return svgBase('<path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/>')}
+function iconInbox(){return svgBase('<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>')}
+function iconUser(){return svgBase('<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>')}
+function iconShield(){return svgBase('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>')}
+function iconCard(){return svgBase('<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>')}
+function iconGear(){return svgBase('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33h0a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51h0a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v0a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>')}
+function iconClock(){return svgBase('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>')}
+function iconChevron(){return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>'}
+function svgBase(inner){return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`}
+function iconCheck(sz=12){return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`}
+function iconX(sz=12){return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`}
+
+function timeAgo(mins){
+  if(mins<1)return 'just now';
+  if(mins<60)return `${Math.floor(mins)} min ago`;
+  if(mins<60*24)return `${Math.floor(mins/60)} hr ago`;
+  return `${Math.floor(mins/60/24)} d ago`;
+}
+function fmtSeconds(s){
+  if(s<60)return `${s}s`;
+  if(s<3600)return `${Math.floor(s/60)}m`;
+  return `${Math.floor(s/3600)}h ${Math.floor((s%3600)/60)}m`;
+}
+function leadInVolume(l){ return true; } // legacy shim
+function currentLeads(){
+  if(state.state!=='active') return [];
+  return state.leads;
+}
+function completion(){
+  return Math.round((state.pct/100)*STEPS.length)/STEPS.length*100;
+}
+function getDoneSteps(){
+  // When user drags pct slider, we fake "done" by taking first N steps
+  const n = Math.round((state.pct/100)*STEPS.length);
+  return STEPS.map((s,i)=>i<n);
+}
+
+// ---------- RENDER ----------
+function render(){
+  updateNav();
+  renderSidebar();
+  renderTabs();
+  renderPage();
+  syncUiState();
+}
+
+function updateNav(){
+  const tierEl = document.getElementById('navTier');
+  const tier = state.tierBadge || 'Basic';
+  tierEl.textContent = tier;
+  tierEl.className = 'tier-badge ' + tier.toLowerCase();
+  const pillEl = document.getElementById('navStatus');
+  const map = {
+    pending: ['pending','Pending Profile'],
+    review: ['review','In Review'],
+    active: ['active','Active'],
+  };
+  pillEl.className = 'status-pill '+map[state.state][0];
+  pillEl.textContent = map[state.state][1];
+}
+
+function renderSidebar(){
+  const el = document.getElementById('sidebar');
+  let html = '<div class="sidebar-group">Dashboard</div>';
+  TABS.forEach(t=>{
+    const active = state.activeTab===t.key?'active':'';
+    const hasBadge = t.badge && t.badge() ? 'has-badge' : '';
+    const countBadge = t.count && t.count()>0 && state.state==='active' ? `<span class="dot" style="opacity:1;background:var(--orange)"></span>` : '';
+    html += `<div class="sidebar-link ${active} ${hasBadge}" onclick="setTab('${t.key}')">${t.icon()}<span>${t.label}</span>${countBadge}</div>`;
+  });
+  el.innerHTML = html;
+}
+
+function renderTabs(){
+  const el = document.getElementById('tabsInner');
+  let html = '';
+  TABS.forEach(t=>{
+    const active = state.activeTab===t.key?'active':'';
+    let suffix = '';
+    if(t.count && state.state==='active'){
+      const c = t.count();
+      if(c>0) suffix = ` <span class="count">${c}</span>`;
+    }
+    html += `<button class="tab ${active}" onclick="setTab('${t.key}')" role="tab" aria-selected="${!!active}">${t.label}${suffix}</button>`;
+  });
+  el.innerHTML = html;
+}
+
+function setTab(k){
+  state.activeTab = k;
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderPage(){
+  const el = document.getElementById('mainPage');
+  let html = '';
+  if(state.activeTab==='overview') html = overviewHTML();
+  else if(state.activeTab==='leads') html = leadsHTML();
+  else if(state.activeTab==='profile') html = profileHTML();
+  else if(state.activeTab==='operations') html = operationsHTML();
+  else if(state.activeTab==='credentials') html = credentialsHTML();
+  else if(state.activeTab==='billing') html = billingHTML();
+  else if(state.activeTab==='settings') html = settingsHTML();
+  el.innerHTML = `<div class="tab-panel" key="${state.activeTab}">${html}</div>`;
+
+  if(state.activeTab==='overview') animateProgressBar();
+}
+
+// ==================== OVERVIEW ====================
+function overviewHTML(){
+  const showWizard = state.state!=='active';
+  const leads = currentLeads();
+  const total = leads.length;
+  const accepted = leads.filter(l=>l.status==='accepted').length;
+  const rate = total>0 ? Math.round((accepted/total)*100) : 0;
+  const avgRespMins = leads.filter(l=>l.status==='accepted').reduce((s,l)=>s+l.mins,0) / Math.max(1, accepted);
+
+  const activeGreeting = `Good afternoon, ${state.profile.company.split(' ')[0]}`;
+  const firstName = (state.profile.firstName||'').trim();
+  const nameSuffix = firstName ? `, ${firstName}` : '';
+  const pendingGreeting = state.state==='review'
+    ? `Thanks${nameSuffix} — we've got it from here`
+    : `Welcome to SSP${nameSuffix}`;
+  const pendingSub = state.state==='review'
+    ? `Your profile is with our review team. We'll ping you as soon as you're live — typically within one business day.`
+    : `Finish setup and you'll start seeing homeowner leads in your inbox. Takes about 4 minutes.`;
+
+  let html = `
+    <div class="page-header">
+      <div class="row">
+        <div>
+          <h1>${showWizard ? pendingGreeting : activeGreeting}</h1>
+          <p class="sub">${showWizard ? pendingSub : 'Here\'s what\'s new in your pipeline today.'}</p>
+        </div>
+        ${state.state==='active' ? `<button class="btn btn-navy" onclick="setTab('leads')">Go to leads →</button>` : ''}
+      </div>
+    </div>
+  `;
+
+  if(showWizard) html += wizardHTML();
+
+  if(state.state==='active'){
+    html += `
+      <div class="stats">
+        ${statCard('Total leads', total, `This month`, iconInbox())}
+        ${statCard('Accepted', accepted, `${rate}% acceptance`, iconCheck(16))}
+        ${statCard('Avg response', isFinite(avgRespMins)?fmtSeconds(Math.round(avgRespMins*60)):'—', 'time to respond', svgBase('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'))}
+        ${statCard('This period', `$${99+accepted*29}`, `$99 plan · ${accepted} × $29`, iconCard(), false, 'accent')}
+        ${statCard('Plan', 'Pro', 'Active · next charge Apr 28', svgBase('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'))}
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title">Recent leads</div>
+          <a class="section-link" onclick="setTab('leads')">View all →</a>
+        </div>
+        ${leadsListHTML(leads.slice(0,5), true)}
+      </div>
+
+      ${billingPreviewHTML(accepted)}
+    `;
+  } else if(state.state==='review'){
+    html += `
+      <div class="card pad" style="margin-top:16px">
+        <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+          <div style="flex-shrink:0">${reviewIllustration()}</div>
+          <div style="flex:1;min-width:240px">
+            <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:22px;color:var(--navy);letter-spacing:-.01em">We're reviewing your info</h3>
+            <p style="color:var(--text3);margin-top:6px;font-size:14px;line-height:1.55;max-width:520px">Your license and insurance documents are being checked against state registries. This almost always takes under one business day. You'll get an email when you're live.</p>
+            <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+              <button class="btn btn-ghost" onclick="setTab('profile')">Review your info</button>
+              <button class="btn btn-ghost" onclick="toast('We\\'ll email support@selectservicepros.com')">Contact support</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  return html;
+}
+
+function statCard(label, value, sub, icon, delta=false, cls=''){
+  return `
+    <div class="stat ${cls}">
+      <div class="stat-label">${icon}${label}</div>
+      <div class="stat-value">${value}</div>
+      <div class="stat-sub">${sub}</div>
+    </div>`;
+}
+
+// ==================== WIZARD ====================
+function wizardHTML(){
+  const done = getDoneSteps();
+  const doneCount = done.filter(Boolean).length;
+  const pct = Math.round((doneCount/STEPS.length)*100);
+  const cur = Math.min(state.currentStep, STEPS.length-1);
+  const allDone = doneCount === STEPS.length;
+
+  const stepsHTML = STEPS.map((s,i)=>`
+    <div class="wiz-step ${done[i]?'done':''} ${i===cur?'active':''}" onclick="state.currentStep=${i}; render()">
+      <div class="wiz-step-current"></div>
+      <div class="wiz-step-ico">${iconCheck(14)}</div>
+      <div class="wiz-step-txt">
+        <div class="wiz-step-title">${s.title}</div>
+        <div class="wiz-step-sub">${s.sub}</div>
+      </div>
+      ${done[i]?'':`<div class="wiz-step-num">${String(i+1).padStart(2,'0')}</div>`}
+    </div>
+  `).join('');
+
+  const contentHTML = allDone ? wizardDoneHTML() : stepContentHTML(STEPS[cur], cur);
+
+  return `
+    <div class="wizard">
+      <div class="wizard-top">
+        <div style="position:relative;z-index:1">
+          <div class="wiz-eyebrow"><span class="pulse"></span>${state.state==='review'?'In review':'Finish setup to go live'}</div>
+          <div class="wiz-title">${allDone ? "You're ready to go live." : "Let's get you receiving leads."}</div>
+          <div class="wiz-subtitle">${allDone
+            ? "Everything checks out on our end — submit for review and we'll verify your credentials within a business day."
+            : `${doneCount} of ${STEPS.length} items done. The rest takes about ${Math.max(1, Math.ceil((STEPS.length-doneCount)*0.8))} minute${STEPS.length-doneCount>1?'s':''}.`}
+          </div>
+          <div class="wiz-progress">
+            <div class="wiz-bar"><div class="wiz-bar-fill" style="width:${pct}%"></div></div>
+            <div class="wiz-pct">${pct}%</div>
+          </div>
+          <button class="btn btn-primary wiz-top-cta" style="margin-top:22px" ${allDone?'':'disabled'} onclick="submitForReview()">
+            Submit for review
+          </button>
+        </div>
+      </div>
+      <div class="wizard-body">
+        <div class="wiz-steps">${stepsHTML}</div>
+        <div class="wiz-content">${contentHTML}</div>
+      </div>
+    </div>
+  `;
+}
+
+function wizardDoneHTML(){
+  return `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:360px;padding:20px">
+      ${readyIllustration()}
+      <h3 style="font-family:'Fraunces',serif;font-weight:600;font-size:26px;color:var(--navy);margin-top:18px;letter-spacing:-.01em">Looking good${(state.profile.firstName||'').trim() ? ', '+state.profile.firstName.trim() : ''}.</h3>
+      <p style="font-size:14px;color:var(--text3);max-width:420px;margin-top:8px;line-height:1.55">Your profile and credentials are complete. Hit submit and we'll verify with the state and get you live — usually within one business day.</p>
+      <button class="btn btn-primary btn-lg" style="margin-top:22px" onclick="submitForReview()">Submit for review</button>
+    </div>
+  `;
+}
+
+function stepContentHTML(step, idx){
+  let body = '';
+  if(step.key==='description') body = stepDescription();
+  else if(step.key==='years') body = stepYears();
+  else if(step.key==='categories') body = stepCategoriesAccordion();
+  else if(step.key==='zips') body = stepZips();
+  else if(step.key==='operations') body = stepOperations();
+  else if(step.key==='licenses') body = stepLicenses();
+  else if(step.key==='insurance') body = stepInsuranceFull();
+
+  const isLast = idx === STEPS.length-1;
+  return `
+    <div class="wiz-content-head">
+      <div class="wiz-tag">Step ${idx+1} of ${STEPS.length}</div>
+      <div class="wiz-h">${step.title}</div>
+      <div class="wiz-d">${stepHelper(step.key)}</div>
+    </div>
+    <div>${body}</div>
+    <div class="wiz-foot">
+      <button class="btn btn-ghost ${idx===0?'':''}" ${idx===0?'disabled':''} onclick="prevStep()">← Back</button>
+      <span class="muted">Saved automatically</span>
+      <button class="btn btn-primary" onclick="${isLast?'submitForReview()':'nextStep()'}">${isLast?'Finish':'Next →'}</button>
+    </div>
+  `;
+}
+
+function stepHelper(k){
+  const M = {
+    description:"This is what homeowners see first on your profile card. Keep it human, mention what makes you different.",
+    years:"Contractors with 3+ years of history book 40% more leads on SSP.",
+    categories:"Pick only what you actually handle. Licensed trades (HVAC, Plumbing, Electrical) require a verified state license.",
+    zips:"We only route leads whose ZIP is in your list. Add as many as you cover.",
+    operations:"Hours, team size, and how you handle payments. Helps homeowners pick the right pro.",
+    licenses:"For HVAC, Plumbing, or Electrical work. Other trades don't need a license on file — just insurance.",
+    insurance:"General liability, current. Required for every contractor on the platform, regardless of trade.",
+  };
+  return M[k]||'';
+}
+
+function stepDescription(){
+  return `
+    <div class="field">
+      <label>Business description</label>
+      <textarea class="textarea" oninput="state.profile.description=this.value;markSaving()" placeholder="Third-generation family HVAC outfit. Same-day service...">${state.profile.description||''}</textarea>
+      <div class="hint">${(state.profile.description||'').length} characters · aim for 60–200</div>
+    </div>
+  `;
+}
+function stepYears(){
+  return `
+    <div class="field-row">
+      <div class="field">
+        <label>Years in business</label>
+        <input class="input" type="number" min="0" value="${state.profile.years}" oninput="state.profile.years=+this.value;markSaving()">
+      </div>
+      <div class="field">
+        <label>Number of employees</label>
+        <input class="input" type="number" min="1" value="${state.profile.employees}" oninput="state.profile.employees=+this.value;markSaving()">
+      </div>
+    </div>
+    <div class="field">
+      <label>Company phone</label>
+      <input class="input" type="tel" value="${state.profile.phone}" oninput="state.profile.phone=this.value;markSaving()">
+    </div>
+  `;
+}
+function stepCategoriesAccordion(){
+  return `
+    <div class="field">
+      <label>Services you offer</label>
+      <div class="hint" style="margin-bottom:10px">Pick top-level categories, then check the specific services under each.</div>
+      ${categoryAccordionHTML()}
+    </div>
+  `;
+}
+
+function categoryAccordionHTML(){
+  const licensedHTML = LICENSED_TRADES.map(cat=>categoryRowHTML(cat,true)).join('');
+  const unlicensedHTML = UNLICENSED_TRADES.map(cat=>categoryRowHTML(cat,false)).join('');
+  return `
+    <div class="cat-group-head">
+      <div class="cat-group-title">Licensed trades</div>
+      <div class="cat-group-sub">A verified state license on file is required to receive leads for these trades.</div>
+    </div>
+    <div class="cat-accordion">${licensedHTML}</div>
+
+    <div class="cat-group-head" style="margin-top:20px">
+      <div class="cat-group-title">Unlicensed trades <span class="cat-group-pill">insurance required</span></div>
+      <div class="cat-group-sub">Check any that apply. Platform-wide insurance on file still required.</div>
+    </div>
+    <div class="cat-accordion">${unlicensedHTML}</div>
+
+    <div class="legal-note">Licensing requirements vary by state. You are responsible for maintaining all licenses required by law for your business. See Section 6 of the Service Agreement.</div>
+  `;
+}
+
+function categoryRowHTML(cat, licensed){
+  const selected = state.categories.has(cat);
+  const subs = state.servicesDetail[cat]||[];
+  const isOpen = state.expandedCategory===cat;
+  const subList = SUB_SERVICES[cat]||[];
+  const subHTML = subList.map(s=>{
+    const on = subs.includes(s);
+    return `<label class="sub-item ${on?'on':''}"><input type="checkbox" ${on?'checked':''} onchange="toggleSubService('${cat}','${s.replace(/'/g,"\\'")}')"><span>${s}</span></label>`;
+  }).join('');
+
+  const lic = licensed ? licenseForTrade(cat) : null;
+  const licStatus = lic
+    ? (lic.verified ? 'verified'
+       : (lic.number && lic.exp && lic.file ? 'pending' : 'incomplete'))
+    : null;
+
+  let metaText;
+  if(licensed){
+    if(!selected) metaText = 'Not selected';
+    else if(licStatus==='verified') metaText = `${subs.length} / ${subList.length} services · License verified`;
+    else if(licStatus==='pending') metaText = `${subs.length} / ${subList.length} services · License pending review`;
+    else metaText = `License required to activate`;
+  } else {
+    metaText = selected ? `${subs.length} / ${subList.length} services` : 'Not selected';
+  }
+
+  const statusPill = licensed && selected && licStatus
+    ? (licStatus==='verified'
+        ? `<span class="lic-pill lic-verified">${iconCheck(10)} Verified</span>`
+        : licStatus==='pending'
+          ? `<span class="lic-pill lic-pending">Pending verification</span>`
+          : `<span class="lic-pill lic-needed">License needed</span>`)
+    : '';
+
+  return `
+    <div class="cat-row ${selected?'selected':''} ${isOpen?'open':''} ${licensed?'licensed':''}">
+      <div class="cat-head" onclick="toggleCategoryOpen('${cat}')">
+        <label class="cat-check" onclick="event.stopPropagation()">
+          <input type="checkbox" ${selected?'checked':''} onchange="toggleCategory('${cat}')">
+        </label>
+        <div class="cat-name">
+          ${cat}
+          ${licensed?'<span class="cat-tag">Licensed</span>':''}
+        </div>
+        <div class="cat-meta">${metaText}</div>
+        ${statusPill}
+        <div class="cat-chev">${iconChevron()}</div>
+      </div>
+      ${isOpen?`
+        <div class="cat-body">
+          ${!selected
+            ? `<div class="cat-hint">Select this category to ${licensed?'add license details and ':''}pick specific services.</div>`
+            : `
+              ${licensed?licenseInlineFormHTML(cat):''}
+              <div class="cat-subs-title">Specific ${cat.toLowerCase()} services you perform</div>
+              ${subHTML}
+            `
+          }
+        </div>
+      `:''}
+    </div>
+  `;
+}
+
+function licenseInlineFormHTML(trade){
+  const lic = licenseForTrade(trade);
+  if(!lic){
+    return `
+      <div class="lic-form missing">
+        <div class="lic-form-title">License required</div>
+        <div class="lic-form-sub">Add your ${trade} license details before this trade can go active. We'll verify it manually — usually within one business day.</div>
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();addLicenseAndRender('${trade}')">+ Add ${trade} license</button>
+      </div>
+    `;
+  }
+  const verified = lic.verified;
+  const statusHTML = verified
+    ? `<span class="lic-pill lic-verified">${iconCheck(10)} Verified</span>`
+    : (lic.number && lic.file ? `<span class="lic-pill lic-pending">Pending verification</span>` : `<span class="lic-pill lic-needed">Incomplete</span>`);
+  return `
+    <div class="lic-form">
+      <div class="lic-form-head">
+        <div class="lic-form-title">${trade} license</div>
+        ${statusHTML}
+      </div>
+      <div class="field-row-3">
+        <div class="field"><label>License type</label>
+          <select class="select" onchange="updateLicense('${lic.id}','type',this.value)">
+            ${LICENSE_TYPES.map(t=>`<option ${lic.type===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field"><label>Issuing state</label>
+          ${stateSelectHTML(lic.state, v=>`updateLicense('${lic.id}','state','${v}')`, lic.id+'-state')}
+        </div>
+        <div class="field"><label>Expiration</label><input class="input" type="date" value="${lic.exp||''}" onchange="updateLicense('${lic.id}','exp',this.value)"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>License number</label><input class="input" value="${lic.number||''}" oninput="updateLicense('${lic.id}','number',this.value)"></div>
+        <div class="field"><label>License document</label>${licenseUploaderHTML(lic)}</div>
+      </div>
+      ${expiryBadge(lic.exp)?`<div style="margin-top:4px">${expiryBadge(lic.exp)}</div>`:''}
+    </div>
+  `;
+}
+
+function stateSelectHTML(value, onchangeFactory, id){
+  // onchangeFactory is a function that takes the value and returns the attr string
+  return `<select class="select" id="${id||''}" onchange="${id?`updateFromStateSelect(this,'${id}')`:''}" data-onchange="state">
+    ${US_STATES.map(([code,name])=>`<option value="${code}" ${value===code?'selected':''}>${code} — ${name}</option>`).join('')}
+  </select>`;
+}
+// Fallback for simple profile-state dropdown:
+function simpleStateSelect(value, onchangeJs){
+  return `<select class="select" onchange="${onchangeJs}">
+    ${US_STATES.map(([code,name])=>`<option value="${code}" ${value===code?'selected':''}>${code} — ${name}</option>`).join('')}
+  </select>`;
+}
+
+// Map UI field names → DB column names on contractor_licenses.
+const LICENSE_FIELD_MAP = {
+  trade: 'trade_category',
+  type: 'license_type',
+  state: 'license_state',
+  number: 'license_number',
+  exp: 'expiration_date',
+  file: 'document_url',
+  verified: 'verified',
+  verifiedAt: 'verified_at',
+  notes: 'notes',
+};
+const _licPersistQueue = {}; // licId -> {pending: {col:val,...}, timer}
+function updateLicense(id, field, value){
+  const lic = state.credentials.licenses.find(l=>l.id===id);
+  if(!lic) return;
+  lic[field] = value;
+  // Changing any field invalidates prior verification.
+  if(field !== 'verified' && field !== 'verifiedAt') lic.verified = false;
+  render(); markSaving();
+
+  // Debounce a per-license DB update.
+  if(String(id).startsWith('tmp_')) return; // not yet inserted — skip
+  const col = LICENSE_FIELD_MAP[field];
+  if(!col) return;
+  let dbVal = value;
+  if(field === 'exp') dbVal = value || null;
+  if(field === 'verified') dbVal = !!value;
+  if(!_licPersistQueue[id]) _licPersistQueue[id] = { pending:{}, timer:null };
+  const q = _licPersistQueue[id];
+  q.pending[col] = dbVal;
+  // Also reset verification server-side when the user edits a field.
+  if(field !== 'verified' && field !== 'verifiedAt') q.pending.verified = false;
+  clearTimeout(q.timer);
+  q.timer = setTimeout(async ()=>{
+    const payload = q.pending;
+    q.pending = {};
+    try {
+      const { error } = await sb.from('contractor_licenses')
+        .update(payload).eq('id', id);
+      if(error) console.error('updateLicense DB error', error);
+    } catch(e){ console.error('updateLicense exception', e); }
+  }, 500);
+}
+// Because stateSelectHTML is used inside license forms, wire a small helper:
+function updateFromStateSelect(el, id){
+  const licId = id.replace(/-state$/,'');
+  updateLicense(licId,'state', el.value);
+}
+function addLicenseAndRender(trade){
+  addLicenseForTrade(trade);
+  state.expandedCategory = trade;
+  render(); markSaving();
+}
+
+function licenseUploaderHTML(lic){
+  if(lic.file){
+    return `
+      <div class="uploader has-file compact">
+        <div class="file-row">
+          <div class="file-thumb">${svgBase('<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>')}</div>
+          <div class="file-info">
+            <div class="file-name">${lic.file}</div>
+            <div class="file-meta">${lic.verified?'Verified':'Pending verification'}</div>
+          </div>
+          <div class="file-actions">
+            <button class="btn btn-ghost btn-sm" onclick="fakeLicenseUpload('${lic.id}',true)">Replace</button>
+            <button class="btn btn-ghost btn-sm" onclick="updateLicense('${lic.id}','file','')">Remove</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  return `
+    <div class="uploader compact" onclick="fakeLicenseUpload('${lic.id}')">
+      <div class="uploader-ico sm">${svgBase('<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>')}</div>
+      <div class="uploader-title sm">Upload license document</div>
+      <div class="uploader-sub sm">PDF, JPG, or PNG · up to 10 MB</div>
+    </div>
+  `;
+}
+
+function toggleCategoryOpen(c){ state.expandedCategory = state.expandedCategory===c?null:c; render(); }
+function toggleSubService(cat, sub){
+  if(!state.servicesDetail[cat]) state.servicesDetail[cat]=[];
+  const arr = state.servicesDetail[cat];
+  const i = arr.indexOf(sub);
+  if(i>=0) arr.splice(i,1); else arr.push(sub);
+  render(); markSaving();
+}
+
+function stepOperations(){ return operationsFormHTML(); }
+function stepZips(){
+  const zipPills = state.zips.map(z=>`<button class="pill zip">${z} <span class="x" onclick="removeZip('${z}');event.stopPropagation()">${iconX(10)}</span></button>`).join('');
+  return `
+    <div class="field">
+      <label>Service ZIP codes</label>
+      <div class="pill-picker" style="margin-bottom:10px">${zipPills || '<span style="color:var(--text4);font-size:13px">No ZIPs yet — add one below.</span>'}</div>
+      <div class="zip-input">
+        <input class="input" id="zipInput" placeholder="e.g. 77019" maxlength="5" onkeydown="if(event.key==='Enter'){addZip();event.preventDefault()}">
+        <button class="btn btn-navy btn-sm" onclick="addZip()">+ Add ZIP</button>
+      </div>
+      <div class="hint">Press Enter or Add. Remove by clicking the ×.</div>
+    </div>
+  `;
+}
+function stepLicenses(){
+  const licensedSelected = [...state.categories].filter(c=>LICENSED_TRADES.includes(c));
+  if(licensedSelected.length===0){
+    return `
+      <div class="card pad" style="background:var(--green-soft);border-color:transparent">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="color:var(--green);flex-shrink:0;margin-top:2px">${iconCheck(18)}</div>
+          <div>
+            <div style="font-weight:600;color:var(--navy)">No licensed trades selected</div>
+            <p style="font-size:13px;color:var(--text2);margin-top:4px">You're not offering HVAC, Plumbing, or Electrical — so no trade license is required. Just make sure your insurance is on file in the next step.</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  return `
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Add license details for each licensed trade you offer. Each one is verified manually — usually within one business day.</p>
+    ${licensedSelected.map(trade=>`
+      <div class="card pad" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="font-family:'Fraunces',serif;font-weight:600;font-size:18px;color:var(--navy)">${trade} license</div>
+          ${licenseForTrade(trade) && licenseForTrade(trade).number && licenseForTrade(trade).file
+            ? `<span class="lic-pill lic-pending">Pending verification</span>`
+            : `<span class="lic-pill lic-needed">Incomplete</span>`}
+        </div>
+        ${licenseInlineFormHTML(trade)}
+      </div>
+    `).join('')}
+    <div class="legal-note">Licensing requirements vary by state. You are responsible for maintaining all licenses required by law for your business.</div>
+  `;
+}
+
+function stepInsuranceFull(){
+  const i = state.credentials.insurance;
+  return `
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Every contractor on SSP carries current general liability, regardless of trade. Upload your ACORD 25 certificate.</p>
+    <div class="field-row-3">
+      <div class="field"><label>Carrier</label><input class="input" value="${i.carrier||''}" oninput="state.credentials.insurance.carrier=this.value;markSaving()"></div>
+      <div class="field"><label>Policy number</label><input class="input" value="${i.policy||''}" oninput="state.credentials.insurance.policy=this.value;markSaving()"></div>
+      <div class="field"><label>Expiration</label><input class="input" type="date" value="${i.exp||''}" onchange="state.credentials.insurance.exp=this.value;markSaving()"></div>
+    </div>
+    <div class="field"><label>Certificate of insurance</label>${uploaderHTML('insurance','Certificate of insurance')}</div>
+    ${expiryBadge(i.exp)?`<div style="margin-top:8px">${expiryBadge(i.exp)}</div>`:''}
+  `;
+}
+
+function uploaderHTML(kind, label){
+  const file = state.credentials[kind].file;
+  if(file){
+    return `
+      <div class="uploader has-file">
+        <div class="file-row">
+          <div class="file-thumb">${svgBase('<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>')}</div>
+          <div class="file-info">
+            <div class="file-name">${file}</div>
+            <div class="file-meta">Uploaded · awaiting verification</div>
+          </div>
+          <div class="file-actions">
+            <button class="btn btn-ghost btn-sm" onclick="fakeUpload('${kind}',true)">Replace</button>
+            <button class="btn btn-ghost btn-sm" onclick="state.credentials.${kind}.file='';render();toast('Removed')">Remove</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  return `
+    <div class="uploader" onclick="fakeUpload('${kind}')">
+      <div class="uploader-ico">${svgBase('<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>')}</div>
+      <div class="uploader-title">Drop file or click to upload</div>
+      <div class="uploader-sub">PDF, JPG, or PNG · up to 10 MB</div>
+    </div>
+  `;
+}
+
+// Opens a hidden file input, uploads the chosen file to Supabase Storage
+// under the contractor's folder, and writes the public URL back to the DB.
+function fakeUpload(kind, replace){
+  // Legacy name kept — only 'insurance' is still supported; license uploads
+  // go through fakeLicenseUpload below.
+  if(kind !== 'insurance') return;
+  pickFile(async (file)=>{
+    if(!validateUpload(file)) return;
+    try {
+      const url = await uploadDoc(file, 'insurance.' + fileExt(file));
+      state.credentials.insurance.file = url;
+      await sb.from('contractors')
+        .update({ insurance_doc_url: url, insurance_verified: false })
+        .eq('id', state.contractorId);
+      state.credentials.insurance.verified = false;
+      render();
+      toast(replace?'File replaced · we\'ll verify soon':'Uploaded · we\'ll verify soon','success');
+    } catch(e){
+      console.error('insurance upload failed', e);
+      toast('Upload failed — try again','error');
+    }
+  });
+}
+
+async function fakeLicenseUpload(licId, replace){
+  pickFile(async (file)=>{
+    if(!validateUpload(file)) return;
+    try {
+      const url = await uploadDoc(file, `license-${licId}.${fileExt(file)}`);
+      const lic = state.credentials.licenses.find(l=>l.id===licId);
+      if(lic){ lic.file = url; lic.verified = false; }
+      await sb.from('contractor_licenses')
+        .update({ document_url: url, verified: false })
+        .eq('id', licId);
+      render();
+      toast(replace?'File replaced · we\'ll verify soon':'Uploaded · we\'ll verify soon','success');
+    } catch(e){
+      console.error('license upload failed', e);
+      toast('Upload failed — try again','error');
+    }
+  });
+}
+
+// ---- helpers ----
+function pickFile(cb){
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/pdf,image/jpeg,image/png';
+  input.onchange = ()=>{ if(input.files && input.files[0]) cb(input.files[0]); };
+  input.click();
+}
+function validateUpload(file){
+  if(file.size > 10 * 1024 * 1024){ toast('File too large — 10 MB max','error'); return false; }
+  const ok = ['application/pdf','image/jpeg','image/jpg','image/png'];
+  if(!ok.includes(file.type)){ toast('PDF, JPG, or PNG only','error'); return false; }
+  return true;
+}
+function fileExt(file){
+  const fromName = (file.name||'').split('.').pop();
+  if(fromName && fromName.length<=4) return fromName.toLowerCase();
+  const map = {'application/pdf':'pdf','image/jpeg':'jpg','image/jpg':'jpg','image/png':'png'};
+  return map[file.type] || 'bin';
+}
+async function uploadDoc(file, pathSuffix){
+  if(!state.contractorId) throw new Error('No contractorId');
+  const path = `${state.contractorId}/${pathSuffix}`;
+  const { error: upErr } = await sb.storage.from('contractor-docs')
+    .upload(path, file, { upsert: true, contentType: file.type });
+  if(upErr) throw upErr;
+  const { data: urlData } = sb.storage.from('contractor-docs').getPublicUrl(path);
+  return urlData.publicUrl;
+}
+
+function toggleCategory(c){
+  if(state.categories.has(c)){
+    state.categories.delete(c);
+    delete state.servicesDetail[c];
+    // Unchecking a licensed trade leaves its license record in place — the user
+    // may be toggling while editing. It's still shown in Credentials → Licenses
+    // and can be removed from there. Mirrors the data model.
+  } else {
+    state.categories.add(c);
+    state.servicesDetail[c] = state.servicesDetail[c]||[];
+    state.expandedCategory = c;
+    // If this is a licensed trade and no license record exists yet, seed one
+    // so the inline form appears immediately.
+    if(LICENSED_TRADES.includes(c) && !licenseForTrade(c)){
+      addLicenseForTrade(c);
+    }
+  }
+  render();
+  markSaving();
+}
+function addZip(){
+  const inp = document.getElementById('zipInput');
+  const v = (inp.value||'').trim();
+  if(!/^\d{5}$/.test(v)){ toast('Enter a 5-digit ZIP','error'); return; }
+  if(!state.zips.includes(v)) state.zips.push(v);
+  inp.value='';
+  render();
+  markSaving();
+}
+function removeZip(z){ state.zips = state.zips.filter(x=>x!==z); render(); markSaving(); }
+function nextStep(){ state.currentStep = Math.min(STEPS.length-1, state.currentStep+1); render(); }
+function prevStep(){ state.currentStep = Math.max(0, state.currentStep-1); render(); }
+
+function submitForReview(){
+  // Open the agreement modal instead of direct state change
+  state.agreement.open = true;
+  state.agreement.scrolledEnd = false;
+  state.agreement.readAgreed = false;
+  state.agreement.authorized = false;
+  state.agreement.typedName = '';
+  renderModal();
+}
+
+function closeAgreement(){
+  state.agreement.open = false;
+  renderModal();
+}
+
+function canSignAgreement(){
+  const a = state.agreement;
+  const legal = (state.profile.firstName+' '+state.profile.lastName).trim().toLowerCase();
+  return a.scrolledEnd && a.readAgreed && a.authorized && a.typedName.trim().toLowerCase()===legal;
+}
+
+async function acceptAgreement(){
+  if(!canSignAgreement()) return;
+  const signedName = state.agreement.typedName.trim();
+
+  // 1) IP capture (best-effort).
+  let ip = '';
+  try {
+    const r = await fetch('https://api.ipify.org?format=json');
+    if(r.ok){ const j = await r.json(); ip = j.ip||''; }
+  } catch(e){ /* non-fatal */ }
+
+  const now = new Date().toISOString();
+  state.agreementRecord = {
+    agreement_accepted_at: now,
+    agreement_accepted_ip: ip,
+    agreement_version: AGREEMENT_VERSION,
+    agreement_signed_name: signedName,
+  };
+
+  // 2) Persist to contractors row + flip status.
+  try {
+    const { error } = await sb.from('contractors').update({
+      agreement_accepted_at: now,
+      agreement_accepted_ip: ip,
+      agreement_version: AGREEMENT_VERSION,
+      agreement_signed_name: signedName,
+      status: 'Pending Review',
+    }).eq('id', state.contractorId);
+    if(error){
+      console.error('acceptAgreement DB failed', error);
+      toast('Could not submit — try again','error');
+      return;
+    }
+  } catch(e){
+    console.error('acceptAgreement exception', e);
+    toast('Could not submit — try again','error');
+    return;
+  }
+
+  // 3) GHL webhook (best-effort — don't block UX on failure).
+  try {
+    if(GHL_REVIEW_WEBHOOK && !GHL_REVIEW_WEBHOOK.startsWith('TODO')){
+      await fetch(GHL_REVIEW_WEBHOOK, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          type:'submit_for_review',
+          contractor_id: state.contractorId,
+          firstName: state.profile.firstName,
+          lastName: state.profile.lastName,
+          name: `${state.profile.firstName} ${state.profile.lastName}`.trim(),
+          company: state.profile.company,
+          email: state.profile.email,
+          phone: state.profile.phone,
+          tier: state.tierBadge,
+          agreement_version: AGREEMENT_VERSION,
+          signed_at: now,
+          signed_ip: ip,
+        }),
+      });
+    }
+  } catch(e){ console.error('GHL webhook failed', e); }
+
+  state.state = 'review';
+  state.agreement.open = false;
+  renderModal();
+  render();
+  toast("Your account is under review. You'll hear from us within 24 hours.",'success');
+}
+
+function onAgreementScroll(e){
+  const el = e.target;
+  if(el.scrollTop + el.clientHeight >= el.scrollHeight - 8 && !state.agreement.scrolledEnd){
+    state.agreement.scrolledEnd = true;
+    document.querySelectorAll('.agree-scroll-hint').forEach(n=>n.remove());
+    // Re-enable gated controls in place so we keep scroll position
+    document.querySelectorAll('.modal-foot input').forEach(inp=>inp.removeAttribute('disabled'));
+    updateAgreementButtons();
+  }
+}
+
+function updateAgreementButtons(){
+  const btn = document.getElementById('agreeAcceptBtn');
+  if(btn) btn.disabled = !canSignAgreement();
+}
+
+function renderModal(){
+  const host = document.getElementById('modalHost');
+  if(!state.agreement.open){ host.innerHTML=''; document.body.style.overflow=''; return; }
+  document.body.style.overflow='hidden';
+  const a = state.agreement;
+  const legalName = `${state.profile.firstName} ${state.profile.lastName}`;
+  host.innerHTML = `
+    <div class="modal-bg" onclick="if(event.target===this) closeAgreement()">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="Service agreement">
+        <div class="modal-head">
+          <div>
+            <div class="modal-title">SelectServicePros Contractor Service Agreement</div>
+            <div class="modal-sub">Version ${AGREEMENT_VERSION} · Scroll to the bottom to enable signing.</div>
+          </div>
+          <button class="icon-btn" onclick="closeAgreement()" aria-label="Close">${iconX(16)}</button>
+        </div>
+        <div class="modal-scroll" onscroll="onAgreementScroll(event)">
+          <pre class="agree-text">${AGREEMENT_TEXT.replace(/</g,'&lt;')}</pre>
+          ${a.scrolledEnd?'':'<div class="agree-scroll-hint">Keep scrolling to continue ↓</div>'}
+        </div>
+        <div class="modal-foot">
+          <label class="check-row">
+            <input type="checkbox" ${a.readAgreed?'checked':''} ${a.scrolledEnd?'':'disabled'} onchange="state.agreement.readAgreed=this.checked;updateAgreementButtons()">
+            <span>I have read and agree to the terms above.</span>
+          </label>
+          <label class="check-row">
+            <input type="checkbox" ${a.authorized?'checked':''} ${a.scrolledEnd?'':'disabled'} onchange="state.agreement.authorized=this.checked;updateAgreementButtons()">
+            <span>I confirm I am authorized to sign this agreement on behalf of my business.</span>
+          </label>
+          <div class="field" style="margin-top:6px;margin-bottom:0">
+            <label>Type your full legal name to sign</label>
+            <input class="input" placeholder="${legalName}" value="${a.typedName}" ${a.scrolledEnd?'':'disabled'} oninput="state.agreement.typedName=this.value;updateAgreementButtons()">
+            <div class="hint">Must match the name on your profile: <strong>${legalName}</strong></div>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeAgreement()">Cancel</button>
+            <button id="agreeAcceptBtn" class="btn btn-primary" ${canSignAgreement()?'':'disabled'} onclick="acceptAgreement()">Accept &amp; submit for review</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ==================== LEADS ====================
+function leadsHTML(){
+  const leads = currentLeads();
+  let filtered = leads;
+  if(state.leadFilter!=='all') filtered = filtered.filter(l=>l.status===state.leadFilter);
+  if(state.searchQuery){
+    const q = state.searchQuery.toLowerCase();
+    filtered = filtered.filter(l=>
+      (l.service+l.name+l.zip+l.desc).toLowerCase().includes(q)
+    );
+  }
+  const counts = {
+    all: leads.length,
+    new: leads.filter(l=>l.status==='new').length,
+    accepted: leads.filter(l=>l.status==='accepted').length,
+    passed: leads.filter(l=>l.status==='passed').length,
+    expired: leads.filter(l=>l.status==='expired').length,
+  };
+
+  if(state.state!=='active'){
+    return `
+      <div class="page-header"><h1>Leads</h1><p class="sub">You'll see homeowner requests here once your profile is live.</p></div>
+      ${pendingLeadsEmptyState()}
+    `;
+  }
+
+  return `
+    <div class="page-header">
+      <div class="row">
+        <div>
+          <h1>Leads</h1>
+          <p class="sub">${counts.new} new · ${counts.accepted} accepted this period</p>
+        </div>
+      </div>
+    </div>
+    <div class="filters">
+      ${chip('all','All',counts.all)}
+      ${chip('new','New',counts.new)}
+      ${chip('accepted','Accepted',counts.accepted)}
+      ${chip('passed','Passed',counts.passed)}
+      ${chip('expired','Expired',counts.expired)}
+      <div class="search">
+        ${svgBase('<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>')}
+        <input placeholder="Search by name, ZIP, service..." value="${state.searchQuery}" oninput="state.searchQuery=this.value;render();document.querySelector('.search input').focus()">
+      </div>
+    </div>
+    ${filtered.length ? leadsListHTML(filtered) : leadsEmpty()}
+  `;
+}
+
+function chip(key,label,count){
+  return `<button class="chip ${state.leadFilter===key?'active':''}" onclick="state.leadFilter='${key}';render()">${label}<span class="c">${count}</span></button>`;
+}
+
+function leadsListHTML(arr, compact){
+  return `<div class="leads-list">${arr.map(l=>leadRowHTML(l,compact)).join('')}</div>`;
+}
+
+function leadRowHTML(l, compact){
+  const isExpanded = state.expandedLead===l.id;
+  const s = l.status;
+  const statusChip = {
+    new:'<span class="lead-status s-new">New</span>',
+    accepted:'<span class="lead-status s-accepted">Accepted</span>',
+    passed:'<span class="lead-status s-passed">Passed</span>',
+    expired:'<span class="lead-status s-expired">Expired</span>',
+  }[s];
+  const urg = `<span class="urg ${l.urgency.toLowerCase()}">${l.urgency}</span>`;
+
+  let row = `
+    <div class="lead-row ${isExpanded?'expanded':''}" onclick="toggleLead(${l.id})">
+      <div class="lead-ico">${iconInbox()}</div>
+      <div class="lead-main">
+        <div class="lead-head-row">
+          <span class="lead-svc">${l.service}</span>
+          ${urg}
+          ${statusChip}
+        </div>
+        <div class="lead-sub">${l.name} · ${l.zip} · ${timeAgo(l.mins)}</div>
+      </div>
+      <div class="lead-meta">
+        <div class="lead-fee">${s==='accepted'?'$'+l.fee+' charged':(s==='new'?'$'+l.fee+' if accepted':'—')}</div>
+        <div class="lead-time">${s==='new'?'per-lead fee':(s==='accepted'?'paid':'no charge')}</div>
+      </div>
+      <div class="lead-cta">
+        ${s==='new' ? `
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();acceptLead(${l.id})">Accept</button>
+          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();passLead(${l.id})">Pass</button>
+        ` : (s==='accepted' && l.phone ? `<a href="tel:${l.phone}" class="btn btn-navy btn-sm" onclick="event.stopPropagation()">Call</a>` : '')}
+      </div>
+    </div>
+  `;
+
+  if(isExpanded){
+    row += `
+      <div class="lead-expand">
+        <div class="lead-detail-grid">
+          <div>
+            <div class="fact-lbl">The ask</div>
+            <p class="lead-desc">${l.desc}</p>
+          </div>
+          <div class="lead-facts">
+            ${l.status==='accepted' && l.phone ? `<div class="fact"><div><div class="fact-lbl">Call homeowner</div><div class="phone-big"><a href="tel:${l.phone}">${l.phone}</a></div></div></div>`:''}
+            <div class="fact"><div><div class="fact-lbl">Budget</div><div class="fact-val">${l.budget}</div></div></div>
+            <div class="fact"><div><div class="fact-lbl">Property</div><div class="fact-val">${l.prop}</div></div></div>
+            <div class="fact"><div><div class="fact-lbl">Contact preference</div><div class="fact-val">${l.contact}</div></div></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  return row;
+}
+
+function toggleLead(id){ state.expandedLead = state.expandedLead===id?null:id; render(); }
+
+let lastLeadAction = null;
+async function acceptLead(id, fee){
+  const l = state.leads.find(x=>x.id===id); if(!l) return;
+  const prev = l.status;
+  const now = new Date().toISOString();
+  const responseSeconds = l.created_at ? Math.floor((Date.now() - new Date(l.created_at).getTime())/1000) : null;
+  const useFee = (typeof fee==='number') ? fee : (l.fee || 29);
+  l.status = 'Accepted';
+  lastLeadAction = {id, prev, fee:useFee};
+  render();
+  try {
+    await sb.from('leads').update({
+      status: 'Accepted', accepted_at: now, responded_at: now,
+      lead_fee: useFee, response_time_seconds: responseSeconds
+    }).eq('id', id);
+  } catch(e){ console.error('acceptLead failed', e); }
+  toast(`Accepted — $${useFee} charged. Homeowner's info is in your leads.`,'success',true);
+}
+async function passLead(id){
+  const l = state.leads.find(x=>x.id===id); if(!l) return;
+  const now = new Date().toISOString();
+  const responseSeconds = l.created_at ? Math.floor((Date.now() - new Date(l.created_at).getTime())/1000) : null;
+  lastLeadAction = {id, prev:l.status};
+  l.status='Passed';
+  render();
+  try {
+    await sb.from('leads').update({
+      status: 'Passed', responded_at: now, response_time_seconds: responseSeconds
+    }).eq('id', id);
+  } catch(e){ console.error('passLead failed', e); }
+  toast(`Passed on ${l.name}'s request.`,'success',true);
+}
+function undoLast(){
+  if(!lastLeadAction) return;
+  const l = state.leads.find(x=>x.id===lastLeadAction.id);
+  if(l){ l.status=lastLeadAction.prev; }
+  lastLeadAction=null;
+  hideToast();
+  render();
+  toast('Undone','success');
+}
+
+function leadsEmpty(){
+  return `
+    <div class="card empty">
+      ${emptyLeadsIllustration()}
+      <h3>No ${state.leadFilter==='all'?'':state.leadFilter+' '}leads match</h3>
+      <p>Try clearing the filter or your search.</p>
+      <button class="btn btn-ghost" onclick="state.leadFilter='all';state.searchQuery='';render()">Clear filters</button>
+    </div>
+  `;
+}
+
+function pendingLeadsEmptyState(){
+  return `
+    <div class="card empty">
+      ${emptyLeadsIllustration()}
+      <h3>Leads unlock once you're live</h3>
+      <p>Finish your profile and get verified — usually same day. You'll start seeing homeowner requests here the minute you're approved.</p>
+      <button class="btn btn-primary" onclick="setTab('overview')">Finish setup</button>
+    </div>
+  `;
+}
+
+// ==================== PROFILE ====================
+function profileHTML(){
+  const p = state.profile;
+  const zipPills = state.zips.map(z=>`<button class="pill zip">${z}<span class="x" onclick="removeZip('${z}');event.stopPropagation()">${iconX(10)}</span></button>`).join('');
+
+  return `
+    <div class="page-header"><h1>Profile</h1><p class="sub">What homeowners see. Changes save automatically.<span class="save-indicator" id="saveInd"><span class="dot-anim"></span>Saving</span></p></div>
+
+    <div class="card pad" style="margin-bottom:16px">
+      <div class="section-title" style="margin-bottom:18px;font-size:16px">About your business</div>
+      <div class="field">
+        <label>Business description</label>
+        <textarea class="textarea" oninput="state.profile.description=this.value;markSaving()">${p.description||''}</textarea>
+        <div class="hint">Shown on your public profile card.</div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Company name</label><input class="input" value="${p.company}" oninput="state.profile.company=this.value;markSaving()"></div>
+        <div class="field"><label>Website</label><input class="input" value="${p.website}" oninput="state.profile.website=this.value;markSaving()"></div>
+      </div>
+      <div class="field-row-3">
+        <div class="field"><label>Phone</label><input class="input" type="tel" value="${p.phone}" oninput="state.profile.phone=this.value;markSaving()"></div>
+        <div class="field"><label>Years in business</label><input class="input" type="number" value="${p.years}" oninput="state.profile.years=+this.value;markSaving()"></div>
+        <div class="field"><label>Employees</label><input class="input" type="number" value="${p.employees}" oninput="state.profile.employees=+this.value;markSaving()"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>State</label>${simpleStateSelect(p.state||'TX',"state.profile.state=this.value;markSaving();render()")}</div>
+        <div class="field"><label style="opacity:.5">&nbsp;</label><div style="font-size:12px;color:var(--text4);padding-top:10px">Your base-of-operations state. Also the default for new licenses.</div></div>
+      </div>
+    </div>
+
+    <div class="card pad" style="margin-bottom:16px">
+      <div class="section-title" style="margin-bottom:6px;font-size:16px">Services you offer</div>
+      <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Pick top-level categories, then check the specific services you perform under each.</p>
+      ${categoryAccordionHTML()}
+    </div>
+
+    <div class="card pad">
+      <div class="section-title" style="margin-bottom:10px;font-size:16px">Service areas</div>
+      <p style="font-size:13px;color:var(--text3);margin-bottom:14px">We only route leads from these ZIPs.</p>
+      <div class="pill-picker" style="margin-bottom:12px">${zipPills}</div>
+      <div class="zip-input">
+        <input class="input" id="zipInput" placeholder="Add a ZIP (e.g. 77019)" maxlength="5" onkeydown="if(event.key==='Enter'){addZip();event.preventDefault()}">
+        <button class="btn btn-navy btn-sm" onclick="addZip()">+ Add ZIP</button>
+      </div>
+    </div>
+  `;
+}
+
+// ==================== CREDENTIALS ====================
+// ==================== OPERATIONS ====================
+function operationsHTML(){
+  return `
+    <div class="page-header"><h1>Operations</h1><p class="sub">How you run the business. Helps us route the right leads to you.<span class="save-indicator" id="saveInd"><span class="dot-anim"></span>Saving</span></p></div>
+    ${operationsFormHTML()}
+  `;
+}
+
+function operationsFormHTML(){
+  const o = state.operations;
+  return `
+    <div class="card pad" style="margin-bottom:16px">
+      <div class="section-title" style="font-size:16px;margin-bottom:14px">Team &amp; fleet</div>
+      <div class="field-row">
+        <div class="field"><label>Number of technicians</label><input class="input" type="number" min="1" value="${o.technicians}" oninput="state.operations.technicians=+this.value;markSaving()"></div>
+        <div class="field"><label>Service vehicles</label><input class="input" type="number" min="0" value="${o.vehicles}" oninput="state.operations.vehicles=+this.value;markSaving()"></div>
+      </div>
+    </div>
+
+    <div class="card pad" style="margin-bottom:16px">
+      <div class="section-title" style="font-size:16px;margin-bottom:6px">Business hours</div>
+      <p style="font-size:13px;color:var(--text3);margin-bottom:14px">When you're reachable. Toggle 24/7 for always-on lines.</p>
+      <div class="hours-table">
+        ${DAYS.map(d=>hoursRowHTML(d)).join('')}
+      </div>
+    </div>
+
+    <div class="card pad" style="margin-bottom:16px">
+      <div class="section-title" style="font-size:16px;margin-bottom:14px">How you run the day</div>
+      <div class="field">
+        <label>Scheduling system</label>
+        <select class="select" onchange="state.operations.scheduling=this.value;markSaving()">
+          ${SCHEDULING_OPTIONS.map(s=>`<option ${o.scheduling===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <label>Who answers the phone?</label>
+        <div class="radio-grid">
+          ${PHONE_ANSWERED_OPTIONS.map(opt=>`
+            <label class="radio-item ${o.phoneAnswered===opt?'on':''}">
+              <input type="radio" name="phoneAnswered" ${o.phoneAnswered===opt?'checked':''} onchange="state.operations.phoneAnswered='${opt}';render();markSaving()">
+              <span>${opt}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="card pad">
+      <div class="section-title" style="font-size:16px;margin-bottom:6px">Payment methods accepted</div>
+      <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Pick every method you take.</p>
+      <div class="pill-picker">
+        ${PAYMENT_OPTIONS.map(pm=>{
+          const on = state.operations.payments.has(pm);
+          return `<button class="pill ${on?'selected':''}" onclick="togglePayment('${pm}')">${on?iconCheck(12):''} ${pm}</button>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function hoursRowHTML(day){
+  const h = state.operations.hours[day];
+  return `
+    <div class="hours-row ${h.open||h.open24?'':'closed'}">
+      <div class="hr-day">${day}</div>
+      <div class="hr-toggle">
+        <div class="switch sm ${h.open||h.open24?'on':''}" onclick="toggleDayOpen('${day}')"></div>
+        <span class="hr-status">${h.open24?'24/7':(h.open?'Open':'Closed')}</span>
+      </div>
+      <div class="hr-times">
+        <input class="input time" type="time" value="${h.from}" ${h.open24||!h.open?'disabled':''} onchange="state.operations.hours['${day}'].from=this.value;markSaving()">
+        <span class="hr-sep">to</span>
+        <input class="input time" type="time" value="${h.to}" ${h.open24||!h.open?'disabled':''} onchange="state.operations.hours['${day}'].to=this.value;markSaving()">
+      </div>
+      <label class="hr-247">
+        <input type="checkbox" ${h.open24?'checked':''} onchange="toggle247('${day}')">
+        <span>24/7</span>
+      </label>
+    </div>
+  `;
+}
+
+function toggleDayOpen(d){
+  const h = state.operations.hours[d];
+  if(h.open24){ h.open24=false; h.open=false; }
+  else h.open = !h.open;
+  render(); markSaving();
+}
+function toggle247(d){
+  const h = state.operations.hours[d];
+  h.open24 = !h.open24;
+  if(h.open24) h.open = true;
+  render(); markSaving();
+}
+function togglePayment(p){
+  if(state.operations.payments.has(p)) state.operations.payments.delete(p);
+  else state.operations.payments.add(p);
+  render(); markSaving();
+}
+
+function credentialsHTML(){
+  const i = state.credentials.insurance;
+  const licenses = state.credentials.licenses;
+  const verifIns = i.file ? (i.verified || state.state==='active' ? 'verified' : 'pending') : 'missing';
+
+  const licensesHTML = licenses.length===0
+    ? `<div class="empty-inline">
+         <p>No licenses on file.</p>
+         <p style="font-size:12px;color:var(--text4);margin-top:4px">Add one below if you offer HVAC, Plumbing, or Electrical work.</p>
+       </div>`
+    : licenses.map(l=>licenseRowHTML(l)).join('');
+
+  const licensedNotSelected = LICENSED_TRADES.filter(t=>!licenseForTrade(t));
+
+  return `
+    <div class="page-header"><h1>Credentials</h1><p class="sub">Insurance and trade licenses. Verified once, good for the life of the policy.<span class="save-indicator" id="saveInd"><span class="dot-anim"></span>Saving</span></p></div>
+
+    <div class="card pad" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:6px">
+        <div>
+          <div class="section-title" style="font-size:18px">Insurance</div>
+          <p style="font-size:13px;color:var(--text3);margin-top:2px">General liability, current. Required for every contractor.</p>
+        </div>
+        ${verifBadge(verifIns)}
+      </div>
+      ${expiryBadge(i.exp)?`<div style="margin:6px 0 14px">${expiryBadge(i.exp)}</div>`:'<div style="height:8px"></div>'}
+      <div class="field-row-3">
+        <div class="field"><label>Carrier</label><input class="input" value="${i.carrier||''}" oninput="state.credentials.insurance.carrier=this.value;state.credentials.insurance.verified=false;markSaving()"></div>
+        <div class="field"><label>Policy number</label><input class="input" value="${i.policy||''}" oninput="state.credentials.insurance.policy=this.value;state.credentials.insurance.verified=false;markSaving()"></div>
+        <div class="field"><label>Expiration</label><input class="input" type="date" value="${i.exp||''}" onchange="state.credentials.insurance.exp=this.value;state.credentials.insurance.verified=false;markSaving();render()"></div>
+      </div>
+      <div class="field"><label>Certificate of insurance</label>${uploaderHTML('insurance','Certificate of insurance')}</div>
+    </div>
+
+    <div class="card pad">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+        <div>
+          <div class="section-title" style="font-size:18px">Trade licenses</div>
+          <p style="font-size:13px;color:var(--text3);margin-top:2px">Required for HVAC, Plumbing, and Electrical work. Not required for other trades.</p>
+        </div>
+        ${licensedNotSelected.length ? `
+          <div class="add-license-wrap">
+            <select class="select add-license-select" id="addLicSelect" onchange="if(this.value){addLicenseAndRender(this.value);this.value='';}">
+              <option value="">+ Add license…</option>
+              ${licensedNotSelected.map(t=>`<option value="${t}">${t}</option>`).join('')}
+            </select>
+          </div>
+        ` : ''}
+      </div>
+      <div class="licenses-list">${licensesHTML}</div>
+      <div class="legal-note" style="margin-top:14px">Licensing requirements vary by state. You are responsible for maintaining all licenses required by law for your business. See Section 6 of the Service Agreement.</div>
+    </div>
+  `;
+}
+
+function licenseRowHTML(lic){
+  const status = lic.verified ? 'verified' : (lic.number && lic.file ? 'pending' : 'incomplete');
+  return `
+    <div class="lic-card">
+      <div class="lic-card-head">
+        <div>
+          <div class="lic-card-trade">${lic.trade} <span class="lic-card-type">· ${lic.type||'License'}</span></div>
+          <div class="lic-card-meta">${lic.state ? `${lic.state} · ` : ''}${lic.number || 'No number'} ${lic.exp ? ` · Expires ${fmtDate(lic.exp)}` : ''}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          ${expiryBadge(lic.exp)}
+          ${status==='verified'
+            ? `<span class="lic-pill lic-verified">${iconCheck(10)} Verified</span>`
+            : status==='pending'
+              ? `<span class="lic-pill lic-pending">Pending verification</span>`
+              : `<span class="lic-pill lic-needed">Incomplete</span>`}
+        </div>
+      </div>
+      <div class="field-row-3" style="margin-top:14px">
+        <div class="field"><label>License type</label>
+          <select class="select" onchange="updateLicense('${lic.id}','type',this.value)">
+            ${LICENSE_TYPES.map(t=>`<option ${lic.type===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field"><label>Issuing state</label>
+          <select class="select" onchange="updateLicense('${lic.id}','state',this.value)">
+            ${US_STATES.map(([code,name])=>`<option value="${code}" ${lic.state===code?'selected':''}>${code} — ${name}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field"><label>Expiration</label><input class="input" type="date" value="${lic.exp||''}" onchange="updateLicense('${lic.id}','exp',this.value)"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>License number</label><input class="input" value="${lic.number||''}" oninput="updateLicense('${lic.id}','number',this.value)"></div>
+        <div class="field"><label>Document</label>${licenseUploaderHTML(lic)}</div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="confirmRemoveLicense('${lic.id}')">Remove</button>
+      </div>
+    </div>
+  `;
+}
+
+function confirmRemoveLicense(id){
+  const l = state.credentials.licenses.find(x=>x.id===id); if(!l) return;
+  if(confirm(`Remove your ${l.trade} license? This will also unselect ${l.trade} from your services.`)){
+    removeLicense(id); render(); markSaving(); toast('License removed');
+  }
+}
+
+function fmtDate(d){
+  if(!d) return '';
+  try{ return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+  catch(e){ return d; }
+}
+
+function verifBadge(s){
+  if(s==='verified') return `<span class="lead-status s-accepted" style="padding:5px 10px;font-size:12px">${iconCheck(12)} Verified</span>`;
+  if(s==='pending') return `<span class="lead-status s-expired" style="padding:5px 10px;font-size:12px">Pending review</span>`;
+  return `<span class="lead-status s-new" style="padding:5px 10px;font-size:12px">Action needed</span>`;
+}
+
+// ==================== BILLING ====================
+function billingHTML(){
+  const tier = 'Pro';
+  const accepted = currentLeads().filter(l=>l.status==='accepted').length;
+  return `
+    <div class="page-header"><h1>Billing & Plan</h1><p class="sub">Your current plan and charges this period.</p></div>
+
+    <div class="plan-card" style="margin-bottom:18px">
+      <div class="plan-card-inner">
+        <div class="plan-eyebrow">Your plan</div>
+        <div class="plan-name-big">Pro</div>
+        <div class="plan-price-big">$99/mo + $29 per accepted lead</div>
+        <div class="plan-actions">
+          <button class="plan-btn primary" onclick="toast('Stripe portal would open here')">Manage subscription</button>
+          <button class="plan-btn" onclick="toast('Upgrade flow (demo)')">Upgrade to Elite</button>
+          <button class="plan-btn" onclick="toast('Downgrade flow (demo)')">Downgrade</button>
+        </div>
+      </div>
+    </div>
+
+    ${billingPreviewHTML(accepted, true)}
+
+    <div class="section" style="margin-top:18px">
+      <div class="section-title" style="font-size:18px;margin-bottom:10px">Change your plan</div>
+      <div class="tiers">
+        ${tierCard('Basic','$49','mo','$39 per lead',['Standard listing','Up to 10 leads/mo','Email support'], tier==='Basic')}
+        ${tierCard('Pro','$99','mo','$29 per lead',['Priority listing','Unlimited leads','Chat + phone support','Customer reviews widget'], tier==='Pro')}
+        ${tierCard('Elite','$199','mo','$19 per lead',['Top of search','Unlimited leads','Dedicated account manager','Featured profile card'], tier==='Elite')}
+      </div>
+    </div>
+
+    <div class="danger-zone" style="background:#fff;border:1px solid var(--border);margin-top:20px">
+      <h3 style="color:var(--navy)">Cancel subscription</h3>
+      <p>You'll keep access until the end of your current billing period. You can come back anytime.</p>
+      <button class="btn btn-danger" onclick="confirmCancel()">Cancel subscription</button>
+    </div>
+  `;
+}
+
+function billingPreviewHTML(accepted, full){
+  const monthly = 99;
+  const perLead = 29;
+  const leadCharges = accepted*perLead;
+  return `
+    <div class="card pad">
+      <div class="section-head" style="margin-bottom:0">
+        <div class="section-title" style="font-size:16px">This billing period</div>
+        <span class="muted" style="font-size:12px;color:var(--text4)">Apr 1 – Apr 30 · next charge Apr 28</span>
+      </div>
+      <div class="billing-break">
+        <div class="break-item"><div class="break-lbl">Monthly plan</div><div class="break-val">$${monthly}</div><div class="break-sub">Pro tier</div></div>
+        <div class="break-item"><div class="break-lbl">Lead charges</div><div class="break-val">$${leadCharges}</div><div class="break-sub">${accepted} × $${perLead}</div></div>
+        <div class="break-item" style="background:var(--navy);color:#fff">
+          <div class="break-lbl" style="color:rgba(255,255,255,.6)">Estimated total</div>
+          <div class="break-val" style="color:#fff">$${monthly+leadCharges}</div>
+          <div class="break-sub" style="color:rgba(255,255,255,.65)">charges to your card</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function tierCard(name, price, per, leadPrice, feats, current){
+  return `
+    <div class="tier ${current?'current':''}">
+      <div class="tier-name">${name}</div>
+      <div class="tier-price">${price}/${per} · ${leadPrice}</div>
+      <ul class="tier-ul">${feats.map(f=>`<li>${iconCheck(12)}${f}</li>`).join('')}</ul>
+      <button class="btn ${current?'btn-ghost':'btn-navy'} btn-sm" style="width:100%" ${current?'disabled':''} onclick="toast('${current?'':'Switching to '+name+'...'}')">${current?'Your plan':'Switch to '+name}</button>
+    </div>
+  `;
+}
+
+function confirmCancel(){
+  if(confirm("Are you sure? You'll keep access until the end of the period.")){
+    toast('Cancellation scheduled. You\'re good until Apr 30.','success');
+  }
+}
+
+// ==================== SETTINGS ====================
+function settingsHTML(){
+  const n = state.notifs;
+  const email = state.profile.email || '';
+  const companyName = state.profile.company || '';
+  const notifsPersist = `saveNotifications()`;
+  return `
+    <div class="page-header"><h1>Settings</h1><p class="sub">Account, notifications, and security.</p></div>
+
+    <div class="card pad" style="margin-bottom:16px">
+      <div class="section-title" style="font-size:16px;margin-bottom:14px">Account</div>
+      <div class="field-row">
+        <div class="field"><label>Email (sign-in)</label><input class="input" value="${email}" disabled style="background:var(--bg);color:var(--text3)"></div>
+        <div class="field"><label>Phone</label><input class="input" type="tel" value="${state.profile.phone||''}" oninput="state.profile.phone=this.value;markSaving()"></div>
+      </div>
+    </div>
+
+    <div class="card pad" style="margin-bottom:16px">
+      <div class="section-title" style="font-size:16px">Notifications</div>
+      <div class="toggle-row">
+        <div class="toggle-info"><h4>Email alerts for new leads</h4><p>Ping within 30 seconds of a new lead hitting your inbox.</p></div>
+        <div class="switch ${n.email?'on':''}" onclick="state.notifs.email=!state.notifs.email;${notifsPersist};render();toast('Saved')"></div>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info"><h4>SMS alerts for new leads</h4><p>Same thing, but to your phone. Good for being in the field.</p></div>
+        <div class="switch ${n.sms?'on':''}" onclick="state.notifs.sms=!state.notifs.sms;${notifsPersist};render();toast('Saved')"></div>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info"><h4>Weekly digest</h4><p>Monday morning summary of last week's leads and charges.</p></div>
+        <div class="switch ${n.digest?'on':''}" onclick="state.notifs.digest=!state.notifs.digest;${notifsPersist};render();toast('Saved')"></div>
+      </div>
+    </div>
+
+    <div class="card pad" style="margin-bottom:16px">
+      <div class="section-title" style="font-size:16px;margin-bottom:14px">Security</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+        <div>
+          <h4 style="font-size:14px;font-weight:600">Password</h4>
+          <p style="font-size:13px;color:var(--text3);margin-top:2px">We'll send a reset link to your email.</p>
+        </div>
+        <button class="btn btn-ghost" onclick="sendPasswordReset()">Send reset link</button>
+      </div>
+    </div>
+
+    <div class="danger-zone">
+      <h3>Delete account</h3>
+      <p>Permanent. All your leads, credentials, and billing history go away. Type your business name to confirm.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <input class="input" id="delConfirm" placeholder="Type '${companyName || 'your business name'}' to confirm" style="max-width:320px" oninput="document.getElementById('delBtn').disabled=this.value!==${JSON.stringify(companyName)}">
+        <button class="btn btn-danger" id="delBtn" disabled onclick="requestAccountDeletion()">Delete my account</button>
+      </div>
+    </div>
+  `;
+}
+
+// Persist notification toggles + phone to contractors row.
+async function saveNotifications(){
+  if(!state.contractorId) return;
+  try {
+    await sb.from('contractors').update({
+      notif_email: !!state.notifs.email,
+      notif_sms: !!state.notifs.sms,
+      notif_digest: !!state.notifs.digest,
+      phone: state.profile.phone || null,
+    }).eq('id', state.contractorId);
+  } catch(e){ console.error('saveNotifications', e); }
+}
+
+async function sendPasswordReset(){
+  const email = state.profile.email;
+  if(!email){ toast('No email on file','error'); return; }
+  try {
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/reset-password',
+    });
+    if(error){ toast(error.message,'error'); return; }
+    toast(`Password reset link sent to ${email}`,'success');
+  } catch(e){
+    console.error(e); toast('Could not send reset link','error');
+  }
+}
+
+async function requestAccountDeletion(){
+  // We don't hard-delete from the client. Mark the row and fire a webhook so
+  // ops gets a ticket to purge within 30 days (per privacy policy).
+  if(!confirm('Are you absolutely sure? This cannot be undone.')) return;
+  try {
+    await sb.from('contractors').update({
+      status: 'Deletion Requested',
+      deletion_requested_at: new Date().toISOString(),
+    }).eq('id', state.contractorId);
+    if(GHL_REVIEW_WEBHOOK && !GHL_REVIEW_WEBHOOK.startsWith('TODO')){
+      fetch(GHL_REVIEW_WEBHOOK, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          type:'account_deletion_requested',
+          contractor_id: state.contractorId,
+          email: state.profile.email,
+          company: state.profile.company,
+        }),
+      }).catch(()=>{});
+    }
+    toast('Account deletion requested. You will receive a confirmation email.','error');
+  } catch(e){
+    console.error(e); toast('Could not submit deletion request','error');
+  }
+}
+
+// ==================== TOAST ====================
+let toastTimer = null;
+function toast(msg, kind='success', showUndo=false){
+  const t = document.getElementById('toast');
+  const i = document.getElementById('toastIco');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = 'toast show '+(kind==='error'?'error':'success');
+  document.getElementById('toastUndo').style.display = showUndo?'inline-block':'none';
+  i.innerHTML = kind==='error'
+    ? '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'
+    : '<polyline points="20 6 9 17 4 12"/>';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, showUndo?5000:2600);
+}
+function hideToast(){ document.getElementById('toast').classList.remove('show'); }
+
+// ==================== SAVING INDICATOR + PERSISTENCE ====================
+// markSaving() is called from every field oninput/onchange in the Profile,
+// Operations, Services, and Insurance tabs. It (a) pulses the "Saving…"
+// indicator in the page header, and (b) debounces a real Supabase write.
+let saveTimer = null;
+let saveIndicatorTimer = null;
+function markSaving(){
+  const el = document.getElementById('saveInd');
+  if(el){
+    el.className='save-indicator show saving';
+    el.innerHTML='<span class="dot-anim"></span>Saving';
+  }
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    const ok = await persistProfile();
+    if(el){
+      if(ok){ el.className='save-indicator show saved'; el.innerHTML=iconCheck(12)+' Saved'; }
+      else  { el.className='save-indicator show error'; el.innerHTML=iconX(12)+' Error'; }
+    }
+    clearTimeout(saveIndicatorTimer);
+    saveIndicatorTimer = setTimeout(()=>{ if(el) el.className='save-indicator saved'; }, 1400);
+  }, 500);
+}
+
+async function persistProfile(){
+  if(!state.contractorId) return false;
+  const p = state.profile, o = state.operations, i = state.credentials.insurance;
+  const payload = {
+    first_name: p.firstName || null,
+    last_name: p.lastName || null,
+    company_name: p.company || null,
+    business_description: p.description || null,
+    years_in_business: p.years ? Number(p.years) : null,
+    number_of_employees: p.employees ? String(p.employees) : null,
+    phone: p.phone || null,
+    website_url: p.website || null,
+    state: p.state || null,
+    service_zips: state.zips.join(','),
+    service_categories: Array.from(state.categories).join(','),
+    services_detail: state.servicesDetail,
+    num_technicians: o.technicians ? Number(o.technicians) : null,
+    num_vehicles: o.vehicles ? Number(o.vehicles) : null,
+    business_hours: o.hours,
+    scheduling_system: o.scheduling || null,
+    phone_answered_by: o.phoneAnswered || null,
+    payment_methods: Array.from(o.payments),
+    insurance_carrier: i.carrier || null,
+    insurance_policy_number: i.policy || null,
+    insurance_expiration: i.exp || null,
+    insurance_verified: !!i.verified,
+  };
+  try {
+    const { error } = await sb.from('contractors').update(payload).eq('id', state.contractorId);
+    if(error){ console.error('persistProfile error', error); return false; }
+    return true;
+  } catch(e){ console.error('persistProfile exception', e); return false; }
+}
+
+// ==================== PROGRESS BAR ANIMATION ====================
+function animateProgressBar(){
+  requestAnimationFrame(()=>{
+    const fill = document.querySelector('.wiz-bar-fill');
+    if(!fill) return;
+    const done = getDoneSteps().filter(Boolean).length;
+    const pct = Math.round((done/STEPS.length)*100);
+    fill.style.width = '0%';
+    requestAnimationFrame(()=>{ fill.style.width = pct+'%'; });
+  });
+}
+
+// ==================== ILLUSTRATIONS ====================
+function emptyLeadsIllustration(){
+  return `
+    <svg width="120" height="88" viewBox="0 0 120 88" fill="none">
+      <rect x="12" y="26" width="96" height="52" rx="6" fill="#f8f7f4" stroke="#e5e4e0" stroke-width="1.5"/>
+      <path d="M12 42h96" stroke="#e5e4e0" stroke-width="1.5"/>
+      <circle cx="60" cy="36" r="4" fill="#f05528"/>
+      <rect x="26" y="54" width="36" height="4" rx="2" fill="#e5e4e0"/>
+      <rect x="26" y="64" width="56" height="4" rx="2" fill="#e5e4e0"/>
+      <path d="M90 12 l6 8 6-8" stroke="#f05528" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="96" cy="8" r="2" fill="#f05528"/>
+    </svg>`;
+}
+function reviewIllustration(){
+  return `
+    <svg width="140" height="110" viewBox="0 0 140 110" fill="none">
+      <rect x="22" y="14" width="80" height="90" rx="6" fill="#fff" stroke="#e5e4e0" stroke-width="1.5"/>
+      <rect x="32" y="28" width="46" height="4" rx="2" fill="#0a1628"/>
+      <rect x="32" y="40" width="60" height="3" rx="1.5" fill="#e5e4e0"/>
+      <rect x="32" y="48" width="52" height="3" rx="1.5" fill="#e5e4e0"/>
+      <rect x="32" y="56" width="56" height="3" rx="1.5" fill="#e5e4e0"/>
+      <circle cx="100" cy="86" r="20" fill="#fdece5"/>
+      <circle cx="100" cy="84" r="8" fill="none" stroke="#f05528" stroke-width="2.5"/>
+      <line x1="107" y1="92" x2="114" y2="99" stroke="#f05528" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>`;
+}
+function readyIllustration(){
+  return `
+    <svg width="140" height="120" viewBox="0 0 140 120" fill="none">
+      <circle cx="70" cy="60" r="46" fill="#fdece5"/>
+      <circle cx="70" cy="60" r="30" fill="#f05528"/>
+      <polyline points="56,60 66,70 84,50" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="18" cy="30" r="3" fill="#f05528"/>
+      <circle cx="124" cy="96" r="2.5" fill="#0a1628"/>
+      <circle cx="28" cy="96" r="2" fill="#f05528" opacity=".6"/>
+      <path d="M116 22 l4 4 M120 22 l-4 4" stroke="#0a1628" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>`;
+}
+
+// ==================== STATUS MAPPING ====================
+// DB stores human-readable strings ("Pending Profile", "Pending Review",
+// "Active", "Deleted"). UI uses short keys ("pending", "review", "active").
+function uiStatusFrom(dbStatus){
+  const s = (dbStatus||'').toLowerCase();
+  if(s.includes('active')) return 'active';
+  if(s.includes('review')) return 'review';
+  return 'pending';
+}
+function dbStatusFrom(uiStatus){
+  if(uiStatus==='active') return 'Active';
+  if(uiStatus==='review') return 'Pending Review';
+  return 'Pending Profile';
+}
+function syncUiState(){
+  // Kept for back-compat — body.dataset already set once at boot.
+  document.body.dataset.banner = state.banner;
+  document.body.dataset.nav = state.nav;
+}
+
+// ==================== DATA LOADING ====================
+async function loadContractor(authId){
+  const { data, error } = await sb.from('contractors')
+    .select('*').eq('auth_id', authId).single();
+  if(error || !data){
+    console.error('loadContractor failed', error);
+    showFatalError("We couldn't find your contractor account. If you just signed up, try again in a minute — otherwise contact support.");
+    return false;
+  }
+
+  state.contractorId = data.id;
+  state.state = uiStatusFrom(data.status);
+  state.tierBadge = data.membership_tier || 'Basic';
+
+  state.profile = {
+    firstName: data.first_name || '',
+    lastName: data.last_name || '',
+    company: data.company_name || '',
+    description: data.business_description || '',
+    years: data.years_in_business || '',
+    employees: data.number_of_employees || '',
+    phone: data.phone || '',
+    email: data.email || '',
+    website: data.website_url || '',
+    state: data.state || '',
+  };
+
+  state.zips = (data.service_zips || '').split(',').map(z=>z.trim()).filter(Boolean);
+  state.categories = new Set(
+    (data.service_categories || '').split(',').map(c=>c.trim()).filter(Boolean)
+  );
+  state.servicesDetail = (data.services_detail && typeof data.services_detail==='object') ? data.services_detail : {};
+  state.expandedCategory = [...state.categories][0] || null;
+
+  state.operations = {
+    technicians: data.num_technicians ?? '',
+    vehicles: data.num_vehicles ?? '',
+    hours: (data.business_hours && typeof data.business_hours==='object') ? data.business_hours : defaultHours(),
+    scheduling: data.scheduling_system || '',
+    phoneAnswered: data.phone_answered_by || '',
+    payments: new Set(Array.isArray(data.payment_methods) ? data.payment_methods : []),
+  };
+
+  state.credentials.insurance = {
+    carrier: data.insurance_carrier || '',
+    policy: data.insurance_policy_number || '',
+    exp: data.insurance_expiration || '',
+    file: data.insurance_doc_url || '',
+    verified: !!data.insurance_verified,
+  };
+
+  // Notification prefs (default to on for email+sms, off for digest).
+  state.notifs = {
+    email: data.notif_email ?? true,
+    sms: data.notif_sms ?? true,
+    digest: data.notif_digest ?? false,
+  };
+
+  // Agreement status
+  if(data.agreement_accepted_at){
+    state.agreementRecord = {
+      agreement_accepted_at: data.agreement_accepted_at,
+      agreement_accepted_ip: data.agreement_accepted_ip,
+      agreement_version: data.agreement_version,
+      agreement_signed_name: data.agreement_signed_name,
+    };
+  }
+
+  // Load licenses
+  const { data: licRows, error: licErr } = await sb.from('contractor_licenses')
+    .select('*').eq('contractor_id', data.id).order('created_at', { ascending: true });
+  if(licErr) console.error('loadLicenses failed', licErr);
+  state.credentials.licenses = (licRows || []).map(r=>({
+    id: r.id,
+    trade: r.trade_category || '',
+    type: r.license_type || '',
+    state: r.license_state || '',
+    number: r.license_number || '',
+    exp: r.expiration_date || '',
+    file: r.document_url || '',
+    verified: !!r.verified,
+    verifiedAt: r.verified_at || null,
+    notes: r.notes || '',
+  }));
+
+  // Nav avatar / name
+  const initials = ((data.first_name||'?')[0] + (data.last_name||'')[0]).toUpperCase();
+  const navAvatar = document.getElementById('navAvatar');
+  if(navAvatar) navAvatar.textContent = initials || '··';
+  const navName = document.getElementById('navName');
+  if(navName) navName.textContent = [data.first_name, data.last_name].filter(Boolean).join(' ') || data.email || '—';
+
+  return true;
 }
 
 async function loadLeads(){
-  var result=await sb.from('leads')
+  if(!state.contractorId){ state.leads=[]; return; }
+  const { data, error } = await sb.from('leads')
     .select('*')
-    .eq('assigned_contractor_id',contractor.id)
-    .order('created_at',{ascending:false})
+    .eq('assigned_contractor_id', state.contractorId)
+    .order('created_at', { ascending: false })
     .limit(50);
-
-  if(result.error||!result.data){
-    leads=[];
-  } else {
-    leads=result.data;
-  }
-  renderLeads();
+  if(error){ console.error('loadLeads failed', error); state.leads=[]; return; }
+  // Normalize DB row -> UI lead shape (adds .mins, .status lowercased for
+  // filter buttons, keeps .created_at for response-time math).
+  state.leads = (data||[]).map(r => normalizeLead(r));
 }
 
-function renderLeads(){
-  var filtered=leads;
-  if(currentFilter!=='all'){
-    filtered=leads.filter(function(l){
-      var s=(l.status||'').toLowerCase();
-      if(currentFilter==='new') return s==='new'||s==='pending';
-      return s===currentFilter;
-    });
-  }
+function normalizeLead(r){
+  const createdMs = r.created_at ? new Date(r.created_at).getTime() : Date.now();
+  const mins = Math.max(0, Math.floor((Date.now() - createdMs)/60000));
+  const statusMap = { 'New':'new', 'Accepted':'accepted', 'Passed':'passed', 'Expired':'expired' };
+  const uiStatus = statusMap[r.status] || (r.status||'new').toLowerCase();
+  return {
+    ...r,
+    id: r.id,
+    service: r.service_category || r.service || '',
+    urgency: r.urgency || 'Soon',
+    name: r.customer_name || r.name || '',
+    zip: r.customer_zip || r.zip || '',
+    phone: r.customer_phone || r.phone || '',
+    desc: r.description || r.desc || '',
+    budget: r.budget || '',
+    prop: r.property_type || r.prop || '',
+    contact: r.preferred_contact || r.contact || '',
+    fee: r.lead_fee || 29,
+    mins,
+    status: uiStatus,
+    created_at: r.created_at,
+  };
+}
 
-  document.getElementById('lead-count').textContent=filtered.length;
+// Silent poll while on Leads tab
+let leadPollTimer = null;
+function startLeadPoll(){
+  stopLeadPoll();
+  leadPollTimer = setInterval(async ()=>{
+    if(state.activeTab!=='leads'){ return; }
+    await loadLeads();
+    render();
+  }, 60000);
+}
+function stopLeadPoll(){ if(leadPollTimer){ clearInterval(leadPollTimer); leadPollTimer=null; } }
 
-  if(filtered.length===0){
-    document.getElementById('leads-list').innerHTML='<div class="card empty"><div class="empty-icon">&#128203;</div><div class="empty-title">No '+currentFilter+' leads</div><div class="empty-sub">'+(currentFilter==='all'?'When homeowners in your area request service, you\'ll see their leads here.':'Try a different filter.')+'</div></div>';
-    return;
-  }
+// ==================== FATAL ERROR SCREEN ====================
+function showFatalError(msg){
+  document.body.removeAttribute('data-loading');
+  document.body.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px;background:#faf9f6">
+      <div style="max-width:440px;text-align:center;font-family:'DM Sans',sans-serif">
+        <div style="font-family:'Fraunces',serif;font-size:28px;color:#0a1628;margin-bottom:10px">Something's off</div>
+        <p style="color:#4b5563;font-size:15px;line-height:1.5;margin-bottom:20px">${msg}</p>
+        <a href="mailto:support@selectservicepros.com" style="display:inline-block;padding:10px 18px;border-radius:10px;background:#0a1628;color:#fff;text-decoration:none;font-weight:600;font-size:14px">Contact support</a>
+      </div>
+    </div>
+  `;
+}
 
-  var tier=contractor.membership_tier||'Basic';
-  var perLead=PLAN_PRICING[tier]?PLAN_PRICING[tier].perLead:39;
+// ==================== AUTH ====================
+async function logout(){
+  try { await sb.auth.signOut(); } catch(e){ console.error(e); }
+  window.location.href = '/contractor-login.html';
+}
 
-  var html='';
-  filtered.forEach(function(lead){
-    var st=lead.status||'pending';
-    var stLower=st.toLowerCase();
-    var badgeClass=stLower==='new'||stLower==='pending'?'badge-new':stLower==='accepted'?'badge-accepted':stLower==='passed'?'badge-passed':'badge-expired';
-    var fee=lead.lead_fee||perLead;
-    var isNew=stLower==='new'||stLower==='pending';
-    var isAccepted=stLower==='accepted';
-
-    var urgencyHtml='';
-    if(lead.urgency){
-      var uClass=lead.urgency.toLowerCase()==='emergency'?'urgency-emergency':lead.urgency.toLowerCase()==='soon'?'urgency-soon':'urgency-planning';
-      urgencyHtml='<span class="lead-urgency '+uClass+'">'+lead.urgency+'</span>';
-    }
-
-    html+='<div class="card lead-card">'
-      +'<div class="lead-info">'
-      +'<div class="lead-top">'
-      +'<span class="lead-service">'+(lead.service_type||lead.service_category||'Service Request')+'</span>'
-      +urgencyHtml
-      +'</div>'
-      +'<div class="lead-detail">'+(lead.homeowner_name||'Homeowner')+' \u00B7 '+(lead.homeowner_zip||'')+'</div>'
-      +(isAccepted&&lead.homeowner_phone?'<div class="lead-phone">\u260E '+lead.homeowner_phone+'</div>':'')
-      +'<div class="lead-detail" style="color:var(--text3)">'+(lead.description||'No details provided')+'</div>'
-      +'<span class="lead-badge '+badgeClass+'">'+st+'</span>'
-      +'<div class="lead-time">'+timeAgo(lead.created_at)+'</div>'
-      +'</div>'
-      +'<div class="lead-right">'
-      +'<div>'
-      +'<div class="lead-fee">'+(isAccepted?'$'+fee+' charged':isNew?'$'+fee+' if accepted':'No charge')+'</div>'
-      +'<div class="lead-fee-note">'+(isNew?'per-lead fee':'')+'</div>'
-      +'</div>'
-      +'<div class="lead-actions">'
-      +(isNew?'<button class="lead-accept" onclick="acceptLead(\''+lead.id+'\','+fee+')">Accept</button><button class="lead-pass" onclick="passLead(\''+lead.id+'\')">Pass</button>':'')
-      +'</div>'
-      +'</div>'
-      +'</div>';
+async function changePassword(){
+  const email = state.profile.email;
+  if(!email){ toast('No email on file','error'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/contractor-login.html'
   });
-  document.getElementById('leads-list').innerHTML=html;
+  if(error) toast('Could not send reset email','error');
+  else toast('Check your email for a password reset link','success');
 }
 
-async function acceptLead(id,fee){
-  var now=new Date().toISOString();
-  var lead=leads.find(function(l){return l.id===id});
-  var responseSeconds=lead?Math.floor((Date.now()-new Date(lead.created_at).getTime())/1000):null;
-
-  await sb.from('leads').update({
-    status:'Accepted',
-    accepted_at:now,
-    responded_at:now,
-    lead_fee:fee||null,
-    response_time_seconds:responseSeconds
-  }).eq('id',id);
-
-  await renderDashboard();
+async function deleteAccount(){
+  if(!state.contractorId) return;
+  try {
+    await sb.from('contractors').update({ status: 'Deleted' }).eq('id', state.contractorId);
+    await sb.auth.signOut();
+    window.location.href = '/';
+  } catch(e){
+    console.error('deleteAccount failed', e);
+    toast('Could not delete account','error');
+  }
 }
 
-async function passLead(id){
-  var now=new Date().toISOString();
-  var lead=leads.find(function(l){return l.id===id});
-  var responseSeconds=lead?Math.floor((Date.now()-new Date(lead.created_at).getTime())/1000):null;
-
-  await sb.from('leads').update({
-    status:'Passed',
-    responded_at:now,
-    response_time_seconds:responseSeconds
-  }).eq('id',id);
-
-  await renderDashboard();
-}
-
-async function doLogout(){
-  await sb.auth.signOut();
-  window.location.href='/contractor-login.html';
-}
-
-function filterLeads(filter){
-  currentFilter=filter;
-  var btns=document.querySelectorAll('.filter-btn');
-  btns.forEach(function(b){b.classList.remove('active')});
-  event.target.classList.add('active');
-  renderLeads();
-}
-
-function timeAgo(date){
-  var s=Math.floor((Date.now()-new Date(date).getTime())/1000);
-  if(s<60) return 'just now';
-  if(s<3600) return Math.floor(s/60)+' min ago';
-  if(s<86400) return Math.floor(s/3600)+' hr ago';
-  return Math.floor(s/86400)+' days ago';
-}
-
-function formatTime(seconds){
-  if(seconds<60) return seconds+'s';
-  if(seconds<3600) return Math.floor(seconds/60)+'m';
-  return Math.floor(seconds/3600)+'h '+Math.floor((seconds%3600)/60)+'m';
-}
-
-sb.auth.onAuthStateChange(function(event){
-  if(event==='SIGNED_OUT') window.location.href='/contractor-login.html';
+sb.auth.onAuthStateChange((event)=>{
+  if(event==='SIGNED_OUT'){ window.location.href = '/contractor-login.html'; }
 });
 
+// ==================== INIT ====================
+async function init(){
+  // Set UI layout from defaults (no more tweak panel).
+  document.body.dataset.banner = state.banner;
+  document.body.dataset.nav = state.nav;
+
+  const { data: { session } } = await sb.auth.getSession();
+  if(!session){
+    // Preview-sandbox bypass: when there's no session but we're clearly not
+    // on a production host, render an empty shell instead of bouncing to
+    // login. Matches localhost, Claude artifact hosts, and any iframe.
+    const h = location.hostname;
+    const isPreview =
+      h==='localhost' || h==='127.0.0.1' ||
+      h.endsWith('.sandbox.dev') ||
+      h.endsWith('.claude.site') ||
+      h.endsWith('.claudeusercontent.com') ||
+      h.endsWith('.preview.app') ||
+      window.self !== window.top;
+    if(isPreview){
+      // 'pending' is the initial onboarding state used by updateNav()'s
+      // status map — not a made-up key.
+      state.state = 'pending';
+      state.authUser = { email: 'preview@example.com' };
+      state.profile.email = 'preview@example.com';
+      document.body.removeAttribute('data-loading');
+      render();
+      return;
+    }
+    window.location.href = '/contractor-login.html';
+    return;
+  }
+  state.authUser = session.user;
+  state.profile.email = session.user.email || '';
+
+  const ok = await loadContractor(session.user.id);
+  if(!ok) return;
+  await loadLeads();
+
+  document.body.removeAttribute('data-loading');
+  render();
+  startLeadPoll();
+}
+
 init();
+
+// keyboard: arrow keys on tabs
+document.addEventListener('keydown',(e)=>{
+  if(e.target.matches('input,textarea,select')) return;
+  if(e.key==='ArrowRight' || e.key==='ArrowLeft'){
+    const idx = TABS.findIndex(t=>t.key===state.activeTab);
+    const next = (idx + (e.key==='ArrowRight'?1:-1) + TABS.length) % TABS.length;
+    setTab(TABS[next].key);
+  }
+});
+
+// =======================================================================
+// TODO / MANUAL WIRING NEEDED BEFORE PRODUCTION
+// =======================================================================
+// 1. Set GHL_REVIEW_WEBHOOK above to the real GHL workflow webhook URL
+//    (workflow fires when contractor submits profile for review).
+// 2. Set STRIPE_PORTAL_URL (if you add "Manage Subscription" button) to
+//    the real Stripe customer portal URL.
+// 3. Run the migration SQL block at the top of this file in the Supabase
+//    SQL editor BEFORE deploying. Dashboard will error without it.
+// 4. Verify the storage bucket "contractor-docs" was created and the RLS
+//    policies are in place. Test upload with a known-good user.
+// =======================================================================
 </script>
-<!--email_off-->
 </body>
 </html>
