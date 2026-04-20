@@ -220,8 +220,6 @@ a{text-decoration:none;color:inherit}
   <div class="step-item active" id="si1"><div class="step-num" id="sn1">1</div><div class="step-label">Your info</div></div>
   <div class="step-line" id="sline1"></div>
   <div class="step-item" id="si2"><div class="step-num" id="sn2">2</div><div class="step-label">Pick a plan</div></div>
-  <div class="step-line" id="sline2"></div>
-  <div class="step-item" id="si3"><div class="step-num" id="sn3">3</div><div class="step-label">Set up profile</div></div>
 </div>
 
 <!-- STEP 1: FORM -->
@@ -269,47 +267,7 @@ a{text-decoration:none;color:inherit}
 </section>
 
 <!-- STEP 3: PROFILE FORM (hidden until payment complete) -->
-<section class="form-section" id="profile-section" style="display:none">
-  <div class="form-card">
-    <h2 class="form-title">Complete your profile</h2>
-    <p class="form-sub">The more detail you provide, the more homeowners will choose you. Takes 2 minutes.</p>
-
-    <div class="fg"><label class="fl">Business description <span class="req">*</span></label><textarea class="fi" id="p-desc" rows="4" placeholder="Tell homeowners what makes your business stand out — your experience, specialties, service philosophy..." style="resize:vertical"></textarea></div>
-
-    <div class="fg fi-row">
-      <div><label class="fl">Years in business <span class="req">*</span></label>
-        <select class="fi" id="p-years" style="appearance:auto"><option value="">Select...</option><option value="Less than 1">Less than 1 year</option><option value="1-3">1–3 years</option><option value="3-5">3–5 years</option><option value="5-10">5–10 years</option><option value="10-20">10–20 years</option><option value="20+">20+ years</option></select>
-      </div>
-      <div><label class="fl">Number of employees</label>
-        <select class="fi" id="p-employees" style="appearance:auto"><option value="">Select...</option><option value="Just me">Just me</option><option value="2-5">2–5</option><option value="6-10">6–10</option><option value="11-25">11–25</option><option value="25+">25+</option></select>
-      </div>
-    </div>
-
-    <div class="fg fi-row">
-      <div><label class="fl">License number</label><input class="fi" type="text" id="p-license" placeholder="e.g. TACLA12345C" onblur="verifyLicense()"/><div id="license-status" style="font-size:12px;margin-top:4px;display:none"></div></div>
-      <div><label class="fl">License type</label>
-        <select class="fi" id="p-license-type" style="appearance:auto" onchange="verifyLicense()"><option value="">Select...</option><option value="TDLR">HVAC / Electrical (TDLR)</option><option value="TSBPE">Plumbing (TSBPE)</option><option value="State Contractor">Other State License</option><option value="City/County">City / County License</option><option value="Other">Other</option></select>
-      </div>
-    </div>
-
-    <div class="fg"><label class="fl">Service area ZIP codes</label><input class="fi" type="text" id="p-zips" placeholder="Add more ZIPs separated by commas (e.g. 77001, 77002, 77003)"/><p style="font-size:12px;color:var(--text3);margin-top:4px">We already have your primary ZIP. Add additional ZIPs where you serve customers.</p></div>
-
-    <div class="fg"><label class="fl">Website URL</label><input class="fi" type="url" id="p-website" placeholder="https://www.yourbusiness.com"/></div>
-
-    <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;margin:20px 0">
-      <p style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:6px">📋 After you create your account, you'll be able to:</p>
-      <ul style="font-size:13px;color:var(--text2);line-height:1.8;padding-left:18px;margin:0">
-        <li>Upload your contractor license document (PDF or image)</li>
-        <li>Upload proof of insurance</li>
-        <li>Add your business logo and profile photo</li>
-        <li>Add photos of your work</li>
-      </ul>
-    </div>
-
-    <button type="button" class="btn-submit" id="profile-submit-btn" onclick="submitProfile()">Complete Profile & Create Account →</button>
-    <p class="form-note">This creates your contractor portal account. You'll receive login credentials via email.</p>
-  </div>
-</section>
+<!-- STEP 3 REMOVED: profile completion now happens inside /contractor-dashboard.html after account creation -->
 
 <!-- STEP 3B: FINAL SUCCESS (hidden until profile submitted) -->
 <section class="form-section" id="success-section" style="display:none">
@@ -595,179 +553,86 @@ function handleCheckoutComplete(){
   var backBtn=document.querySelector('#checkout-section .btn-submit');
   if(backBtn)backBtn.style.display='none';
 
-  // After 3 seconds, transition to the full welcome/profile screen
+  // After 3 seconds, create the contractor account + redirect to dashboard
   setTimeout(function(){
     document.getElementById('checkout-section').style.display='none';
-    showProfile(planName);
+    completeSignupAfterPayment();
   },3000);
 }
 
-function showProfile(planName){
-  // Step 2 done
-  document.getElementById('si2').classList.remove('active');
-  document.getElementById('si2').classList.add('done');
-  document.getElementById('sn2').textContent='\u2713';
-  document.getElementById('sline2').classList.add('done');
-  document.getElementById('si3').classList.add('active');
-  document.getElementById('plans-section').classList.remove('visible');
-  document.getElementById('plans-section').style.display='none';
+// ═══ POST-PAYMENT ACCOUNT CREATION ═══
+// Called from the #success hash handler once Stripe confirms payment.
+// Creates the Supabase auth user + contractor row with Step 1 data only
+// (no profile fields yet — those get filled in inside the dashboard).
+// On success, redirects straight to /contractor-dashboard.html?welcome=1
+// where the magic-link session carries the contractor into their portal.
+async function completeSignupAfterPayment(){
+  var saved = JSON.parse(sessionStorage.getItem('ssp_contractor')||'{}');
+  var planName = sessionStorage.getItem('ssp_plan')||'Basic';
+  var fn=saved.fn||'', ln=saved.ln||'', em=saved.em||'';
+  var biz=saved.biz||'', ph=saved.ph||'';
+  var svcs=saved.svcs||'', cats=saved.cats||'', zip=saved.zip||'';
 
-  // Pre-fill ZIP from step 1
-  var saved=sessionStorage.getItem('ssp_contractor');
-  if(saved){
-    var d=JSON.parse(saved);
-    document.getElementById('p-zips').value=d.zip||'';
-  }
-
-  // Show the profile form (NOT the final success)
-  document.getElementById('profile-section').style.display='block';
-  history.replaceState(null,null,'#step3');
-  window.scrollTo({top:document.getElementById('stepper').offsetTop-80,behavior:'smooth'});
-}
-
-// ═══ TDLR LICENSE VERIFICATION ═══
-var licenseVerified=false;
-var licenseData=null;
-
-async function verifyLicense(){
-  var license=document.getElementById('p-license').value.trim();
-  var licenseType=document.getElementById('p-license-type').value;
-  var statusEl=document.getElementById('license-status');
-
-  // Only verify for TDLR and TSBPE
-  if(!license||!licenseType||(licenseType!=='TDLR'&&licenseType!=='TSBPE')){
-    statusEl.style.display='none';
-    licenseVerified=false;
-    licenseData=null;
+  if(!em || !fn || !ln){
+    console.error('Missing Step 1 data in sessionStorage', saved);
+    alert('Something went wrong carrying your info over. Please email support@selectservicepros.com and we will get you set up right away.');
     return;
   }
 
-  // Show checking state
-  statusEl.style.display='block';
-  statusEl.className='license-checking';
-  statusEl.innerHTML='<span class="license-spinner"></span> Verifying license with '+(licenseType==='TSBPE'?'Texas State Board of Plumbing Examiners':'Texas Department of Licensing & Regulation')+'...';
+  // Show "Creating your account..." splash on the success section
+  document.getElementById('success-section').style.display='block';
+  document.getElementById('success-card').innerHTML =
+    '<div class="success-wrap">'
+    + '<div class="s-icon" style="animation:popIn .4s ease">\u2713</div>'
+    + '<div class="s-title">Payment received'+(fn?', '+fn:'')+'!</div>'
+    + '<p class="s-msg">Setting up your <strong>'+planName+'</strong> account\u2026</p>'
+    + '</div>';
 
   try{
-    var resp=await fetch('/api/verify-license',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        licenseNumber:license,
-        licenseType:licenseType,
-        trade:''
+    var resp = await fetch('/api/create-contractor', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        email: em,
+        firstName: fn,
+        lastName: ln,
+        phone: ph,
+        companyName: biz,
+        planName: planName,
+        serviceZips: zip,
+        services: svcs,
+        serviceCategories: cats
+        // Profile fields (description, years, employees, license, website)
+        // intentionally omitted — contractor fills them in on the dashboard.
       })
     });
 
-    var data=await resp.json();
-
-    if(data.verified){
-      licenseVerified=true;
-      licenseData=data;
-      var name=data.name||data.licensee||'';
-      var expDate=data.expiration_date||data.expirationDate||data.expiry||'';
-      var licStatus=data.status||data.license_status||'';
-      var isExpired=false;
-
-      // Check if license is expired
-      if(expDate){
-        var exp=new Date(expDate);
-        if(exp<new Date()){isExpired=true}
-      }
-      if(licStatus&&licStatus.toLowerCase().indexOf('expir')!==-1){isExpired=true}
-
-      if(isExpired){
-        statusEl.className='license-invalid';
-        statusEl.innerHTML='\u26a0 License found but <strong>EXPIRED</strong>'+(name?' — '+name:'')+(expDate?' (Expired: '+new Date(expDate).toLocaleDateString()+')':'')+'. Please upload a current license after creating your account.';
-        licenseData.expired=true;
-      }else{
-        statusEl.className='license-valid';
-        statusEl.innerHTML='\u2713 License verified'+(name?' — '+name:'')+(licStatus?' ('+licStatus+')':'')+(expDate?' · Expires: '+new Date(expDate).toLocaleDateString():'');
-        licenseData.expired=false;
-      }
-    }else{
-      licenseVerified=false;
-      licenseData=null;
-      statusEl.className='license-invalid';
-      statusEl.innerHTML='\u2717 License not found in '+licenseType+' database. Double-check the number or select a different license type. You can still continue — we\'ll verify manually.';
-    }
-  }catch(err){
-    console.error('License verify error:',err);
-    statusEl.className='license-invalid';
-    statusEl.innerHTML='Could not verify at this time. You can still continue — we\'ll verify manually.';
-    licenseVerified=false;
-  }
-}
-
-// ═══ SUBMIT PROFILE → BD + GHL ═══
-async function submitProfile(){
-  var desc=document.getElementById('p-desc').value.trim();
-  var years=document.getElementById('p-years').value;
-  var employees=document.getElementById('p-employees').value;
-  var license=document.getElementById('p-license').value.trim();
-  var licenseType=document.getElementById('p-license-type').value;
-  var zips=document.getElementById('p-zips').value.trim();
-  var website=document.getElementById('p-website').value.trim();
-
-  if(!desc){alert('Please enter a business description.');return}
-  if(!years){alert('Please select your years in business.');return}
-
-  var planName=sessionStorage.getItem('ssp_plan')||'';
-  var saved=JSON.parse(sessionStorage.getItem('ssp_contractor')||'{}');
-  var fn=saved.fn||'';var ln=saved.ln||'';var ph=saved.ph||'';var em=saved.em||'';
-  var biz=saved.biz||'';var svcs=saved.svcs||'';var cats=saved.cats||'';var zip=saved.zip||'';
-
-  // Disable button
-  var btn=document.getElementById('profile-submit-btn');
-  btn.textContent='Creating your account...';
-  btn.disabled=true;
-  btn.style.opacity='0.6';
-
-  // 1. Send profile data to GHL (update contact) — field names match GHL custom fields
-  /* removed: redundant client-side GHL webhook — handled server-side via /api/create-contractor */
-
-  // 2. Create BD account via serverless function
-  try{
-    var resp=await fetch('/api/create-contractor',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        email:em,firstName:fn,lastName:ln,phone:ph,
-        companyName:biz,planName:planName,
-        businessDescription:desc,yearsInBusiness:years,
-        licenseNumber:license,serviceZips:zips,
-        websiteUrl:website,services:svcs,categories:cats
-      })
-    });
-
-    var data=await resp.json();
-
+    var data = await resp.json();
     if(!resp.ok){
       throw new Error(data.error||'Failed to create account');
     }
 
-    // Success — show final confirmation
-    showFinalSuccess(fn,planName,biz,cats,ph,zip,em,data.loginUrl||'',data.tempPassword||'');
+    // Clear sessionStorage — data is now in Supabase
+    sessionStorage.removeItem('ssp_contractor');
+    sessionStorage.removeItem('ssp_plan');
+    sessionStorage.removeItem('ssp_plan_id');
+
+    // Redirect into the dashboard. welcome=1 triggers the onboarding banner.
+    // The user will be asked to set their password via the emailed recovery link
+    // from GHL's workflow; until then they land on the login page via the
+    // dashboard's auth gate.
+    window.location.href = '/contractor-login.html?welcome=1&email=' + encodeURIComponent(em);
 
   }catch(err){
-    console.error('Account creation error:',err);
-    alert('There was a problem setting up your account. Your payment was received. Please contact support@selectservicepros.com and we will get you set up right away.');
+    console.error('Account creation error:', err);
+    document.getElementById('success-card').innerHTML =
+      '<div class="success-wrap">'
+      + '<div class="s-title" style="color:#c0392b">Something went wrong</div>'
+      + '<p class="s-msg">Your payment was received, but we had trouble setting up your account. Please email <a href="mailto:support@selectservicepros.com" style="color:var(--orange)">support@selectservicepros.com</a> and we will get you set up right away. Include your email: <strong>'+em+'</strong></p>'
+      + '</div>';
   }
 }
 
-function showFinalSuccess(fn,planName,biz,cats,ph,zip,em,loginUrl,tempPw){
-  document.getElementById('profile-section').style.display='none';
-  document.getElementById('success-section').style.display='block';
-
-  var retrievalUrl='https://www.selectservicepros.com/contractor-login.html';
-  var loginUrl2='https://www.selectservicepros.com/contractor-login.html';
-
-  var loginBlock='<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:20px;margin-top:20px;text-align:left"><p style="font-size:15px;font-weight:700;color:#166534;margin-bottom:12px">\u2709 Set up your account</p><p style="font-size:14px;color:var(--text1);margin-bottom:8px">Your profile has been created with <strong>'+em+'</strong>. Just two quick steps:</p><ol style="font-size:14px;color:var(--text1);line-height:1.8;padding-left:20px;margin:0"><li><strong>Set your password</strong> — click the button below, enter your email, and check your inbox for a reset link</li><li><strong>Log in</strong> — use your new password at the login page to access your dashboard</li></ol></div><a href="'+retrievalUrl+'" class="s-next" style="margin-top:16px">Set Your Password \u2192</a><p style="font-size:13px;color:var(--text3);text-align:center;margin-top:12px">Already set your password? <a href="'+loginUrl2+'" style="color:var(--orange);font-weight:600">Log in here</a></p>';
-
-  document.getElementById('success-card').innerHTML='<div class="success-wrap"><div class="s-icon" style="animation:popIn .4s ease">\u2713</div><div class="s-title">You\'re all set'+(fn?', '+fn:'')+'!</div><p class="s-msg">Your <strong>'+planName+'</strong> membership is active and your contractor profile has been created.</p><div class="s-box"><div class="s-row"><span>Plan</span><span style="color:#1a8a4a;font-weight:700">'+(planName||'—')+' — Active \u2713</span></div><div class="s-row"><span>Services</span><span>'+cats+'</span></div><div class="s-row"><span>Business</span><span>'+biz+'</span></div><div class="s-row"><span>ZIP code</span><span>'+zip+'</span></div><div class="s-row"><span>Contact</span><span>'+ph+'</span></div></div>'+loginBlock+'<p style="font-size:13px;color:var(--text3);text-align:center;margin-top:16px">Questions? Email us at <a href="mailto:support@selectservicepros.com" style="color:var(--orange)">support@selectservicepros.com</a></p></div>';
-
-  history.replaceState(null,null,'#complete');
-  window.scrollTo({top:document.getElementById('stepper').offsetTop-80,behavior:'smooth'});
-}
 
 // ═══ FAQ ═══
 function toggleFaq(el){var item=el.closest('.faq-item');var isOpen=item.classList.contains('open');document.querySelectorAll('.faq-item').forEach(function(i){i.classList.remove('open')});if(!isOpen)item.classList.add('open')}
@@ -780,40 +645,29 @@ function init(){
   document.getElementById('cat-pills').innerHTML=CATS.map(function(c){return '<button type="button" class="cpill" onclick="toggleCat(this)">'+c+'</button>'}).join('');
   var hash=window.location.hash;
   if(hash.indexOf('#success')===0){
-    // Returned from Stripe payment redirect — show payment confirmation
+    // Returned from Stripe payment redirect — show payment confirmation, then create account
     var planName=sessionStorage.getItem('ssp_plan')||'';
     var saved=sessionStorage.getItem('ssp_contractor');
     var fn='';
     if(saved){fn=JSON.parse(saved).fn||''}
 
-    // Send payment complete to GHL
-    if(saved){
-      var d=JSON.parse(saved);
-      /* removed: redundant client-side GHL webhook — handled server-side via /api/create-contractor */
-    }
-
-    // Update stepper — all steps done
+    // Update stepper — both steps done
     document.getElementById('si1').classList.remove('active');document.getElementById('si1').classList.add('done');document.getElementById('sn1').textContent='\u2713';
     document.getElementById('sline1').classList.add('done');
     document.getElementById('si2').classList.remove('active');document.getElementById('si2').classList.add('done');document.getElementById('sn2').textContent='\u2713';
-    document.getElementById('sline2').classList.add('done');
-    document.getElementById('si3').classList.add('active');
 
     // Hide form and plans
     document.getElementById('form-section').style.display='none';
     document.getElementById('plans-section').style.display='none';
     document.getElementById('checkout-section').style.display='none';
 
-    // Show payment confirmation first
+    // Brief "Payment Successful" splash
     document.getElementById('success-section').style.display='block';
-    document.getElementById('success-card').innerHTML='<div class="success-wrap"><div style="width:80px;height:80px;background:#e8f5e9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:40px;color:#1a8a4a;font-weight:700;animation:popIn .4s ease">\u2713</div><h2 class="form-title" style="color:#1a8a4a;font-size:26px">Payment Successful!</h2><p class="form-sub" style="margin-top:8px;font-size:15px">Your <strong>'+planName+'</strong> membership is now active'+(fn?', '+fn:'')+'. You\'re all set to start receiving qualified leads.</p></div>';
+    document.getElementById('success-card').innerHTML='<div class="success-wrap"><div style="width:80px;height:80px;background:#e8f5e9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:40px;color:#1a8a4a;font-weight:700;animation:popIn .4s ease">\u2713</div><h2 class="form-title" style="color:#1a8a4a;font-size:26px">Payment Successful!</h2><p class="form-sub" style="margin-top:8px;font-size:15px">Your <strong>'+planName+'</strong> membership is now active'+(fn?', '+fn:'')+'. Setting up your account\u2026</p></div>';
 
-    // After 3 seconds, show the full welcome screen
-    setTimeout(function(){showProfile(planName)},3000);
+    // After 2 seconds, create the account + redirect to dashboard
+    setTimeout(function(){completeSignupAfterPayment()},2000);
 
-  }else if(hash==='#step3'){
-    showPlansQuiet();
-    showProfile(sessionStorage.getItem('ssp_plan')||'');
   }else if(hash==='#step2'){
     showPlansQuiet();
   }
@@ -825,8 +679,8 @@ window.addEventListener('load',init);
 window.addEventListener('hashchange',function(){
   var hash=window.location.hash;
   if(hash.indexOf('#success')===0){
-    // Stripe just completed payment and changed the hash
-    // Destroy the checkout if it's still mounted
+    // Stripe just completed payment and changed the hash.
+    // Destroy the checkout if still mounted.
     if(embeddedCheckout){embeddedCheckout.destroy();embeddedCheckout=null}
     document.getElementById('checkout-mount').innerHTML='';
     document.getElementById('checkout-section').style.display='none';
@@ -836,29 +690,21 @@ window.addEventListener('hashchange',function(){
     var fn='';
     if(saved){fn=JSON.parse(saved).fn||''}
 
-    // Send payment complete to GHL
-    if(saved){
-      var d=JSON.parse(saved);
-      /* removed: redundant client-side GHL webhook — handled server-side via /api/create-contractor */
-    }
-
-    // Update stepper
+    // Update stepper — both steps done
     document.getElementById('si1').classList.remove('active');document.getElementById('si1').classList.add('done');document.getElementById('sn1').textContent='\u2713';
     document.getElementById('sline1').classList.add('done');
     document.getElementById('si2').classList.remove('active');document.getElementById('si2').classList.add('done');document.getElementById('sn2').textContent='\u2713';
-    document.getElementById('sline2').classList.add('done');
-    document.getElementById('si3').classList.add('active');
 
-    // Hide everything except profile
+    // Hide form/plans
     document.getElementById('form-section').style.display='none';
     document.getElementById('plans-section').style.display='none';
 
-    // Show payment success briefly, then profile form
-    document.getElementById('profile-section').style.display='block';
-    document.getElementById('profile-section').querySelector('.form-title').textContent='Payment Successful! Complete your profile';
-    document.getElementById('profile-section').querySelector('.form-sub').textContent='Your '+planName+' membership is active. Fill in your business details to start receiving leads.';
+    // Brief "Payment Successful" splash + then create account + redirect
+    document.getElementById('success-section').style.display='block';
+    document.getElementById('success-card').innerHTML='<div class="success-wrap"><div style="width:80px;height:80px;background:#e8f5e9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:40px;color:#1a8a4a;font-weight:700;animation:popIn .4s ease">\u2713</div><h2 class="form-title" style="color:#1a8a4a;font-size:26px">Payment Successful!</h2><p class="form-sub" style="margin-top:8px;font-size:15px">Your <strong>'+planName+'</strong> membership is now active'+(fn?', '+fn:'')+'. Setting up your account\u2026</p></div>';
 
     window.scrollTo({top:document.getElementById('stepper').offsetTop-80,behavior:'smooth'});
+    setTimeout(function(){completeSignupAfterPayment()},2000);
   }
 });
 </script>
