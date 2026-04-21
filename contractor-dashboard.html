@@ -643,6 +643,11 @@ const state = {
   // ui
   activeTab: 'overview',
   currentStep: 0,
+  // When the user has completed all steps, `editingAfterDone` lets them
+  // re-open any individual step to fix something. Default false = show the
+  // "You're ready to go live" celebration; clicking a step nav item flips it
+  // to true so the step content renders instead.
+  editingAfterDone: false,
   expandedLead: null,
   leadFilter: 'all',
   searchQuery: '',
@@ -1171,6 +1176,12 @@ function renderTabs(){
 }
 
 function setTab(k){
+  // Leaving the Overview tab (which hosts the wizard) — reset the edit flag
+  // so the next time the user comes back after completion, they see the
+  // "You're ready to go live" celebration again.
+  if(state.activeTab === 'overview' && k !== 'overview'){
+    state.editingAfterDone = false;
+  }
   state.activeTab = k;
   render();
   window.scrollTo({top:0,behavior:'smooth'});
@@ -1282,7 +1293,7 @@ function wizardHTML(){
   const allDone = doneCount === STEPS.length;
 
   const stepsHTML = STEPS.map((s,i)=>`
-    <div class="wiz-step ${done[i]?'done':''} ${i===cur?'active':''}" onclick="state.currentStep=${i}; render()">
+    <div class="wiz-step ${done[i]?'done':''} ${i===cur?'active':''}" onclick="state.currentStep=${i}; state.editingAfterDone=true; render()">
       <div class="wiz-step-current"></div>
       <div class="wiz-step-ico">${iconCheck(14)}</div>
       <div class="wiz-step-txt">
@@ -1293,7 +1304,11 @@ function wizardHTML(){
     </div>
   `).join('');
 
-  const contentHTML = allDone ? wizardDoneHTML() : stepContentHTML(STEPS[cur], cur);
+  // When allDone + user hasn't clicked a step to edit → show celebration.
+  // Otherwise show whichever step they're on (which works normally before
+  // everything is done, and stays clickable / editable after).
+  const showDoneCelebration = allDone && !state.editingAfterDone;
+  const contentHTML = showDoneCelebration ? wizardDoneHTML() : stepContentHTML(STEPS[cur], cur);
 
   return `
     <div class="wizard">
@@ -1329,6 +1344,7 @@ function wizardDoneHTML(){
       <h3 style="font-family:'DM Sans',sans-serif;font-weight:800;font-size:26px;color:var(--navy);margin-top:18px;letter-spacing:-.025em">Looking good${(state.profile.firstName||'').trim() ? ', '+state.profile.firstName.trim() : ''}.</h3>
       <p style="font-size:14px;color:var(--text3);max-width:420px;margin-top:8px;line-height:1.55">Your profile and credentials are complete. Hit submit and we'll verify with the state and get you live — usually within one business day.</p>
       <button class="btn btn-primary btn-lg" style="margin-top:22px" onclick="submitForReview()">Submit for review</button>
+      <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="state.editingAfterDone=true;state.currentStep=0;render()">Edit details</button>
     </div>
   `;
 }
@@ -1611,7 +1627,7 @@ function licenseInlineFormHTML(trade){
         <div class="field"><label>Expiration</label><input class="input" type="date" value="${lic.exp||''}" onchange="updateLicense('${lic.id}','exp',this.value)"></div>
       </div>
       <div class="field-row">
-        <div class="field"><label>License number</label><input class="input" value="${lic.number||''}" oninput="updateLicense('${lic.id}','number',this.value)"></div>
+        <div class="field"><label>License number</label><input class="input" value="${lic.number||''}" oninput="updateLicense('${lic.id}','number',this.value)" onblur="render()"></div>
         <div class="field"><label>License document</label>${licenseUploaderHTML(lic)}</div>
       </div>
       ${expiryBadge(lic.exp)?`<div style="margin-top:4px">${expiryBadge(lic.exp)}</div>`:''}
@@ -1651,7 +1667,14 @@ function updateLicense(id, field, value){
   lic[field] = value;
   // Changing any field invalidates prior verification.
   if(field !== 'verified' && field !== 'verifiedAt') lic.verified = false;
-  render(); markSaving();
+  markSaving();
+  // Only re-render for field changes that cause layout shifts (selects/dates/verified/file).
+  // Text fields like `number` MUST NOT re-render on every keystroke — it blows away
+  // the <input> DOM node, killing focus and dropping the last typed character.
+  // The status pill (Incomplete/Pending/Verified) that depends on `number` will
+  // update on the next natural re-render (blur, step change, etc).
+  const TEXT_FIELDS = ['number', 'notes'];
+  if(!TEXT_FIELDS.includes(field)) render();
 
   // Debounce a per-license DB update.
   if(String(id).startsWith('tmp_')) return; // not yet inserted — skip
@@ -1935,8 +1958,13 @@ function closeAgreement(){
 
 function canSignAgreement(){
   const a = state.agreement;
-  const legal = (state.profile.firstName+' '+state.profile.lastName).trim().toLowerCase();
-  return a.scrolledEnd && a.readAgreed && a.authorized && a.typedName.trim().toLowerCase()===legal;
+  // Accept any legal name the contractor types — it doesn't need to match the
+  // profile name exactly (legal name may differ from display name, and profile
+  // typos shouldn't block signing). We require at least 2 words and only
+  // letters/spaces/hyphens/apostrophes/periods (standard name characters).
+  const typed = (a.typedName || '').trim();
+  const looksLikeName = /^[A-Za-z][A-Za-z .'\-]*\s+[A-Za-z][A-Za-z .'\-]*$/.test(typed);
+  return a.scrolledEnd && a.readAgreed && a.authorized && looksLikeName;
 }
 
 async function acceptAgreement(){
@@ -2057,7 +2085,7 @@ function renderModal(){
           <div class="field" style="margin-top:6px;margin-bottom:0">
             <label>Type your full legal name to sign</label>
             <input class="input" placeholder="${legalName}" value="${a.typedName}" ${a.scrolledEnd?'':'disabled'} oninput="state.agreement.typedName=this.value;updateAgreementButtons()">
-            <div class="hint">Must match the name on your profile: <strong>${legalName}</strong></div>
+            <div class="hint">Type your full legal name as it should appear on the signed agreement (first and last).</div>
           </div>
           <div class="modal-actions">
             <button class="btn btn-ghost" onclick="closeAgreement()">Cancel</button>
@@ -2531,7 +2559,7 @@ function licenseRowHTML(lic){
         <div class="field"><label>Expiration</label><input class="input" type="date" value="${lic.exp||''}" onchange="updateLicense('${lic.id}','exp',this.value)"></div>
       </div>
       <div class="field-row">
-        <div class="field"><label>License number</label><input class="input" value="${lic.number||''}" oninput="updateLicense('${lic.id}','number',this.value)"></div>
+        <div class="field"><label>License number</label><input class="input" value="${lic.number||''}" oninput="updateLicense('${lic.id}','number',this.value)" onblur="render()"></div>
         <div class="field"><label>Document</label>${licenseUploaderHTML(lic)}</div>
       </div>
       <div style="display:flex;justify-content:flex-end;margin-top:8px">
@@ -2895,8 +2923,24 @@ function syncUiState(){
 
 // ==================== DATA LOADING ====================
 async function loadContractor(authId){
-  const { data, error } = await sb.from('contractors')
-    .select('*').eq('auth_id', authId).single();
+  // Retry once on empty: when a user lands here fresh from a password reset
+  // the SDK may not yet have persisted the JWT to storage, so the first RLS
+  // check runs with auth.uid() = null and returns no rows. A short wait +
+  // second attempt almost always resolves this without the user seeing an
+  // error. Using maybeSingle() instead of single() so "no row" isn't treated
+  // as a query error.
+  async function fetchOnce(){
+    return await sb.from('contractors')
+      .select('*').eq('auth_id', authId).maybeSingle();
+  }
+
+  let { data, error } = await fetchOnce();
+  if(!error && !data){
+    // One retry with a small delay — covers the session-hydration race.
+    await new Promise(r=>setTimeout(r, 600));
+    ({ data, error } = await fetchOnce());
+  }
+
   if(error || !data){
     console.error('loadContractor failed', error);
     showFatalError("We couldn't find your contractor account. If you just signed up, try again in a minute — otherwise contact support.");
@@ -3097,7 +3141,16 @@ async function deleteAccount(){
 }
 
 sb.auth.onAuthStateChange((event)=>{
-  if(event==='SIGNED_OUT'){ window.location.href = '/contractor-login.html'; }
+  if(event==='SIGNED_OUT'){ window.location.href = '/contractor-login.html'; return; }
+  // If the Supabase SDK detects a recovery-type token in the URL (e.g. the user
+  // clicked the "set your password" link from the welcome email), it fires a
+  // PASSWORD_RECOVERY event. Without this redirect, the user lands on the
+  // dashboard in a half-authenticated state that trips RLS / "Something's off".
+  // Send them to the dedicated reset page instead.
+  if(event==='PASSWORD_RECOVERY'){
+    window.location.href = '/reset-password.html' + window.location.hash;
+    return;
+  }
 });
 
 // ==================== INIT ====================
