@@ -1104,9 +1104,13 @@ function completion(){
   return Math.round((state.pct/100)*STEPS.length)/STEPS.length*100;
 }
 function getDoneSteps(){
-  // When user drags pct slider, we fake "done" by taking first N steps
-  const n = Math.round((state.pct/100)*STEPS.length);
-  return STEPS.map((s,i)=>i<n);
+  // Evaluate each step's check() against current state. Each check is a
+  // predicate defined on the STEP (e.g. state.profile.description?.length>40).
+  // Defensive try/catch: an error in one step's check (e.g. state shape
+  // missing after a bad load) should not mark every step as done.
+  return STEPS.map(s=>{
+    try { return !!s.check(); } catch(e){ console.error('STEP check failed', s.key, e); return false; }
+  });
 }
 
 // ---------- RENDER ----------
