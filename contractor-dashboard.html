@@ -2200,8 +2200,51 @@ async function acceptLead(id, fee){
       status: 'Accepted', accepted_at: now, responded_at: now,
       lead_fee: useFee, response_time_seconds: responseSeconds
     }).eq('id', id);
-  } catch(e){ console.error('acceptLead failed', e); }
+ } catch(e){ console.error('acceptLead failed', e); }
+
+  // Fire GHL "Homeowner — Matched With Pro" workflow so Email 6 goes out.
+  fireHomeownerMatched(l).catch(e => console.error('homeowner_matched webhook failed (non-fatal):', e));
+
   toast(`Accepted — $${useFee} charged. Homeowner's info is in your leads.`,'success',true);
+}
+
+async function fireHomeownerMatched(l){
+  if(!l || !l.email){
+    console.warn('homeowner_matched: no homeowner email on lead, skipping', l && l.id);
+    return;
+  }
+  const WEBHOOK = 'https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/cSb176GBaN3hMu0573QO';
+  const p = state.profile || {};
+  const firstName = (l.name||'').trim().split(/\s+/)[0] || '';
+  const contractorName = [p.firstName, p.lastName].filter(Boolean).join(' ').trim();
+  const payload = {
+    type: 'homeowner_matched',
+    lead_id: l.id,
+    homeowner_email: l.email,
+    homeowner_first_name: firstName,
+    homeowner_name: l.name || '',
+    homeowner_phone: l.phone || '',
+    homeowner_zip: l.zip || '',
+    homeowner_address: l.address || '',
+    service_type: l.service || '',
+    urgency: l.urgency || '',
+    contractor_id: state.contractorId,
+    contractor_name: contractorName,
+    contractor_company: p.company || '',
+    contractor_phone: p.phone || '',
+    contractor_email: p.email || '',
+    business_description: p.description || '',
+    years_in_business: p.years != null ? String(p.years) : '',
+    dashboard_url: window.location.origin + '/contractor-dashboard.html',
+  };
+  const resp = await fetch(WEBHOOK, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if(!resp.ok){
+    throw new Error('homeowner_matched webhook HTTP ' + resp.status);
+  }
 }
 async function passLead(id){
   const l = state.leads.find(x=>x.id===id); if(!l) return;
@@ -2983,9 +3026,11 @@ function normalizeLead(r){
     id: r.id,
     service: r.service_category || r.service || '',
     urgency: r.urgency || 'Soon',
-    name: r.customer_name || r.name || '',
-    zip: r.customer_zip || r.zip || '',
-    phone: r.customer_phone || r.phone || '',
+    name: r.homeowner_name || r.customer_name || r.name || '',
+    zip: r.homeowner_zip || r.customer_zip || r.zip || '',
+    phone: r.homeowner_phone || r.customer_phone || r.phone || '',
+    email: r.homeowner_email || r.customer_email || r.email || '',
+    address: r.homeowner_address || r.customer_address || r.address || '',
     desc: r.description || r.desc || '',
     budget: r.budget || '',
     prop: r.property_type || r.prop || '',
