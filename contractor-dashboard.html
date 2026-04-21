@@ -659,6 +659,7 @@ const state = {
   operations: {
     technicians:'', vehicles:'',
     hours: defaultHours(),
+    hoursConfirmed: false,
     scheduling:'', phoneAnswered:'',
     payments: new Set(),
   },
@@ -976,7 +977,7 @@ const STEPS = [
     return true;
   }},
   {key:'zips', title:'Service areas', sub:'ZIPs you cover', check:()=>state.zips.length>0},
-  {key:'operations', title:'Operations', sub:'Hours, team, payments', check:()=>state.operations.technicians>0 && state.operations.phoneAnswered && state.operations.payments.size>0 && DAYS.some(d=>state.operations.hours[d].open||state.operations.hours[d].open24)},
+  {key:'operations', title:'Operations', sub:'Hours, team, payments', check:()=>state.operations.technicians>0 && state.operations.phoneAnswered && state.operations.payments.size>0 && state.operations.hoursConfirmed && DAYS.some(d=>state.operations.hours[d].open||state.operations.hours[d].open24)},
   {key:'licenses', title:'Trade licenses', sub:LICENSED_TRADES.join(', ')+' only', check:()=>{
     const licensedSelected = [...state.categories].filter(c=>LICENSED_TRADES.includes(c));
     if(licensedSelected.length===0) return true; // no licensed trades selected -> auto-complete
@@ -1407,8 +1408,14 @@ function missingFieldsFor(key){
       if(!(state.operations.technicians>0)) out.push('Number of technicians on your team');
       if(!state.operations.phoneAnswered) out.push('Who answers your business phone');
       if(!(state.operations.payments && state.operations.payments.size>0)) out.push('At least one payment method you accept');
-      const hasHours = DAYS.some(d=>state.operations.hours[d].open || state.operations.hours[d].open24);
-      if(!hasHours) out.push('Business hours for at least one day of the week');
+      const hasAnyOpenDay = DAYS.some(d=>state.operations.hours[d].open || state.operations.hours[d].open24);
+      if(!state.operations.hoursConfirmed){
+        out.push(hasAnyOpenDay
+          ? 'Confirm your business hours (even if the defaults are right, toggle or adjust one day to confirm)'
+          : 'Business hours for at least one day of the week');
+      } else if(!hasAnyOpenDay){
+        out.push('Set at least one day as open (or toggle 24/7)');
+      }
       break;
     }
     case 'licenses': {
@@ -2362,9 +2369,9 @@ function hoursRowHTML(day){
         <span class="hr-status">${h.open24?'24/7':(h.open?'Open':'Closed')}</span>
       </div>
       <div class="hr-times">
-        <input class="input time" type="time" value="${h.from}" ${h.open24||!h.open?'disabled':''} onchange="state.operations.hours['${day}'].from=this.value;markSaving()">
+        <input class="input time" type="time" value="${h.from}" ${h.open24||!h.open?'disabled':''} onchange="state.operations.hours['${day}'].from=this.value;state.operations.hoursConfirmed=true;markSaving()">
         <span class="hr-sep">to</span>
-        <input class="input time" type="time" value="${h.to}" ${h.open24||!h.open?'disabled':''} onchange="state.operations.hours['${day}'].to=this.value;markSaving()">
+        <input class="input time" type="time" value="${h.to}" ${h.open24||!h.open?'disabled':''} onchange="state.operations.hours['${day}'].to=this.value;state.operations.hoursConfirmed=true;markSaving()">
       </div>
       <label class="hr-247">
         <input type="checkbox" ${h.open24?'checked':''} onchange="toggle247('${day}')">
@@ -2378,12 +2385,14 @@ function toggleDayOpen(d){
   const h = state.operations.hours[d];
   if(h.open24){ h.open24=false; h.open=false; }
   else h.open = !h.open;
+  state.operations.hoursConfirmed = true;
   render(); markSaving();
 }
 function toggle247(d){
   const h = state.operations.hours[d];
   h.open24 = !h.open24;
   if(h.open24) h.open = true;
+  state.operations.hoursConfirmed = true;
   render(); markSaving();
 }
 function togglePayment(p){
@@ -2754,7 +2763,7 @@ async function persistProfile(){
     services_detail: state.servicesDetail,
     num_technicians: o.technicians ? Number(o.technicians) : null,
     num_vehicles: o.vehicles ? Number(o.vehicles) : null,
-    business_hours: o.hours,
+    business_hours: Object.assign({}, o.hours, { _confirmed: !!o.hoursConfirmed }),
     scheduling_system: o.scheduling || null,
     phone_answered_by: o.phoneAnswered || null,
     payment_methods: Array.from(o.payments),
@@ -2875,10 +2884,25 @@ async function loadContractor(authId){
   state.servicesDetail = (data.services_detail && typeof data.services_detail==='object') ? data.services_detail : {};
   state.expandedCategory = [...state.categories][0] || null;
 
+  // Unpack the business_hours JSONB: we stash a `_confirmed` sibling flag
+  // alongside the per-day entries so `hoursConfirmed` survives reloads
+  // without needing a separate DB column.
+  const rawHours = (data.business_hours && typeof data.business_hours==='object') ? data.business_hours : defaultHours();
+  const hoursConfirmed = !!rawHours._confirmed;
+  const hoursOnly = {};
+  for(const k of Object.keys(rawHours)){
+    if(k === '_confirmed') continue;
+    hoursOnly[k] = rawHours[k];
+  }
+  // If we ended up with an empty hours object (e.g. row had just `{_confirmed:true}`),
+  // fall back to defaults so the UI still renders rows to toggle.
+  const hoursForState = Object.keys(hoursOnly).length ? hoursOnly : defaultHours();
+
   state.operations = {
     technicians: data.num_technicians ?? '',
     vehicles: data.num_vehicles ?? '',
-    hours: (data.business_hours && typeof data.business_hours==='object') ? data.business_hours : defaultHours(),
+    hours: hoursForState,
+    hoursConfirmed: hoursConfirmed,
     scheduling: data.scheduling_system || '',
     phoneAnswered: data.phone_answered_by || '',
     payments: new Set(Array.isArray(data.payment_methods) ? data.payment_methods : []),
