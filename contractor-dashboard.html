@@ -2167,7 +2167,7 @@ function leadRowHTML(l, compact){
   const urg = `<span class="urg ${l.urgency.toLowerCase()}">${l.urgency}</span>`;
 
   let row = `
-    <div class="lead-row ${isExpanded?'expanded':''}" onclick="toggleLead(${l.id})">
+    <div class="lead-row ${isExpanded?'expanded':''}" onclick="toggleLead('${l.id}')">
       <div class="lead-ico">${iconInbox()}</div>
       <div class="lead-main">
         <div class="lead-head-row">
@@ -2183,8 +2183,8 @@ function leadRowHTML(l, compact){
       </div>
       <div class="lead-cta">
         ${s==='new' ? `
-          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();acceptLead(${l.id})">Accept</button>
-          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();passLead(${l.id})">Pass</button>
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();acceptLead('${l.id}')">Accept</button>
+          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();passLead('${l.id}')">Pass</button>
         ` : (s==='accepted' && l.phone ? `<a href="tel:${l.phone}" class="btn btn-navy btn-sm" onclick="event.stopPropagation()">Call</a>` : '')}
       </div>
     </div>
