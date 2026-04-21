@@ -17,6 +17,20 @@ const HOMEOWNER_NOTIFY_WEBHOOK =
 // Tier priority for matching (highest priority first)
 const TIER_PRIORITY = { Elite: 1, Pro: 2, Basic: 3 };
 
+// Minutes each tier has to claim a lead before it's offered to the next tier.
+// Used in Email 4 ("expires in N minutes") and in the dashboard lead timer.
+// Must match what the Tiered Lead Expiry GHL workflow uses.
+var TIER_RESPONSE_WINDOW = { Elite: 60, Pro: 45, Basic: 30 };
+
+// Pull the first word from a full name field so branded emails can greet
+// the homeowner by first name without needing a separate intake field.
+function firstNameOf(full) {
+  if (!full) return "";
+  var s = String(full).trim();
+  if (!s) return "";
+  return s.split(/\s+/)[0];
+}
+
 // Map urgency input to label
 function mapUrgency(input) {
   if (!input) return "Planning";
@@ -168,10 +182,14 @@ module.exports = async function handler(req, res) {
     }
 
     // --- Find matching contractors ---
+    // SELECT includes the fields needed for lead-notification (Email 4) and
+    // homeowner-matched (Email 6) email templates. Adding fields here once
+    // means every downstream webhook payload can include them without extra
+    // DB round-trips.
     var contractorsResult = await supabase
       .from("contractors")
       .select(
-        "id, first_name, last_name, email, membership_tier, service_categories, service_zips, status"
+        "id, first_name, last_name, email, phone, company_name, membership_tier, service_categories, service_zips, status, business_description, years_in_business"
       )
       .in("status", ["Active"]);
 
@@ -335,8 +353,11 @@ module.exports = async function handler(req, res) {
     }
 
     // --- Notify contractor of new lead ---
+    // Payload feeds GHL's "New Lead Notification" workflow → Email 4.
+    // Every placeholder in that template must be covered here.
     if (assignedContractor && assignedContractor.email) {
       try {
+        var contractorTier = assignedContractor.membership_tier || "Basic";
         await fetch(CONTRACTOR_NOTIFY_WEBHOOK, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -346,11 +367,15 @@ module.exports = async function handler(req, res) {
               (assignedContractor.first_name || "") +
               " " +
               (assignedContractor.last_name || ""),
+            contractor_first_name: assignedContractor.first_name || "",
             contractor_email: assignedContractor.email,
+            contractor_phone: assignedContractor.phone || "",
+            contractor_company: assignedContractor.company_name || "",
             contractor_id: assignedContractor.id,
-            contractor_tier: assignedContractor.membership_tier || "Basic",
+            contractor_tier: contractorTier,
             lead_id: leadId,
             homeowner_name: name,
+            homeowner_first_name: firstNameOf(name),
             homeowner_zip: zip,
             homeowner_address: body.address || "",
             service_type: service,
@@ -358,6 +383,9 @@ module.exports = async function handler(req, res) {
             urgency: urgencyLabel,
             details: details,
             lead_fee: leadFee,
+            response_window_minutes: TIER_RESPONSE_WINDOW[contractorTier] || 30,
+            accept_url: "https://www.selectservicepros.com/contractor-dashboard.html?tab=leads&lead=" + leadId + "&action=accept",
+            dashboard_url: "https://www.selectservicepros.com/contractor-dashboard.html",
           }),
         });
       } catch (notifyError) {
@@ -366,6 +394,11 @@ module.exports = async function handler(req, res) {
     }
 
     // --- Notify homeowner of lead received ---
+    // Payload drives TWO GHL workflows:
+    //   - "homeowner_confirmation" (Email 5): always fires
+    //   - "homeowner_matched"      (Email 6): GHL filters when matched=true
+    //     AND contractor_company is populated
+    // Both templates get everything they need from this single payload.
     if (email) {
       try {
         await fetch(HOMEOWNER_NOTIFY_WEBHOOK, {
@@ -374,6 +407,7 @@ module.exports = async function handler(req, res) {
           body: JSON.stringify({
             type: "homeowner_confirmation",
             homeowner_name: name,
+            homeowner_first_name: firstNameOf(name),
             homeowner_email: email,
             homeowner_phone: phone,
             homeowner_zip: zip,
@@ -383,6 +417,19 @@ module.exports = async function handler(req, res) {
             urgency: urgencyLabel,
             details: details,
             matched: !!assignedContractor,
+            // Contractor fields — present only when matched. Email 6
+            // template uses these; Email 5 ignores them. GHL filter on
+            // contractor_company presence keeps Email 6 from firing on
+            // unmatched leads.
+            contractor_name: assignedContractor
+              ? (assignedContractor.first_name || "") + " " + (assignedContractor.last_name || "")
+              : "",
+            contractor_first_name: assignedContractor ? (assignedContractor.first_name || "") : "",
+            contractor_company: assignedContractor ? (assignedContractor.company_name || "") : "",
+            contractor_phone: assignedContractor ? (assignedContractor.phone || "") : "",
+            contractor_email: assignedContractor ? (assignedContractor.email || "") : "",
+            years_in_business: assignedContractor ? (assignedContractor.years_in_business || "") : "",
+            business_description: assignedContractor ? (assignedContractor.business_description || "") : "",
           }),
         });
       } catch (homeownerError) {
