@@ -79,6 +79,16 @@ tr:hover{background:rgba(240,85,40,.02)}
 .save-btn:hover{background:#158a3e}
 .save-msg{font-size:13px;color:var(--green);margin-left:12px;display:none}
 @media(max-width:768px){table{font-size:12px}th,td{padding:8px}.stats{grid-template-columns:1fr 1fr}.pricing-grid{grid-template-columns:1fr}.search-input{width:100%}}
+
+.act-btn{display:inline-block;border:0;padding:6px 12px;border-radius:7px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer;text-decoration:none;transition:background .15s,color .15s}
+.act-approve{background:#1a8a4a;color:#fff}
+.act-approve:hover{background:#166f3c}
+.act-reject{background:transparent;color:#c13e3e;border:1px solid #f5a5a5}
+.act-reject:hover{background:#fee2e2}
+.act-suspend{background:transparent;color:#c13e3e;border:1px solid #f5a5a5}
+.act-suspend:hover{background:#fee2e2}
+.act-ghost{background:transparent;color:var(--text2,#3a4654);border:1px solid var(--border,#e5e4e0)}
+.act-ghost:hover{border-color:var(--navy,#0a1628);color:var(--navy,#0a1628)}
 </style>
 </head>
 <body>
@@ -127,7 +137,7 @@ tr:hover{background:rgba(240,85,40,.02)}
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <input class="search-input" type="text" id="contractor-search" placeholder="Search contractors..." oninput="renderContractors()"/>
           <select class="sel" id="plan-filter" onchange="renderContractors()"><option value="all">All Plans</option><option value="Elite">Elite</option><option value="Pro">Pro</option><option value="Basic">Basic</option></select>
-          <select class="sel" id="status-filter" onchange="renderContractors()"><option value="all">All Status</option><option value="Paid">Paid</option><option value="Verified">Verified</option><option value="Pending">Pending</option></select>
+          <select class="sel" id="status-filter" onchange="renderContractors()"><option value="all">All Status</option><option value="Pending Review">Pending Review</option><option value="Pending Profile">Pending Profile</option><option value="Active">Active</option><option value="Paid">Paid (legacy)</option><option value="Verified">Verified</option><option value="Suspended">Suspended</option></select>
         </div>
       </div>
       <div class="card"><div style="overflow-x:auto">
@@ -142,6 +152,7 @@ tr:hover{background:rgba(240,85,40,.02)}
           <th onclick="sortC('rate')">Accept % <span id="sa-rate"></span></th>
           <th onclick="sortC('response')">Avg Response <span id="sa-response"></span></th>
           <th onclick="sortC('joined')">Joined <span id="sa-joined"></span></th>
+          <th style="text-align:right">Actions</th>
         </tr></thead><tbody id="contractors-table"></tbody></table>
       </div></div>
     </div>
@@ -273,7 +284,7 @@ function renderContractors(){
   if(arrow) arrow.textContent=cSort.dir==='asc'?'\u25B2':'\u25BC';
 
   document.getElementById('c-count').textContent=cs.length;
-  if(!cs.length){document.getElementById('contractors-table').innerHTML='<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--text3)">No contractors match</td></tr>';return}
+  if(!cs.length){document.getElementById('contractors-table').innerHTML='<tr><td colspan="11" style="text-align:center;padding:30px;color:var(--text3)">No contractors match</td></tr>';return}
   var h='';
   cs.forEach(function(c){
     var tier=c.membership_tier||'Basic';
@@ -293,7 +304,7 @@ function renderContractors(){
       +'<td>'+(pa>0?'<span style="color:var(--text4)">'+pa+'</span>':'0')+'</td>'
       +'<td>'+(tl>0?ra+'%':'\u2014')+'</td>'
       +'<td>'+rt+'</td>'
-      +'<td><div class="sub-text">'+fmtDate(c.created_at)+'</div></td></tr>'});
+      +'<td><div class="sub-text">'+fmtDate(c.created_at)+'</div></td>'+'<td style="text-align:right;white-space:nowrap">'+actionsCell(c)+'</td></tr>'});
   document.getElementById('contractors-table').innerHTML=h;
 }
 
@@ -362,6 +373,115 @@ function savePricing(){
 
 function fmtTime(s){if(s<60)return s+'s';if(s<3600)return Math.floor(s/60)+'m';return Math.floor(s/3600)+'h '+Math.floor((s%3600)/60)+'m'}
 function fmtDate(d){if(!d)return'\u2014';return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
+
+// ═══════════════════════════════════════════════════════════════════
+//  CONTRACTOR APPROVAL ACTIONS
+// ═══════════════════════════════════════════════════════════════════
+var GHL_APPROVAL_HOOK = 'https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c';
+
+function actionsCell(c){
+  var st = c.status || '';
+  if (st === 'Pending Review') {
+    return '<button class="act-btn act-approve" onclick="approveContractor(\''+c.id+'\')">Approve</button>'
+         + ' <button class="act-btn act-reject" onclick="rejectContractor(\''+c.id+'\')">Reject</button>';
+  }
+  if (st === 'Active') {
+    return '<button class="act-btn act-suspend" onclick="suspendContractor(\''+c.id+'\')">Suspend</button>';
+  }
+  if (st === 'Pending Profile' || st === 'Paid') {
+    return '<a class="act-btn act-ghost" href="mailto:'+(c.email||'')+'?subject=Finish%20your%20SSP%20profile">Nudge</a>';
+  }
+  if (st === 'Suspended') {
+    return '<button class="act-btn act-approve" onclick="reactivateContractor(\''+c.id+'\')">Reactivate</button>';
+  }
+  return '<span style="color:var(--text4);font-size:12px">—</span>';
+}
+
+async function approveContractor(id){
+  var c = (adminData.contractors || []).find(function(x){return x.id===id});
+  if (!c) return;
+  if (!confirm('Approve '+(c.company_name||c.email)+' and activate lead routing?\n\nThis flips their status to Active and fires the "You are live" email.')) return;
+  await updateContractorStatus(id, 'Active', { webhookType:'contractor_approved', webhookData:c, successMsg:(c.company_name||c.email)+' is now Active.' });
+}
+
+async function rejectContractor(id){
+  var c = (adminData.contractors || []).find(function(x){return x.id===id});
+  if (!c) return;
+  var reason = prompt('What needs fixing? (emailed to contractor)\n\nExamples: "COI expired", "license number unreadable"');
+  if (reason == null) return;
+  if (!reason.trim()) { alert('No reason given. Nothing sent.'); return; }
+  if (!confirm('Send '+(c.first_name||'this contractor')+' back to Pending Profile?\n\n"'+reason+'"')) return;
+  await updateContractorStatus(id, 'Pending Profile', { webhookType:'contractor_rejected', webhookData:Object.assign({},c,{reason:reason.trim()}), successMsg:'Sent back for edits.' });
+}
+
+async function suspendContractor(id){
+  var c = (adminData.contractors || []).find(function(x){return x.id===id});
+  if (!c) return;
+  if (!confirm('Suspend '+(c.company_name||c.email)+'?\n\nThey will stop receiving leads immediately.')) return;
+  await updateContractorStatus(id, 'Suspended', { successMsg:'Suspended.' });
+}
+
+async function reactivateContractor(id){
+  var c = (adminData.contractors || []).find(function(x){return x.id===id});
+  if (!c) return;
+  if (!confirm('Reactivate '+(c.company_name||c.email)+'?\n\nLead routing resumes immediately.')) return;
+  await updateContractorStatus(id, 'Active', { successMsg:'Reactivated.' });
+}
+
+async function updateContractorStatus(id, newStatus, opts){
+  opts = opts || {};
+  try {
+    var resp = await fetch('/api/admin-update-contractor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: storedPw, contractor_id: id, status: newStatus })
+    });
+    var data = await resp.json();
+    if (!data.success) throw new Error(data.error || 'Update failed');
+    if (opts.webhookType && opts.webhookData) {
+      var c = opts.webhookData;
+      try {
+        await fetch(GHL_APPROVAL_HOOK, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: opts.webhookType,
+            contractor_id: id,
+            first_name: c.first_name || '',
+            last_name: c.last_name || '',
+            email: c.email || '',
+            phone: c.phone || '',
+            company_name: c.company_name || '',
+            membership_tier: c.membership_tier || 'Basic',
+            service_zips: c.service_zips || '',
+            service_categories: Array.isArray(c.service_categories) ? c.service_categories.join(', ') : (c.service_categories || ''),
+            reason: c.reason || '',
+            dashboard_url: 'https://www.selectservicepros.com/contractor-dashboard.html'
+          })
+        });
+      } catch (ghlErr) {
+        console.warn('GHL webhook failed:', ghlErr);
+        alert('Status updated, but GHL webhook failed. You may need to email the contractor manually.');
+      }
+    }
+    showAdminToast(opts.successMsg || 'Updated.');
+    loadData();
+  } catch (e) {
+    alert('Failed to update: ' + e.message);
+  }
+}
+
+function showAdminToast(msg){
+  var existing = document.getElementById('admin-toast');
+  if (existing) existing.remove();
+  var t = document.createElement('div');
+  t.id = 'admin-toast';
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1a8a4a;color:#fff;padding:14px 20px;border-radius:10px;font-weight:700;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.2);z-index:9999;font-family:inherit';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); }, 3200);
+}
+
 </script>
 <!--email_off-->
 </body>
