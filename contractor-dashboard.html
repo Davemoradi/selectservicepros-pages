@@ -281,6 +281,10 @@ body[data-nav="sidebar"] .shell-main{padding-top:24px}
 .icon-btn{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text3);transition:.15s}
 .icon-btn:hover{background:var(--white);color:var(--text1)}
 
+.wiz-missing{background:#fff8e6;border:1px solid #f5d97f;border-left:4px solid #e6a700;border-radius:10px;padding:14px 16px;margin:0 0 20px;color:#6b4d00}
+.wiz-missing-title{font-weight:700;font-size:13.5px;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.wiz-missing-list{margin:0;padding-left:22px;font-size:13.5px;line-height:1.7;color:#533c00}
+.wiz-missing-list li{margin:2px 0}
 .wiz-foot{margin-top:auto;padding-top:20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px}
 .wiz-foot .muted{font-size:12px;color:var(--text4)}
 
@@ -1082,6 +1086,7 @@ function iconClock(){return svgBase('<circle cx="12" cy="12" r="10"/><polyline p
 function iconChevron(){return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>'}
 function svgBase(inner){return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`}
 function iconCheck(sz=12){return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`}
+function iconAlert(sz=14){return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;vertical-align:-2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`}
 function iconX(sz=12){return `<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`}
 
 function timeAgo(mins){
@@ -1338,19 +1343,98 @@ function stepContentHTML(step, idx){
   else if(step.key==='insurance') body = stepInsuranceFull();
 
   const isLast = idx === STEPS.length-1;
+  const stepDone = (() => { try { return !!step.check(); } catch(e){ return false; } })();
+  const missing = stepDone ? [] : missingFieldsFor(step.key);
+  const missingBanner = (missing.length>0)
+    ? `<div class="wiz-missing">
+         <div class="wiz-missing-title">${iconAlert(16)} This step isn't complete yet — you can come back to it</div>
+         <ul class="wiz-missing-list">${missing.map(m=>`<li>${m}</li>`).join('')}</ul>
+       </div>`
+    : '';
+
   return `
     <div class="wiz-content-head">
       <div class="wiz-tag">Step ${idx+1} of ${STEPS.length}</div>
       <div class="wiz-h">${step.title}</div>
       <div class="wiz-d">${stepHelper(step.key)}</div>
     </div>
+    ${missingBanner}
     <div>${body}</div>
     <div class="wiz-foot">
-      <button class="btn btn-ghost ${idx===0?'':''}" ${idx===0?'disabled':''} onclick="prevStep()">← Back</button>
+      <button class="btn btn-ghost" ${idx===0?'disabled':''} onclick="prevStep()">← Back</button>
       <span class="muted">Saved automatically</span>
       <button class="btn btn-primary" onclick="${isLast?'submitForReview()':'nextStep()'}">${isLast?'Finish':'Next →'}</button>
     </div>
   `;
+}
+
+// Returns a list of plain-English reasons a step isn't complete yet.
+// The list mirrors each STEP.check() predicate in STEPS (above). When
+// everything required is present, the returned list is empty.
+function missingFieldsFor(key){
+  const out = [];
+  switch(key){
+    case 'description': {
+      const len = (state.profile.description||'').length;
+      if(len === 0) out.push('Business description (aim for 60–200 characters)');
+      else if(len <= 40) out.push(`Business description is too short — you have ${len} characters, need at least 41`);
+      break;
+    }
+    case 'years': {
+      if(!(state.profile.years>0)) out.push('Years in business');
+      break;
+    }
+    case 'categories': {
+      if(state.categories.size===0){
+        out.push('Select at least one service category');
+      } else {
+        for(const c of state.categories){
+          if((state.servicesDetail[c]||[]).length===0){
+            out.push(`At least one specific service under "${c}"`);
+          }
+          if(LICENSED_TRADES.includes(c) && !licenseForTrade(c)){
+            out.push(`A license record for ${c} (added on the Licenses step)`);
+          }
+        }
+      }
+      break;
+    }
+    case 'zips': {
+      if(state.zips.length===0) out.push('At least one ZIP code you serve');
+      break;
+    }
+    case 'operations': {
+      if(!(state.operations.technicians>0)) out.push('Number of technicians on your team');
+      if(!state.operations.phoneAnswered) out.push('Who answers your business phone');
+      if(!(state.operations.payments && state.operations.payments.size>0)) out.push('At least one payment method you accept');
+      const hasHours = DAYS.some(d=>state.operations.hours[d].open || state.operations.hours[d].open24);
+      if(!hasHours) out.push('Business hours for at least one day of the week');
+      break;
+    }
+    case 'licenses': {
+      const licensedSelected = [...state.categories].filter(c=>LICENSED_TRADES.includes(c));
+      if(licensedSelected.length===0) break;
+      for(const c of licensedSelected){
+        const l = licenseForTrade(c);
+        if(!l){ out.push(`Add a ${c} license`); continue; }
+        if(!l.number) out.push(`${c} license: license number`);
+        if(!l.type)   out.push(`${c} license: license type`);
+        if(!l.state)  out.push(`${c} license: issuing state`);
+        if(!l.exp)    out.push(`${c} license: expiration date`);
+        if(!l.file)   out.push(`${c} license: upload license document`);
+      }
+      break;
+    }
+    case 'insurance': {
+      const i = state.credentials.insurance;
+      if(!i.carrier) out.push('Insurance carrier name');
+      if(!i.policy)  out.push('Policy number');
+      if(!i.exp)     out.push('Policy expiration date');
+      if(!i.file)    out.push('Upload your Certificate of Insurance (COI)');
+      break;
+    }
+  }
+  return out;
 }
 
 function stepHelper(k){
