@@ -154,18 +154,36 @@ module.exports = async (req, res) => {
 // 'Pending Verification' → send welcome email with Finish Your Setup CTA.
 //
 // Uses the same webhook URL pattern as create-contractor.js so the WF5 template
-// variables ({{inboundWebhookRequest.first_name}}, .membership_tier) resolve
-// correctly no matter which path creates the contractor.
+// variables resolve correctly no matter which path creates the contractor.
+//
+// WF5 reads fields as camelCase ({{inboundWebhookRequest.firstName}}), so we
+// translate our snake_case internal shape into the camelCase shape WF5 expects.
+// We also send the snake_case versions so older parts of the workflow that
+// used them (if any) continue to work. Keep both until WF5 is fully verified.
 //
 // Non-fatal: logs + swallows errors. The payment still succeeded and the DB
 // row is correct; at worst the contractor just doesn't get the email.
 async function fireWelcomeWebhook(payload) {
   const WF5_URL = 'https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/Ny618W28bwWSntyu1DyL';
+
+  // Build the outbound payload with BOTH snake_case (our internal convention)
+  // and camelCase (what WF5 template reads). Sending both is cheap and avoids
+  // breaking existing consumers.
+  const outbound = Object.assign({}, payload, {
+    firstName:      payload.first_name      || '',
+    lastName:       payload.last_name       || '',
+    companyName:    payload.company_name    || '',
+    phone:          payload.phone           || '',
+    email:          payload.email           || '',
+    membershipTier: payload.membership_tier || '',
+    contractorId:   payload.contractor_id   || ''
+  });
+
   try {
     const resp = await fetch(WF5_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(outbound)
     });
     if (!resp.ok) {
       console.warn('WF5 webhook returned non-2xx: ' + resp.status + ' for ' + payload.email);
