@@ -620,16 +620,14 @@ async function completeSignupAfterPayment(){
     // Happy path: redirect user directly to the Supabase password-reset URL
     // we got back from /api/create-contractor. This lands them on
     // /reset-password.html with a valid recovery session, where they set
-    // a password and get logged into the dashboard. No email round-trip
-    // needed — the email via WF5 is a fallback if they close the tab.
+    // a password and get logged into the dashboard.
     if (data.passwordResetUrl) {
       window.location.href = data.passwordResetUrl;
     } else {
-      // Fallback: no URL returned (shouldn't happen in normal flow).
-      // Send them to login where "Forgot password?" will resend the link.
+      // Fallback: no URL returned (shouldn't happen). Send them to login
+      // where "Forgot password?" will resend the link.
       window.location.href = '/contractor-login.html?welcome=1&email=' + encodeURIComponent(em);
     }
-
   }catch(err){
     console.error('Account creation error:', err);
     document.getElementById('success-card').innerHTML =
