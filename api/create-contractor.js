@@ -1,5 +1,24 @@
 const { createClient } = require('@supabase/supabase-js');
 
+// Creates a new contractor account from the signup form.
+//
+// Ownership / race considerations:
+//   - /api/create-checkout-session opens Stripe Checkout BEFORE this runs
+//   - On payment success, Stripe fires webhook → /api/stripe-webhook
+//   - stripe-webhook.js may INSERT a contractor row before this file finishes
+//   - This file creates the auth.users row + password reset link, and MUST
+//     converge on the same contractor row regardless of order.
+//
+// Flow:
+//   1. Create Supabase auth.users (always new — email is unique in auth)
+//   2. Generate password recovery link
+//   3. UPSERT contractor row keyed on email:
+//        - If no row yet → insert fresh (normal fast path)
+//        - If row already exists (stripe-webhook beat us) → update, adding
+//          auth_id + profile fields, preserving Stripe IDs that webhook set
+//   4. Fire WF5 welcome email with passwordResetUrl
+//   5. Fire GHL contact upsert webhook
+
 module.exports = async (req, res) => {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -26,7 +45,9 @@ module.exports = async (req, res) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    // 1. Create Supabase auth user with auto-confirm and random password
+    // 1. Create Supabase auth user with auto-confirm and random password.
+    // If the user already exists (e.g. someone retries signup), surface the
+    // error so the frontend can offer a login flow instead.
     const randomPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: email,
@@ -63,10 +84,19 @@ module.exports = async (req, res) => {
       console.error('Recovery link generation failed:', linkErr.message);
     }
 
-    // 2. Insert contractor profile into contractors table
-    const { error: insertError } = await supabase.from('contractors').insert({
+    // 2. UPSERT contractor profile into contractors table.
+    //
+    // Why upsert not insert: the Stripe webhook race. When the webhook fires
+    // first (common with fast Stripe events), it inserts a minimal contractor
+    // row with email + metadata + Stripe IDs. This file then runs and needs
+    // to ADD the rest of the profile data (license, services, insurance, etc)
+    // plus link the auth_id — not fail silently.
+    //
+    // We do "find-then-update-or-insert" manually rather than supabase's
+    // .upsert() because the natural key here is email (not id), and we want
+    // to preserve any Stripe IDs the webhook already wrote.
+    const profileFields = {
       auth_id: authId,
-      email: email,
       first_name: firstName,
       last_name: lastName,
       phone: phone || null,
@@ -81,14 +111,54 @@ module.exports = async (req, res) => {
       services: services || null,
       service_categories: serviceCategories || null,
       website_url: websiteUrl || null,
-      status: 'Pending Profile',
-      lead_count: 0,
-      acceptance_rate: 0
-    });
+      // Don't overwrite status if webhook already set it to 'Pending Verification'
+      // (meaning they paid). Only set 'Pending Profile' when row is brand new.
+    };
 
-    if (insertError) {
-      console.error('Insert error:', insertError.message);
-      // Don't fail completely — auth user was created
+    // Check if a row already exists for this email (likely pre-created by webhook)
+    const { data: existing, error: findErr } = await supabase
+      .from('contractors')
+      .select('id, status, stripe_customer_id, stripe_subscription_id')
+      .ilike('email', email)
+      .maybeSingle();
+
+    if (findErr) {
+      console.error('Contractor lookup error:', findErr.message);
+    }
+
+    if (existing && existing.id) {
+      // Row exists — update with profile data, keep Stripe IDs + Stripe-set status.
+      console.log('Contractor row exists (id=' + existing.id + '), updating with profile data');
+      const { error: updateErr } = await supabase
+        .from('contractors')
+        .update(Object.assign({}, profileFields, { updated_at: new Date().toISOString() }))
+        .eq('id', existing.id);
+      if (updateErr) {
+        console.error('Update error:', updateErr.message);
+      }
+    } else {
+      // No row yet — fresh insert with Pending Profile status.
+      const insertRow = Object.assign({}, profileFields, {
+        email: email,
+        status: 'Pending Profile',
+        lead_count: 0,
+        acceptance_rate: 0
+      });
+      const { error: insertError } = await supabase.from('contractors').insert(insertRow);
+      if (insertError) {
+        // Final fallback: maybe webhook inserted BETWEEN our lookup and insert
+        // (unlikely but possible). Retry as an update.
+        if (insertError.code === '23505' || /duplicate/i.test(insertError.message || '')) {
+          console.log('Insert race detected, retrying as update for ' + email);
+          const { error: retryErr } = await supabase
+            .from('contractors')
+            .update(Object.assign({}, profileFields, { updated_at: new Date().toISOString() }))
+            .ilike('email', email);
+          if (retryErr) console.error('Retry update error:', retryErr.message);
+        } else {
+          console.error('Insert error:', insertError.message);
+        }
+      }
     }
 
     // 3. Call GHL webhooks server-side (reliable, no CORS issues)
