@@ -179,11 +179,74 @@ async function handleCheckoutCompleted(stripe, supabase, session) {
   }
 
   if (!contractor) {
-    // No matching contractor row yet. This shouldn't happen if signup flow is intact
-    // (create-contractor.js runs BEFORE checkout and inserts the row), but log it so
-    // we can backfill manually.
-    console.warn('No contractor found for email ' + email + ' (session ' + session.id + '). Manual review needed.');
-    return { result: 'error:no_contractor_row', contractorId: null };
+    // Race condition path. The signup flow calls /api/create-checkout-session BEFORE
+    // /api/create-contractor, which means Stripe's webhook can arrive faster than the
+    // contractor row is inserted. Rather than error out (and leave the customer paid
+    // but unprovisioned), we insert the row here from checkout metadata. Option B.
+    //
+    // This also makes the webhook the source of truth for "paid → provisioned":
+    // even if /api/create-contractor fails silently post-payment, we still end up
+    // with a contractor row linked to the Stripe IDs.
+    const meta = session.metadata || {};
+    const fullName = (meta.contractor_name || '').trim();
+    const spaceIdx = fullName.indexOf(' ');
+    const firstName = spaceIdx > 0 ? fullName.substring(0, spaceIdx) : (fullName || 'Unknown');
+    const lastName  = spaceIdx > 0 ? fullName.substring(spaceIdx + 1) : 'Unknown';
+
+    const insertRow = {
+      email: email,
+      first_name: firstName,
+      last_name: lastName,
+      phone: meta.contractor_phone || null,
+      company_name: meta.contractor_company || null,
+      membership_tier: tier || 'Basic',
+      status: 'Pending Verification',
+      stripe_customer_id: session.customer || null,
+      stripe_subscription_id: session.subscription || null
+    };
+
+    const { data: created, error: insertErr } = await supabase
+      .from('contractors')
+      .insert(insertRow)
+      .select('id')
+      .single();
+
+    if (insertErr) {
+      // One common cause: /api/create-contractor won the race and inserted the row
+      // between our lookup and our insert (duplicate email, unique constraint fail).
+      // Retry the lookup and update instead.
+      if (insertErr.code === '23505' || /duplicate/i.test(insertErr.message || '')) {
+        console.log('Contractor inserted by other path during race; retrying lookup for ' + email);
+        const { data: retry } = await supabase
+          .from('contractors')
+          .select('id')
+          .ilike('email', email)
+          .maybeSingle();
+        if (retry) {
+          const { error: updErr2 } = await supabase
+            .from('contractors')
+            .update({
+              stripe_customer_id: session.customer || null,
+              stripe_subscription_id: session.subscription || null,
+              membership_tier: tier || 'Basic',
+              status: 'Pending Verification',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', retry.id);
+          if (updErr2) {
+            console.error('Race-retry update failed for ' + retry.id + ':', updErr2);
+            return { result: 'error:race_retry_failed', contractorId: retry.id };
+          }
+          console.log('Race-retry succeeded for contractor ' + retry.id);
+          return { result: 'ok:activated_after_race', contractorId: retry.id };
+        }
+      }
+      console.error('Failed to insert contractor from webhook (' + email + '):', insertErr);
+      return { result: 'error:insert_failed', contractorId: null };
+    }
+
+    console.log('checkout.session.completed: inserted new contractor ' + created.id + ' for ' + email + ' on tier ' + (tier || 'Basic'));
+    return { result: 'ok:inserted', contractorId: created.id };
   }
 
   // Update the contractor: save Stripe IDs, set tier, flip status.
