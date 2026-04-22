@@ -6,9 +6,11 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // Plan config — prices in cents
 const PLANS = {
-  basic: { name: 'Basic Membership', price: 9900, interval: 'month' },
-  pro:   { name: 'Pro Membership',   price: 19900, interval: 'month' },
-  elite: { name: 'Elite Membership', price: 29900, interval: 'month' },
+  // Prices in cents. Must match ssp-config.js and platform_config.pricing.
+  // Source of truth: platform_config.pricing in Supabase. Verified 2026-04-22.
+  basic: { name: 'Basic Membership', price: 4900,  interval: 'month' },  // $49/mo
+  pro:   { name: 'Pro Membership',   price: 9900,  interval: 'month' },  // $99/mo
+  elite: { name: 'Elite Membership', price: 19900, interval: 'month' },  // $199/mo
 };
 
 module.exports = async (req, res) => {
