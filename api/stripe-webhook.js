@@ -149,6 +149,34 @@ module.exports = async (req, res) => {
 // Event handlers
 // ============================================================
 
+// Fires the GHL inbound webhook that WF5 (Contractor Welcome Email) listens on.
+// Trigger spec: contractor finished paying on Stripe → status flipped to
+// 'Pending Verification' → send welcome email with Finish Your Setup CTA.
+//
+// Uses the same webhook URL pattern as create-contractor.js so the WF5 template
+// variables ({{inboundWebhookRequest.first_name}}, .membership_tier) resolve
+// correctly no matter which path creates the contractor.
+//
+// Non-fatal: logs + swallows errors. The payment still succeeded and the DB
+// row is correct; at worst the contractor just doesn't get the email.
+async function fireWelcomeWebhook(payload) {
+  const WF5_URL = 'https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/Ny618W28bwWSntyu1DyL';
+  try {
+    const resp = await fetch(WF5_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!resp.ok) {
+      console.warn('WF5 webhook returned non-2xx: ' + resp.status + ' for ' + payload.email);
+    } else {
+      console.log('WF5 welcome email fired for ' + payload.email);
+    }
+  } catch (e) {
+    console.warn('WF5 webhook fetch failed for ' + payload.email + ':', e.message);
+  }
+}
+
 async function handleCheckoutCompleted(stripe, supabase, session) {
   // session shape for subscription mode:
   //   session.customer              = 'cus_...'
@@ -167,9 +195,11 @@ async function handleCheckoutCompleted(stripe, supabase, session) {
   }
 
   // Find the contractor row. Matches by email (case-insensitive).
+  // Pulls name/phone/company so we can fire WF5 with template data without
+  // an extra round-trip after update.
   const { data: contractor, error: findErr } = await supabase
     .from('contractors')
-    .select('id, status, email, stripe_customer_id')
+    .select('id, status, email, stripe_customer_id, first_name, last_name, phone, company_name')
     .ilike('email', email)
     .maybeSingle();
 
@@ -238,6 +268,28 @@ async function handleCheckoutCompleted(stripe, supabase, session) {
             return { result: 'error:race_retry_failed', contractorId: retry.id };
           }
           console.log('Race-retry succeeded for contractor ' + retry.id);
+          // Fetch the now-complete row so we can fire WF5 with real name data
+          // (the existing row may have richer data than Stripe metadata alone).
+          try {
+            const { data: full } = await supabase
+              .from('contractors')
+              .select('first_name, last_name, phone, company_name, membership_tier')
+              .eq('id', retry.id)
+              .single();
+            if (full) {
+              await fireWelcomeWebhook({
+                email: email,
+                first_name: full.first_name || '',
+                last_name: full.last_name || '',
+                phone: full.phone || '',
+                company_name: full.company_name || '',
+                membership_tier: full.membership_tier || tier || 'Basic',
+                status: 'Pending Verification',
+                contractor_id: retry.id,
+                source: 'stripe_webhook:race_retry'
+              });
+            }
+          } catch (_) { /* non-fatal */ }
           return { result: 'ok:activated_after_race', contractorId: retry.id };
         }
       }
@@ -246,6 +298,17 @@ async function handleCheckoutCompleted(stripe, supabase, session) {
     }
 
     console.log('checkout.session.completed: inserted new contractor ' + created.id + ' for ' + email + ' on tier ' + (tier || 'Basic'));
+    await fireWelcomeWebhook({
+      email: email,
+      first_name: firstName,
+      last_name: lastName,
+      phone: meta.contractor_phone || '',
+      company_name: meta.contractor_company || '',
+      membership_tier: tier || 'Basic',
+      status: 'Pending Verification',
+      contractor_id: created.id,
+      source: 'stripe_webhook:inserted'
+    });
     return { result: 'ok:inserted', contractorId: created.id };
   }
 
@@ -272,6 +335,17 @@ async function handleCheckoutCompleted(stripe, supabase, session) {
   }
 
   console.log('checkout.session.completed: contractor ' + contractor.id + ' now ' + update.status + ' on tier ' + update.membership_tier);
+  await fireWelcomeWebhook({
+    email: email,
+    first_name: contractor.first_name || '',
+    last_name: contractor.last_name || '',
+    phone: contractor.phone || '',
+    company_name: contractor.company_name || '',
+    membership_tier: update.membership_tier,
+    status: update.status,
+    contractor_id: contractor.id,
+    source: 'stripe_webhook:activated'
+  });
   return { result: 'ok:activated', contractorId: contractor.id };
 }
 
