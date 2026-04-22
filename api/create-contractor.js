@@ -71,7 +71,11 @@ module.exports = async (req, res) => {
         type: 'recovery',
         email: email,
         options: {
-          redirectTo: 'https://www.selectservicepros.com/contractor-login.html'
+          // After Supabase verifies the recovery token, it redirects the
+          // browser here. Must be /reset-password.html so the user lands
+          // on the "Set a new password" form — NOT /contractor-login.html
+          // which just shows a sign-in form with no context.
+          redirectTo: 'https://www.selectservicepros.com/reset-password.html'
         }
       });
       if (linkError) {
