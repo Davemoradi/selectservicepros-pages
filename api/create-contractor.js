@@ -214,6 +214,13 @@ module.exports = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: 'Account created — check your email to set your password',
+      // passwordResetUrl is the one-time Supabase recovery link. The signup
+      // page redirects directly to this after payment so the contractor
+      // lands on /reset-password.html with a valid session and can set
+      // their password immediately — no email round-trip needed for the
+      // happy path. The same URL is also emailed via WF5 as a backup
+      // for contractors who close the tab before setting a password.
+      passwordResetUrl: passwordResetUrl,
       loginUrl: 'https://www.selectservicepros.com/contractor-login.html'
     });
 
