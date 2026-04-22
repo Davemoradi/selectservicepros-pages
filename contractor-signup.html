@@ -617,11 +617,18 @@ async function completeSignupAfterPayment(){
     sessionStorage.removeItem('ssp_plan');
     sessionStorage.removeItem('ssp_plan_id');
 
-    // Redirect into the dashboard. welcome=1 triggers the onboarding banner.
-    // The user will be asked to set their password via the emailed recovery link
-    // from GHL's workflow; until then they land on the login page via the
-    // dashboard's auth gate.
-    window.location.href = '/contractor-login.html?welcome=1&email=' + encodeURIComponent(em);
+    // Happy path: redirect user directly to the Supabase password-reset URL
+    // we got back from /api/create-contractor. This lands them on
+    // /reset-password.html with a valid recovery session, where they set
+    // a password and get logged into the dashboard. No email round-trip
+    // needed — the email via WF5 is a fallback if they close the tab.
+    if (data.passwordResetUrl) {
+      window.location.href = data.passwordResetUrl;
+    } else {
+      // Fallback: no URL returned (shouldn't happen in normal flow).
+      // Send them to login where "Forgot password?" will resend the link.
+      window.location.href = '/contractor-login.html?welcome=1&email=' + encodeURIComponent(em);
+    }
 
   }catch(err){
     console.error('Account creation error:', err);
