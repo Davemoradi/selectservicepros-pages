@@ -22,8 +22,6 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:var(--font);background:var(--bg);color:var(--text1);}
-
-/* AUTH SCREEN */
 .auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
 .auth-box{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:40px;max-width:380px;width:100%;text-align:center;box-shadow:var(--shadow-md);}
 .auth-box h1{font-size:24px;font-weight:800;margin-bottom:4px;}
@@ -35,26 +33,28 @@ body{font-family:var(--font);background:var(--bg);color:var(--text1);}
 .auth-btn:hover{background:var(--navy2);}
 .auth-error{color:var(--red);font-size:13px;margin-top:8px;display:none;}
 
-/* ADMIN LAYOUT */
 .admin{display:none;}
 .admin-nav{background:var(--navy);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;}
 .admin-nav .logo{font-size:18px;font-weight:800;color:var(--white);}
 .admin-nav .logo span{color:var(--orange);}
+.admin-nav .right{display:flex;align-items:center;gap:18px;}
+.admin-nav .status{font-size:12px;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:6px;}
+.admin-nav .status .dot{width:8px;height:8px;border-radius:50%;background:var(--green);}
+.admin-nav .status.saving .dot{background:var(--orange);animation:pulse 1s infinite;}
+.admin-nav .status.error .dot{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .admin-nav .logout{font-size:13px;color:rgba(255,255,255,.5);cursor:pointer;transition:color .15s;}
 .admin-nav .logout:hover{color:var(--white);}
-
 .admin-body{max-width:900px;margin:0 auto;padding:32px 24px 80px;}
 .admin-header{margin-bottom:32px;}
 .admin-header h1{font-size:28px;font-weight:800;margin-bottom:6px;}
 .admin-header p{font-size:14px;color:var(--text3);}
 
-/* SECTIONS */
 .config-section{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:24px;overflow:hidden;}
 .config-header{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--border);}
 .config-header h2{font-size:18px;font-weight:700;}
 .config-header .count{font-size:12px;color:var(--text3);background:var(--bg);padding:4px 10px;border-radius:100px;}
 
-/* TOGGLE ROWS */
 .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);transition:background .1s;}
 .toggle-row:last-child{border:none;}
 .toggle-row:hover{background:var(--bg);}
@@ -66,8 +66,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text1);}
 .status-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:.3px;}
 .status-badge.active{background:var(--green-light);color:var(--green);}
 .status-badge.inactive{background:var(--red-light);color:var(--red);}
-
-/* TOGGLE SWITCH */
 .toggle-switch{position:relative;width:44px;height:24px;cursor:pointer;}
 .toggle-switch input{opacity:0;width:0;height:0;}
 .toggle-slider{position:absolute;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:24px;transition:.2s;}
@@ -75,21 +73,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text1);}
 .toggle-switch input:checked+.toggle-slider{background:var(--green);}
 .toggle-switch input:checked+.toggle-slider:before{transform:translateX(20px);}
 
-/* SAVE BAR */
-.save-bar{position:fixed;bottom:0;left:0;right:0;background:var(--navy);padding:16px 24px;display:none;align-items:center;justify-content:center;gap:16px;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,.15);}
-.save-bar.visible{display:flex;}
-.save-bar p{color:rgba(255,255,255,.7);font-size:14px;}
-.save-btn{background:var(--orange);color:var(--white);border:none;padding:10px 28px;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:background .2s;}
-.save-btn:hover{background:var(--orange2);}
-.discard-btn{background:transparent;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.2);padding:10px 20px;border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;cursor:pointer;}
-.discard-btn:hover{color:var(--white);border-color:rgba(255,255,255,.4);}
-
-/* CONFIG OUTPUT */
-.config-output{background:var(--navy);border-radius:var(--radius-sm);padding:20px;margin-top:16px;color:rgba(255,255,255,.8);font-family:monospace;font-size:12px;line-height:1.6;max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;}
-.copy-btn{background:var(--orange);color:var(--white);border:none;padding:8px 20px;border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;margin-top:12px;transition:background .2s;}
-.copy-btn:hover{background:var(--orange2);}
-
-/* MARKET ADD FORM */
 .add-market-form{padding:16px 24px;background:var(--bg);display:none;border-top:1px solid var(--border);}
 .add-market-form.visible{display:block;}
 .add-market-row{display:flex;gap:8px;align-items:end;flex-wrap:wrap;}
@@ -100,6 +83,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text1);}
 .add-market-btn{background:var(--green);color:var(--white);border:none;padding:8px 16px;border-radius:6px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;height:36px;}
 .show-add-btn{font-size:13px;color:var(--orange);font-weight:600;cursor:pointer;padding:12px 24px;display:block;transition:background .1s;}
 .show-add-btn:hover{background:var(--orange-light);}
+.full-load{display:flex;align-items:center;justify-content:center;padding:60px 24px;color:var(--text3);font-size:14px;}
+.error-banner{background:var(--red-light);color:var(--red);border:1px solid var(--red);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;font-size:13px;display:none;}
+.error-banner.visible{display:block;}
 
 @media(max-width:600px){
   .admin-body{padding:20px 16px 100px;}
@@ -113,7 +99,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text1);}
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
+<!-- AUTH -->
 <div class="auth-screen" id="auth">
   <div class="auth-box">
     <h1>Select<span class="brand">Service</span>Pros</h1>
@@ -124,134 +110,199 @@ body{font-family:var(--font);background:var(--bg);color:var(--text1);}
   </div>
 </div>
 
-<!-- ADMIN PANEL -->
+<!-- ADMIN -->
 <div class="admin" id="admin">
   <nav class="admin-nav">
     <div class="logo">SSP <span>Admin</span></div>
-    <div class="logout" onclick="logout()">Sign Out</div>
+    <div class="right">
+      <div class="status" id="sync-status"><span class="dot"></span><span id="sync-label">Synced</span></div>
+      <div class="logout" onclick="logout()">Sign Out</div>
+    </div>
   </nav>
 
   <div class="admin-body">
     <div class="admin-header">
       <h1>Platform Configuration</h1>
-      <p>Toggle service categories and markets on/off. Changes update the config file you'll push to GitHub.</p>
+      <p>Changes save to the database as you toggle. No re-deploy needed.</p>
     </div>
 
-    <!-- SERVICE CATEGORIES -->
-    <div class="config-section">
-      <div class="config-header">
-        <h2>Service Categories</h2>
-        <span class="count" id="cat-count">0 of 10 active</span>
-      </div>
-      <div id="cat-list"></div>
-      <div class="show-add-btn" onclick="document.getElementById('add-cat-form').classList.toggle('visible')">+ Add New Category</div>
-      <div class="add-market-form" id="add-cat-form">
-        <div class="add-market-row">
-          <div class="add-market-field"><label>Category Name</label><input id="new-cat-label" placeholder="e.g. Landscaping"/></div>
-          <div class="add-market-field"><label>ID (internal)</label><input id="new-cat-id" placeholder="e.g. Landscaping"/></div>
-          <div class="add-market-field"><label>Emoji Icon</label><input id="new-cat-icon" placeholder="e.g. 🌿" style="width:60px;"/></div>
-          <button class="add-market-btn" onclick="addCategory()">Add</button>
+    <div class="error-banner" id="err-banner"></div>
+
+    <div id="load-placeholder" class="full-load">Loading configuration…</div>
+
+    <div id="main-content" style="display:none">
+      <!-- Categories -->
+      <div class="config-section">
+        <div class="config-header">
+          <h2>Service Categories</h2>
+          <span class="count" id="cat-count">0 of 0 active</span>
+        </div>
+        <div id="cat-list"></div>
+        <div class="show-add-btn" onclick="document.getElementById('add-cat-form').classList.toggle('visible')">+ Add New Category</div>
+        <div class="add-market-form" id="add-cat-form">
+          <div class="add-market-row">
+            <div class="add-market-field"><label>Category Name</label><input id="new-cat-label" placeholder="e.g. Landscaping"/></div>
+            <div class="add-market-field"><label>ID (internal)</label><input id="new-cat-id" placeholder="e.g. Landscaping"/></div>
+            <div class="add-market-field"><label>Emoji Icon</label><input id="new-cat-icon" placeholder="e.g. 🌿" style="width:60px;"/></div>
+            <button class="add-market-btn" onclick="addCategory()">Add</button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- MARKETS -->
-    <div class="config-section">
-      <div class="config-header">
-        <h2>Markets (Cities)</h2>
-        <span class="count" id="market-count">0 of 5 active</span>
-      </div>
-      <div id="market-list"></div>
-      <div class="show-add-btn" onclick="document.getElementById('add-form').classList.toggle('visible')">+ Add New Market</div>
-      <div class="add-market-form" id="add-form">
-        <div class="add-market-row">
-          <div class="add-market-field"><label>City</label><input id="new-city" placeholder="e.g. Miami"/></div>
-          <div class="add-market-field"><label>State</label><input id="new-state" placeholder="e.g. FL" maxlength="2"/></div>
-          <div class="add-market-field"><label>ZIP prefixes <span id="zip-status" style="color:var(--green);font-weight:400;text-transform:none;"></span></label><input id="new-zips" placeholder="Auto-fills or enter manually"/></div>
-          <button class="add-market-btn" style="background:var(--navy);" onclick="fetchZips()">Fetch ZIPs</button>
-          <button class="add-market-btn" onclick="addMarket()">Add</button>
+      <!-- Markets -->
+      <div class="config-section">
+        <div class="config-header">
+          <h2>Markets (Cities)</h2>
+          <span class="count" id="market-count">0 of 0 active</span>
         </div>
-      </div>
-    </div>
-
-    <!-- GENERATED CONFIG -->
-    <div class="config-section">
-      <div class="config-header">
-        <h2>Generated Config</h2>
-        <span class="count">Copy & paste into ssp-config.js</span>
-      </div>
-      <div style="padding:20px 24px;">
-        <p style="font-size:13px;color:var(--text3);margin-bottom:8px;">After toggling your settings above, copy this config and replace the contents of <strong>ssp-config.js</strong> in your GitHub repo. Vercel will auto-deploy.</p>
-        <div class="config-output" id="config-output"></div>
-        <button class="copy-btn" onclick="copyConfig()">Copy to Clipboard</button>
+        <div id="market-list"></div>
+        <div class="show-add-btn" onclick="document.getElementById('add-form').classList.toggle('visible')">+ Add New Market</div>
+        <div class="add-market-form" id="add-form">
+          <div class="add-market-row">
+            <div class="add-market-field"><label>City</label><input id="new-city" placeholder="e.g. Miami"/></div>
+            <div class="add-market-field"><label>State</label><input id="new-state" placeholder="e.g. FL" maxlength="2"/></div>
+            <div class="add-market-field">
+              <label>ZIP prefixes <span id="zip-status" style="color:var(--green);font-weight:400;text-transform:none;"></span></label>
+              <input id="new-zips" placeholder="Auto-fills or enter manually"/>
+            </div>
+            <button class="add-market-btn" style="background:var(--navy);" onclick="fetchZips()">Fetch ZIPs</button>
+            <button class="add-market-btn" onclick="addMarket()">Add</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- SAVE BAR -->
-<div class="save-bar" id="save-bar">
-  <p>You have unsaved changes</p>
-  <button class="discard-btn" onclick="discardChanges()">Discard</button>
-  <button class="save-btn" onclick="generateConfig()">Generate Config</button>
-</div>
-
 <script>
-// === AUTH ===
-const ADMIN_PASS = 'ssp2025';
+// =====================================================================
+// AUTH — password kept in sessionStorage for the session so every
+// admin-config API call can include it. Cleared on Sign Out.
+// =====================================================================
+const ADMIN_PASS_KEY = 'ssp-admin-pass';
+
 function login(){
   const pass = document.getElementById('auth-pass').value;
-  if(pass === ADMIN_PASS){
-    document.getElementById('auth').style.display='none';
-    document.getElementById('admin').style.display='block';
-    sessionStorage.setItem('ssp-admin','1');
+  if(!pass){ document.getElementById('auth-error').style.display='block'; return; }
+  // Validate by trying to read config. If the API accepts, password is good.
+  sessionStorage.setItem(ADMIN_PASS_KEY, pass);
+  document.getElementById('auth-error').style.display = 'none';
+  loadConfig().then(ok => {
+    if(ok){
+      document.getElementById('auth').style.display = 'none';
+      document.getElementById('admin').style.display = 'block';
+    } else {
+      sessionStorage.removeItem(ADMIN_PASS_KEY);
+      document.getElementById('auth-error').style.display = 'block';
+    }
+  });
+}
+
+function logout(){
+  sessionStorage.removeItem(ADMIN_PASS_KEY);
+  document.getElementById('admin').style.display = 'none';
+  document.getElementById('auth').style.display = 'flex';
+  document.getElementById('auth-pass').value = '';
+}
+
+// If a password is already stored, try to use it
+if(sessionStorage.getItem(ADMIN_PASS_KEY)){
+  loadConfig().then(ok => {
+    if(ok){
+      document.getElementById('auth').style.display = 'none';
+      document.getElementById('admin').style.display = 'block';
+    } else {
+      sessionStorage.removeItem(ADMIN_PASS_KEY);
+    }
+  });
+}
+
+// =====================================================================
+// API — all reads/writes go through /api/admin-config with the admin
+// password in the request body. The endpoint uses the service role to
+// bypass RLS.
+// =====================================================================
+const API_URL = '/api/admin-config';
+
+function setSyncStatus(state, label){
+  const el = document.getElementById('sync-status');
+  el.className = 'status' + (state ? ' ' + state : '');
+  document.getElementById('sync-label').textContent = label || 'Synced';
+}
+function showError(msg){
+  const b = document.getElementById('err-banner');
+  b.textContent = msg;
+  b.classList.add('visible');
+  setTimeout(() => b.classList.remove('visible'), 6000);
+}
+
+async function apiCall(action, payload){
+  const password = sessionStorage.getItem(ADMIN_PASS_KEY);
+  if(!password){ throw new Error('Not signed in'); }
+  const resp = await fetch(API_URL, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(Object.assign({ action, password }, payload || {}))
+  });
+  const body = await resp.json().catch(() => ({}));
+  if(!resp.ok || !body.success){
+    throw new Error(body.error || ('HTTP ' + resp.status));
+  }
+  return body;
+}
+
+// =====================================================================
+// STATE — mirrors DB. Treat DB as source of truth; state is just a
+// cache for render + optimistic updates.
+// =====================================================================
+let config = { categories: [], markets: [] };
+
+async function loadConfig(){
+  setSyncStatus('saving', 'Loading…');
+  try {
+    const r = await apiCall('get');
+    config.categories = r.config.service_categories || [];
+    config.markets = r.config.markets || [];
     renderAll();
-  } else {
-    document.getElementById('auth-error').style.display='block';
+    document.getElementById('load-placeholder').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    setSyncStatus('', 'Synced');
+    return true;
+  } catch(e){
+    // Password wrong or server error — caller decides what to do
+    console.error('loadConfig failed:', e);
+    setSyncStatus('error', 'Error');
+    // Only show banner if we're past the auth screen
+    if(document.getElementById('admin').style.display === 'block'){
+      showError('Could not load config: ' + e.message);
+    }
+    return false;
   }
 }
-function logout(){
-  sessionStorage.removeItem('ssp-admin');
-  document.getElementById('admin').style.display='none';
-  document.getElementById('auth').style.display='flex';
-  document.getElementById('auth-pass').value='';
-}
-if(sessionStorage.getItem('ssp-admin')==='1'){
-  document.getElementById('auth').style.display='none';
-  document.getElementById('admin').style.display='block';
-  setTimeout(renderAll,0);
+
+// Persist one of the two arrays to the DB. Optimistic: we've already
+// updated local state + re-rendered before calling this, so the user sees
+// the change immediately. If the write fails, we reload from DB to resync.
+async function persist(key){
+  setSyncStatus('saving', 'Saving…');
+  try {
+    const value = (key === 'service_categories') ? config.categories : config.markets;
+    await apiCall('set', { key, value });
+    setSyncStatus('', 'Synced');
+  } catch(e){
+    console.error('persist failed for', key, e);
+    setSyncStatus('error', 'Save failed');
+    showError('Save failed: ' + e.message + ' — reloading latest from server.');
+    await loadConfig();
+  }
 }
 
-// === CONFIG STATE ===
-let config = {
-  categories: [
-    { id:"HVAC", label:"HVAC", enabled:true, icon:"❄️" },
-    { id:"Plumbing", label:"Plumbing", enabled:false, icon:"🔧" },
-    { id:"Electrical", label:"Electrical", enabled:false, icon:"⚡" },
-    { id:"Roofing", label:"Roofing", enabled:false, icon:"🏠" },
-    { id:"Handyman", label:"Handyman", enabled:false, icon:"🔨" },
-    { id:"Appliance Repair", label:"Appliance Repair", enabled:false, icon:"🔌" },
-    { id:"Construction", label:"Remodeling", enabled:false, icon:"🏗" },
-    { id:"Painting", label:"Painting", enabled:false, icon:"🎨" },
-    { id:"Pool & Spa", label:"Pool & Spa", enabled:false, icon:"🏊" },
-    { id:"Windows & Doors", label:"Windows & Doors", enabled:false, icon:"🪟" }
-  ],
-  markets: [
-    { id:"houston-tx", city:"Houston", state:"TX", zips:["770","773","774"], enabled:true },
-    { id:"dallas-tx", city:"Dallas", state:"TX", zips:["750","751","752","753"], enabled:false },
-    { id:"san-antonio-tx", city:"San Antonio", state:"TX", zips:["782","781"], enabled:false },
-    { id:"austin-tx", city:"Austin", state:"TX", zips:["787","786","785"], enabled:false },
-    { id:"fort-worth-tx", city:"Fort Worth", state:"TX", zips:["760","761","762"], enabled:false }
-  ]
-};
-let originalConfig = JSON.stringify(config);
-let hasChanges = false;
-
-// === RENDER ===
+// =====================================================================
+// RENDER
+// =====================================================================
 function renderAll(){
   renderCategories();
   renderMarkets();
-  generateConfig();
 }
 
 function renderCategories(){
@@ -290,7 +341,7 @@ function renderMarkets(){
         <div class="toggle-icon">📍</div>
         <div>
           <div class="toggle-label">${m.city}, ${m.state}</div>
-          <div class="toggle-sub">ZIP prefixes: ${m.zips.join(', ')}</div>
+          <div class="toggle-sub">ZIP prefixes: ${(m.zips||[]).join(', ')}</div>
         </div>
       </div>
       <div class="toggle-right">
@@ -306,168 +357,113 @@ function renderMarkets(){
   `).join('');
 }
 
-// === TOGGLES ===
+// =====================================================================
+// TOGGLE / ADD / EDIT / DELETE — every mutation flows through persist()
+// =====================================================================
 function toggleCat(idx, val){
   config.categories[idx].enabled = val;
-  markChanged();
   renderCategories();
-  generateConfig();
+  persist('service_categories');
 }
 function toggleMarket(idx, val){
   config.markets[idx].enabled = val;
-  markChanged();
   renderMarkets();
-  generateConfig();
-}
-function addMarket(){
-  const city = document.getElementById('new-city').value.trim();
-  const state = document.getElementById('new-state').value.trim().toUpperCase();
-  const zips = document.getElementById('new-zips').value.trim().split(',').map(z=>z.trim()).filter(z=>z);
-  if(!city||!state||zips.length===0){alert('Please fill in city, state, and at least one ZIP prefix.');return;}
-  const id = city.toLowerCase().replace(/\s+/g,'-') + '-' + state.toLowerCase();
-  config.markets.push({ id, city, state, zips, enabled:false });
-  document.getElementById('new-city').value='';
-  document.getElementById('new-state').value='';
-  document.getElementById('new-zips').value='';
-  document.getElementById('add-form').classList.remove('visible');
-  markChanged();
-  renderMarkets();
-  generateConfig();
+  persist('markets');
 }
 
 function addCategory(){
   const label = document.getElementById('new-cat-label').value.trim();
   const id = document.getElementById('new-cat-id').value.trim() || label;
   const icon = document.getElementById('new-cat-icon').value.trim() || '📋';
-  if(!label){alert('Please enter a category name.');return;}
-  if(config.categories.find(c=>c.id===id)){alert('A category with this ID already exists.');return;}
+  if(!label){ alert('Please enter a category name.'); return; }
+  if(config.categories.find(c=>c.id===id)){ alert('A category with this ID already exists.'); return; }
   config.categories.push({ id, label, enabled:false, icon });
   document.getElementById('new-cat-label').value='';
   document.getElementById('new-cat-id').value='';
   document.getElementById('new-cat-icon').value='';
   document.getElementById('add-cat-form').classList.remove('visible');
-  markChanged();
   renderCategories();
-  generateConfig();
+  persist('service_categories');
 }
 
-function deleteCat(idx){
-  const cat = config.categories[idx];
-  if(!confirm('Remove "'+cat.label+'" from categories?'))return;
-  config.categories.splice(idx,1);
-  markChanged();
-  renderCategories();
-  generateConfig();
-}
-
-function deleteMarket(idx){
-  const m = config.markets[idx];
-  if(!confirm('Remove "'+m.city+', '+m.state+'" from markets?'))return;
-  config.markets.splice(idx,1);
-  markChanged();
+function addMarket(){
+  const city = document.getElementById('new-city').value.trim();
+  const state = document.getElementById('new-state').value.trim().toUpperCase();
+  const zips = document.getElementById('new-zips').value.trim().split(',').map(z=>z.trim()).filter(z=>z);
+  if(!city||!state||zips.length===0){ alert('Please fill in city, state, and at least one ZIP prefix.'); return; }
+  const id = city.toLowerCase().replace(/\s+/g,'-') + '-' + state.toLowerCase();
+  config.markets.push({ id, city, state, zips, enabled:false });
+  document.getElementById('new-city').value='';
+  document.getElementById('new-state').value='';
+  document.getElementById('new-zips').value='';
+  document.getElementById('add-form').classList.remove('visible');
   renderMarkets();
-  generateConfig();
+  persist('markets');
 }
 
 function editCat(idx){
   const cat = config.categories[idx];
-  const newLabel = prompt('Category name:', cat.label);
-  if(newLabel===null) return;
-  const newId = prompt('Internal ID:', cat.id);
-  if(newId===null) return;
-  const newIcon = prompt('Emoji icon:', cat.icon||'📋');
-  if(newIcon===null) return;
+  const newLabel = prompt('Category name:', cat.label); if(newLabel===null) return;
+  const newId = prompt('Internal ID:', cat.id); if(newId===null) return;
+  const newIcon = prompt('Emoji icon:', cat.icon||'📋'); if(newIcon===null) return;
   if(newLabel.trim()) cat.label = newLabel.trim();
   if(newId.trim()) cat.id = newId.trim();
   if(newIcon.trim()) cat.icon = newIcon.trim();
-  markChanged();
   renderCategories();
-  generateConfig();
+  persist('service_categories');
 }
 
 function editMarket(idx){
   const m = config.markets[idx];
-  const newCity = prompt('City:', m.city);
-  if(newCity===null) return;
-  const newState = prompt('State (2-letter):', m.state);
-  if(newState===null) return;
-  const newZips = prompt('ZIP prefixes (comma-separated):', m.zips.join(','));
-  if(newZips===null) return;
+  const newCity = prompt('City:', m.city); if(newCity===null) return;
+  const newState = prompt('State (2-letter):', m.state); if(newState===null) return;
+  const newZips = prompt('ZIP prefixes (comma-separated):', (m.zips||[]).join(',')); if(newZips===null) return;
   if(newCity.trim()) m.city = newCity.trim();
   if(newState.trim()) m.state = newState.trim().toUpperCase();
   if(newZips.trim()) m.zips = newZips.split(',').map(z=>z.trim()).filter(z=>z);
   m.id = m.city.toLowerCase().replace(/\s+/g,'-') + '-' + m.state.toLowerCase();
-  markChanged();
   renderMarkets();
-  generateConfig();
+  persist('markets');
 }
 
+function deleteCat(idx){
+  const cat = config.categories[idx];
+  if(!confirm('Remove "'+cat.label+'" from categories?')) return;
+  config.categories.splice(idx,1);
+  renderCategories();
+  persist('service_categories');
+}
+function deleteMarket(idx){
+  const m = config.markets[idx];
+  if(!confirm('Remove "'+m.city+', '+m.state+'" from markets?')) return;
+  config.markets.splice(idx,1);
+  renderMarkets();
+  persist('markets');
+}
+
+// =====================================================================
+// ZIP LOOKUP — unchanged, still hits /api/zip-lookup
+// =====================================================================
 async function fetchZips(){
   const city = document.getElementById('new-city').value.trim();
   const state = document.getElementById('new-state').value.trim().toUpperCase();
-  if(!city||!state){alert('Enter a city and state first.');return;}
+  if(!city||!state){ alert('Enter a city and state first.'); return; }
   const status = document.getElementById('zip-status');
   status.textContent = '(fetching...)';
   try{
     const r = await fetch('/api/zip-lookup?city='+encodeURIComponent(city)+'&state='+encodeURIComponent(state));
     const data = await r.json();
-    if(data.error){status.textContent = '('+data.error+')';return;}
+    if(data.error){ status.textContent = '('+data.error+')'; return; }
     if(data.prefixes && data.prefixes.length > 0){
       document.getElementById('new-zips').value = data.prefixes.join(',');
       status.textContent = '(found '+data.total_zips+' ZIPs, '+data.prefixes.length+' prefixes)';
     } else {
       status.textContent = '(no results found)';
     }
-  }catch(e){
+  } catch(e){
     status.textContent = '(error fetching)';
     console.error(e);
   }
-}
-
-function markChanged(){
-  hasChanges = JSON.stringify(config) !== originalConfig;
-  document.getElementById('save-bar').classList.toggle('visible', hasChanges);
-}
-function discardChanges(){
-  config = JSON.parse(originalConfig);
-  hasChanges = false;
-  document.getElementById('save-bar').classList.remove('visible');
-  renderAll();
-}
-
-// === GENERATE CONFIG OUTPUT ===
-function generateConfig(){
-  const cats = config.categories.map(c => `    { id: "${c.id}", label: "${c.label}", enabled: ${c.enabled} }`).join(',\n');
-  const mkts = config.markets.map(m => `    { id: "${m.id}", city: "${m.city}", state: "${m.state}", zips: ${JSON.stringify(m.zips)}, enabled: ${m.enabled} }`).join(',\n');
-
-  const output = `const SSP_CONFIG = {
-  categories: [
-${cats}
-  ],
-  markets: [
-${mkts}
-  ],
-  settings: {
-    maxLeadsPerContractor: 3,
-    eliteWindowMinutes: 60,
-    proWindowMinutes: 45,
-    basicWindowMinutes: 30,
-    adminEmail: "dave@selecthomewarranty.com"
-  }
-};
-if (typeof module !== 'undefined') module.exports = SSP_CONFIG;
-if (typeof window !== 'undefined') window.SSP_CONFIG = SSP_CONFIG;`;
-
-  document.getElementById('config-output').textContent = output;
-}
-
-function copyConfig(){
-  const text = document.getElementById('config-output').textContent;
-  navigator.clipboard.writeText(text).then(()=>{
-    const btn = document.querySelector('.copy-btn');
-    btn.textContent = '✓ Copied!';
-    setTimeout(()=>{ btn.textContent = 'Copy to Clipboard'; }, 2000);
-  });
 }
 </script>
 </body>
