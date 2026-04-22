@@ -117,7 +117,7 @@ tr:hover{background:rgba(240,85,40,.02)}
     <div class="tab" onclick="switchTab('config',this)">Platform Config</div>
   </div>
 
-  <!-- ═══ OVERVIEW TAB ═══ -->
+  <!-- === OVERVIEW TAB === -->
   <div class="tab-content active" id="tab-overview">
     <div class="dash-header">
       <div><h1>Business Overview</h1><p id="dash-time"></p></div>
@@ -137,7 +137,7 @@ tr:hover{background:rgba(240,85,40,.02)}
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <input class="search-input" type="text" id="contractor-search" placeholder="Search contractors..." oninput="renderContractors()"/>
           <select class="sel" id="plan-filter" onchange="renderContractors()"><option value="all">All Plans</option><option value="Elite">Elite</option><option value="Pro">Pro</option><option value="Basic">Basic</option></select>
-          <select class="sel" id="status-filter" onchange="renderContractors()"><option value="all">All Status</option><option value="Pending Review">Pending Review</option><option value="Pending Profile">Pending Profile</option><option value="Active">Active</option><option value="Paid">Paid (legacy)</option><option value="Verified">Verified</option><option value="Suspended">Suspended</option></select>
+          <select class="sel" id="status-filter" onchange="renderContractors()"><option value="all">All Status</option><option value="Pending Review">Pending Review</option><option value="Pending Verification">Pending Verification</option><option value="Pending Profile">Pending Profile</option><option value="Active">Active</option><option value="Paid">Paid (legacy)</option><option value="Verified">Verified</option><option value="Suspended">Suspended</option></select>
         </div>
       </div>
       <div class="card"><div style="overflow-x:auto">
@@ -172,7 +172,7 @@ tr:hover{background:rgba(240,85,40,.02)}
     </div>
   </div>
 
-  <!-- ═══ PLATFORM CONFIG TAB ═══ -->
+  <!-- === PLATFORM CONFIG TAB === -->
   <div class="tab-content" id="tab-config">
     <div class="dash-header"><div><h1>Platform Configuration</h1><p>Manage pricing, service categories, and markets.</p></div></div>
 
@@ -374,26 +374,36 @@ function savePricing(){
 function fmtTime(s){if(s<60)return s+'s';if(s<3600)return Math.floor(s/60)+'m';return Math.floor(s/3600)+'h '+Math.floor((s%3600)/60)+'m'}
 function fmtDate(d){if(!d)return'\u2014';return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
 
-// ═══════════════════════════════════════════════════════════════════
+// ======================================================================
 //  CONTRACTOR APPROVAL ACTIONS
-// ═══════════════════════════════════════════════════════════════════
+// ======================================================================
 var GHL_APPROVAL_HOOK = 'https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/2FB5RlM1KbFEC2ybUy8Z';
 
+// Action buttons shown in the contractor table, keyed by status.
+// Changes from prior version:
+//  - "Pending Verification" now gets Approve + Reject (was no actions)
+//  - "Paid" (legacy) now gets Approve + Nudge so legacy contractors can be
+//    activated from the UI instead of requiring a manual SQL flip.
+//  - "Pending Profile" gets Nudge + Suspend (was Nudge only) so contractors
+//    who stall mid-onboarding can be cut off without waiting for them to finish.
 function actionsCell(c){
   var st = c.status || '';
-  if (st === 'Pending Review') {
-    return '<button class="act-btn act-approve" onclick="approveContractor(\''+c.id+'\')">Approve</button>'
-         + ' <button class="act-btn act-reject" onclick="rejectContractor(\''+c.id+'\')">Reject</button>';
-  }
-  if (st === 'Active') {
-    return '<button class="act-btn act-suspend" onclick="suspendContractor(\''+c.id+'\')">Suspend</button>';
-  }
-  if (st === 'Pending Profile' || st === 'Paid') {
-    return '<a class="act-btn act-ghost" href="mailto:'+(c.email||'')+'?subject=Finish%20your%20SSP%20profile">Nudge</a>';
-  }
-  if (st === 'Suspended') {
-    return '<button class="act-btn act-approve" onclick="reactivateContractor(\''+c.id+'\')">Reactivate</button>';
-  }
+  var id = c.id;
+  var email = c.email || '';
+
+  // Build reusable buttons
+  function approveBtn(){ return '<button class="act-btn act-approve" onclick="approveContractor(\''+id+'\')">Approve</button>'; }
+  function rejectBtn(){ return '<button class="act-btn act-reject" onclick="rejectContractor(\''+id+'\')">Reject</button>'; }
+  function suspendBtn(){ return '<button class="act-btn act-suspend" onclick="suspendContractor(\''+id+'\')">Suspend</button>'; }
+  function reactivateBtn(){ return '<button class="act-btn act-approve" onclick="reactivateContractor(\''+id+'\')">Reactivate</button>'; }
+  function nudgeBtn(){ return '<a class="act-btn act-ghost" href="mailto:'+email+'?subject=Finish%20your%20SSP%20profile">Nudge</a>'; }
+
+  if (st === 'Pending Review')       return approveBtn() + ' ' + rejectBtn();
+  if (st === 'Pending Verification') return approveBtn() + ' ' + rejectBtn();
+  if (st === 'Active')               return suspendBtn();
+  if (st === 'Paid')                 return approveBtn() + ' ' + nudgeBtn();
+  if (st === 'Pending Profile')      return nudgeBtn() + ' ' + suspendBtn();
+  if (st === 'Suspended')            return reactivateBtn();
   return '<span style="color:var(--text4);font-size:12px">—</span>';
 }
 
