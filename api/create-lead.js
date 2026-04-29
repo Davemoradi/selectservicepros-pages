@@ -6,7 +6,7 @@ const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imthc3F0eHdic21qbGlzYm5lYmt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzkxODgsImV4cCI6MjA5MTQxNTE4OH0.QEiRMQYZlOEgk1FzOV-L3TMRjgC046ymziSE7RNO8Yg";
 
 const GHL_WEBHOOK =
-  "https://services.leadconnectorhq.com/hooks/a65106d8-9948-4122-9364-bddcc07aca5c";
+  "https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c";
 const CONTRACTOR_NOTIFY_WEBHOOK =
   "https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/jhKITwxqbN20tY3x5BqS";
 const HOMEOWNER_NOTIFY_WEBHOOK =
