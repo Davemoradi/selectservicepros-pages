@@ -35,10 +35,25 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Invalid plan' });
     }
 
+    // Reuse the existing Stripe customer if this email has paid before.
+    // Without this, an abandoned checkout + retry creates a duplicate
+    // customer; the webhook (which matches contractors by email) then
+    // overwrites stripe_customer_id with the newer customer's ID,
+    // orphaning the first.
+    let existingCustomerId = null;
+    if (email) {
+      try {
+        const existing = await stripe.customers.list({ email: email, limit: 1 });
+        existingCustomerId = existing.data[0]?.id || null;
+      } catch (lookupErr) {
+        console.warn('Stripe customer lookup failed, falling back:', lookupErr.message);
+      }
+    }
+
     const session = await stripe.checkout.sessions.create({
       ui_mode: 'embedded',
       mode: 'subscription',
-      customer_email: email,
+      ...(existingCustomerId ? { customer: existingCustomerId } : { customer_email: email }),
       metadata: {
         contractor_name: name,
         contractor_phone: phone,
