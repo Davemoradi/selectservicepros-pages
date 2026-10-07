@@ -11,7 +11,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Join the Network — Select Service Pros</title>
-<meta name="description" content="Join Select Service Pros and get qualified homeowner leads in Houston. Three membership tiers — Basic, Pro, Elite. Cancel anytime."/>
+<meta name="description" content="Join Select Service Pros free and receive limited-share homeowner lead opportunities in Houston. Pay only when you accept a lead."/>
 <link rel="icon" href="/favicon.ico"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:wght@700;800;900&display=swap" rel="stylesheet"/>
 <script>history.scrollRestoration='manual';window.scrollTo(0,0);</script>
@@ -228,16 +228,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <!-- STEPPER -->
 <div class="stepper" id="stepper">
-  <div class="step-item active" id="si1"><div class="step-num" id="sn1">1</div><div class="step-label">Your info</div></div>
+  <div class="step-item active" id="si1"><div class="step-num" id="sn1">1</div><div class="step-label">Create account</div></div>
   <div class="step-line" id="sline1"></div>
-  <div class="step-item" id="si2"><div class="step-num" id="sn2">2</div><div class="step-label">Pick a plan</div></div>
+  <div class="step-item" id="si2"><div class="step-num" id="sn2">2</div><div class="step-label">Set password</div></div>
 </div>
 
 <!-- STEP 1: FORM -->
 <section class="form-section" id="form-section">
   <div class="form-card" id="form-card">
     <h2 class="form-title">Tell us about your business</h2>
-    <p class="form-sub">We'll match you with homeowners in your area. Takes 60 seconds.</p>
+    <p class="form-sub">Free to join. Tell us what you do and where you work.</p>
 
     <div class="fg">
       <label class="fl">What services do you offer? <span class="req">*</span></label>
@@ -252,33 +252,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="fg fi-row"><div><label class="fl">First name <span class="req">*</span></label><input class="fi" type="text" id="c-fname" placeholder="First name"/></div><div><label class="fl">Last name <span class="req">*</span></label><input class="fi" type="text" id="c-lname" placeholder="Last name"/></div></div>
     <div class="fg"><label class="fl">Business name <span class="req">*</span></label><input class="fi" type="text" id="c-biz" placeholder="Your company or DBA name"/></div>
     <div class="fg fi-row"><div><label class="fl">Mobile phone <span class="req">*</span></label><input class="fi" type="tel" id="c-phone" placeholder="(555) 123-4567" oninput="fmtPhone(this)"/></div><div><label class="fl">Email <span class="req">*</span></label><input class="fi" type="email" id="c-email" placeholder="you@company.com"/></div></div>
-    <button type="button" class="btn-submit" onclick="submitForm()">Continue — Choose a Plan →</button>
-    <p class="form-note">By continuing, you agree to receive communications from Select Service Pros.</p>
+    <button type="button" class="btn-submit" id="signupBtn" onclick="submitForm()">Create free account →</button>
+    <p class="form-note">By creating an account, you agree to receive account-related email from Select Service Pros. SMS lead alerts are optional and can be enabled later.</p>
   </div>
 </section>
-
-<!-- STEP 2: PLANS (hidden until form submitted) -->
-<section class="plans-section" id="plans-section">
-  <div class="plans-header"><h2>Choose your plan</h2><p>All plans include qualified homeowner leads, cancel anytime.</p></div>
-  <div class="plans-grid" id="plans-grid"></div>
-  <p class="plans-note">Lead fees are charged only when you accept a lead · Memberships renew monthly · Cancel anytime</p>
-</section>
-
-<!-- STEP 2B: STRIPE CHECKOUT (hidden until plan selected) -->
-<section class="form-section" id="checkout-section" style="display:none">
-  <div class="form-card">
-    <div id="checkout-header" style="text-align:center;margin-bottom:20px">
-      <h2 class="form-title" id="checkout-plan-name">Complete Payment</h2>
-      <p class="form-sub" id="checkout-plan-desc"></p>
-    </div>
-    <div id="checkout-mount"></div>
-    <div id="checkout-error" style="color:#e53e3e;text-align:center;margin-top:12px;font-size:14px;display:none"></div>
-    <button type="button" class="btn-submit" style="background:var(--border);color:var(--text2);margin-top:12px" onclick="backToPlans()">← Back to plans</button>
-  </div>
-</section>
-
-<!-- STEP 3: PROFILE FORM (hidden until payment complete) -->
-<!-- STEP 3 REMOVED: profile completion now happens inside /contractor-dashboard.html after account creation -->
 
 <!-- STEP 3B: FINAL SUCCESS (hidden until profile submitted) -->
 <section class="form-section" id="success-section" style="display:none">
@@ -286,32 +263,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </section>
 
 <!-- HOW IT WORKS -->
-<section class="how-section"><div class="how-inner"><h2>How it works</h2><p class="how-sub">From signup to your first lead in minutes.</p><div class="how-grid"><div class="how-step"><div class="how-num">1</div><h3>Tell us about you</h3><p>Enter your trade, service area, and contact info.</p></div><div class="how-step"><div class="how-num">2</div><h3>Choose a plan</h3><p>Pick the tier that fits your business and budget.</p></div><div class="how-step"><div class="how-num">3</div><h3>Complete your profile</h3><p>Upload your license, insurance, and set your preferences.</p></div><div class="how-step"><div class="how-num">4</div><h3>Get leads</h3><p>Receive notifications when homeowners in your area need help.</p></div></div></div></section>
+<section class="how-section"><div class="how-inner"><h2>How it works</h2><p class="how-sub">A simple pay-per-lead model with no monthly subscription.</p><div class="how-grid"><div class="how-step"><div class="how-num">1</div><h3>Create your account</h3><p>Tell us your trades, service area, and contact information.</p></div><div class="how-step"><div class="how-num">2</div><h3>Complete your profile</h3><p>Add your business details, insurance, and any license documentation SSP requests for your categories.</p></div><div class="how-step"><div class="how-num">3</div><h3>Get reviewed</h3><p>We review your profile and credentials before activating lead access.</p></div><div class="how-step"><div class="how-num">4</div><h3>Choose each lead</h3><p>See the lead price before you accept. You are charged only when you choose to accept.</p></div></div></div></section>
 
 <!-- TRUST -->
-<section class="trust-section"><div class="trust-inner"><h2>Why contractors choose us</h2><p class="trust-sub">Better leads, fair pricing, no lock-in.</p><div class="trust-grid"><div class="trust-item"><div class="trust-icon">🎯</div><h3>Qualified leads only</h3><p>Homeowners answer detailed intake questions before you see the request — no tire kickers.</p></div><div class="trust-item"><div class="trust-icon">⚡</div><h3>First-access windows</h3><p>Higher-tier members get exclusive access windows before leads open to other contractors.</p></div><div class="trust-item"><div class="trust-icon">💰</div><h3>You keep 100%</h3><p>Flat per-lead fee only when you accept. No commission on what you charge the homeowner.</p></div></div></div></section>
+<section class="trust-section"><div class="trust-inner"><h2>Built for local service businesses</h2><p class="trust-sub">Simple terms and a contractor-first lead model.</p><div class="trust-grid"><div class="trust-item"><div class="trust-icon">💳</div><h3>Free to join</h3><p>No monthly subscription and no contract just to stay on the network.</p></div><div class="trust-item"><div class="trust-icon">🎯</div><h3>Limited-share leads</h3><p>A homeowner lead can be accepted by no more than three contractors.</p></div><div class="trust-item"><div class="trust-icon">🤝</div><h3>You own the customer</h3><p>Once you accept a lead, the customer relationship and your pricing are yours to manage directly.</p></div></div></div></section>
 
 <!-- FAQ -->
 <section class="faq-section"><div class="faq-inner"><h2>Frequently asked questions</h2>
-<div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How does the tiered lead routing work?</div><div class="faq-a">When a homeowner submits a request, Elite members get first access for 60 minutes. If no Elite member accepts, Pro members are notified for 45 minutes. Then Basic for 30 minutes.</div></div>
-<div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Am I charged if I pass on a lead?</div><div class="faq-a">No. The per-lead fee is only charged when you click Accept. Pass on as many leads as you want — no charge.</div></div>
-<div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Do I need a license to join?</div><div class="faq-a">Yes. We verify all contractor licenses through the Texas Department of Licensing and Regulation (TDLR) and other state boards.</div></div>
-<div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Can I change my plan later?</div><div class="faq-a">Yes. Upgrade or downgrade at any time. Changes take effect at the start of your next billing cycle.</div></div>
+<div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How much does it cost to join?</div><div class="faq-a">There is no monthly fee to join. Each lead has a price shown before acceptance, and you are charged only when you affirmatively accept that lead.</div></div>
+<div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Am I charged if I pass on a lead?</div><div class="faq-a">No. Passing on a lead does not charge your wallet.</div></div>
+<div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Do I need a trade license?</div><div class="faq-a">Licensing requirements depend on the work and jurisdiction. SSP currently collects license documentation during onboarding for HVAC, Plumbing, and Electrical. You remain responsible for every license or certification required by law for the services you perform.</div></div>
+<div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What is the Founding 25 credit?</div><div class="faq-a">Eligible Founding 25 Houston contractors receive $250 in SSP promotional lead credit. Promotional credit is used for lead fees and is not refundable for cash.</div></div>
 </div></section>
 
 <!-- CTA BANNER -->
-<section class="cta-banner"><h2>Ready to start getting leads?</h2><p>Fill out the form above and pick a plan — you'll be receiving qualified leads in minutes.</p><a href="#" class="cta-btn" onclick="scrollToForm();return false;">Get Started →</a></section>
+<section class="cta-banner"><h2>Ready to join Select Service Pros?</h2><p>Create your account for free and complete your contractor profile.</p><a href="#" class="cta-btn" onclick="scrollToForm();return false;">Create Free Account →</a></section>
 
 <!-- FOOTER -->
 <footer class="footer"><p>&copy; 2025 SelectServicePros.com · <a href="https://www.selectservicepros.com/">Home</a> · <a href="mailto:info@selectservicepros.com">Contact</a> · <a href="#">Terms</a> · <a href="#">Privacy</a></p></footer>
 
-<script src="https://js.stripe.com/v3/"></script>
-<script src="/ssp-config.js"></script>
 <!--email_off-->
 <script>
-// ═══ GHL WEBHOOK ═══
-var GHL="https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c";
-
 // ═══ SERVICE INDEX ═══
 var CATS=["HVAC","Plumbing","Electrical","Roofing","Handyman","Appliance Repair","Remodeling","Painting","Pool & Spa","Windows & Doors"];
 var SVC=[
@@ -378,277 +350,80 @@ function fmtPhone(el){
   else if(v.length>0)el.value='('+v;
 }
 
-// ═══ SUBMIT FORM → GHL ═══
-function submitForm(){
+// ═══ CREATE FREE ACCOUNT ═══
+async function submitForm(){
   var fn=document.getElementById('c-fname').value.trim();
   var ln=document.getElementById('c-lname').value.trim();
   var biz=document.getElementById('c-biz').value.trim();
   var ph=document.getElementById('c-phone').value.trim();
-  var em=document.getElementById('c-email').value.trim();
+  var em=document.getElementById('c-email').value.trim().toLowerCase();
   var zip=document.getElementById('c-zip').value.trim();
+  var btn=document.getElementById('signupBtn');
 
-  if(!fn||!ln||!ph||!em||!zip){alert('Please fill in all required fields.');return}
+  if(!fn||!ln||!biz||!ph||!em||!zip){alert('Please fill in all required fields.');return}
+  if(!/^\d{5}$/.test(zip)){alert('Enter a 5-digit ZIP code.');return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)){alert('Enter a valid email address.');return}
   if(selectedServices.length===0){alert('Please select at least one service you offer.');return}
 
-  var svcs=selectedServices.map(function(s){return s.name}).join(', ');
-  var cats=[...new Set(selectedServices.map(function(s){return s.cat}))].join(', ');
-
-  contractorData={fn:fn,ln:ln,biz:biz,ph:ph,em:em,zip:zip,svcs:svcs,cats:cats};
+  var cats=[...new Set(selectedServices.map(function(s){return s.cat}))].join(',');
+  contractorData={fn:fn,ln:ln,biz:biz,ph:ph,em:em,zip:zip,cats:cats};
   sessionStorage.setItem('ssp_contractor',JSON.stringify(contractorData));
 
-  // Send to GHL
-  /* removed: redundant client-side GHL webhook — handled server-side via /api/create-contractor */
-
-  // Advance to step 2
-  document.getElementById('si1').classList.remove('active');
-  document.getElementById('si1').classList.add('done');
-  document.getElementById('sn1').textContent='\u2713';
-  document.getElementById('sline1').classList.add('done');
-  document.getElementById('si2').classList.add('active');
-  document.getElementById('form-section').style.display='none';
-  document.getElementById('plans-section').classList.add('visible');
-  renderPlans();
-  history.replaceState(null,null,'#step2');
-  window.scrollTo({top:document.getElementById('stepper').offsetTop-80,behavior:'smooth'});
-}
-
-// ═══ PLANS ═══
-var PLAN_FEATURES={
-  basic:{tagline:'Get started and test the platform',leads:[{y:true,t:'30-min access window'},{y:true,t:'Up to 3 leads per job'},{y:false,t:'Priority access'}],notif:[{y:true,t:'Email lead alerts'},{y:false,t:'SMS lead alerts'}],prof:[{y:true,t:'Public profile'},{y:false,t:'Verified badge'},{y:false,t:'Priority placement'},{y:false,t:'Dedicated support'}]},
-  pro:{tagline:'Best value for growing contractors',leads:[{y:true,t:'45-min access window'},{y:true,t:'Up to 3 leads per job'},{y:true,t:'Seen before Basic'}],notif:[{y:true,t:'Email lead alerts'},{y:true,t:'SMS lead alerts'}],prof:[{y:true,t:'Public profile'},{y:true,t:'Verified badge'},{y:true,t:'Priority placement'},{y:false,t:'Dedicated support'}]},
-  elite:{tagline:'For contractors who want every lead first',leads:[{y:true,t:'60-min exclusive window'},{y:true,t:'Up to 3 leads per job'},{y:true,t:'First access — always'}],notif:[{y:true,t:'Email lead alerts'},{y:true,t:'SMS lead alerts'}],prof:[{y:true,t:'Public profile'},{y:true,t:'Verified badge'},{y:true,t:'Priority placement'},{y:true,t:'Dedicated support'}]}
-};
-
-function ck(){return '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#1a8a4a" stroke-width="2" stroke-linecap="round"><path d="M1.5 5l2.5 2.5 4.5-4.5"/></svg>'}
-function xk(){return '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#9ca0a8" stroke-width="2" stroke-linecap="round"><path d="M2 2l6 6M8 2l-6 6"/></svg>'}
-
-function rfg(label,items){return '<div class="fg-lbl">'+label+'</div>'+items.map(function(f){return '<div class="feat-i '+(f.y?'yes':'no')+'">'+(f.y?ck():xk())+' '+f.t+'</div>'}).join('')}
-
-function renderPlans(){
-  if(typeof SSP_CONFIG==='undefined'){
-    document.getElementById('plans-grid').innerHTML='<p style="text-align:center;color:#888;grid-column:1/-1;">Loading plans...</p>';
-    setTimeout(renderPlans,500);
-    return;
-  }
-  var plans=SSP_CONFIG.plans;
-  document.getElementById('plans-grid').innerHTML=plans.map(function(p){
-    var f=PLAN_FEATURES[p.id]||PLAN_FEATURES.basic;
-    var isSel=(p.id==='pro');
-    return '<div class="plan'+(isSel?' selected':'')+'" id="pl-'+p.id+'" onclick="selPlan(\''+p.id+'\')">'
-      +(p.badge?'<div class="plan-badge">'+p.badge+'</div>':'')
-      +'<div class="plan-name">'+p.name+'</div>'
-      +'<div class="plan-tagline">'+f.tagline+'</div>'
-      +'<div class="plan-price">$'+p.monthlyPrice+'<span>/mo</span></div>'
-      +'<div class="plan-lead">+ $'+p.leadPrice+'/accepted lead</div>'
-      +rfg('Lead access',f.leads)
-      +rfg('Notifications',f.notif)
-      +rfg('Profile & support',f.prof)
-      +'<button type="button" class="plan-btn '+(isSel?'primary':'outline')+'" onclick="choosePlan(\''+p.id+'\',\''+p.name+'\','+p.monthlyPrice+')">Choose '+p.name+'</button>'
-      +'</div>';
-  }).join('');
-}
-
-function selPlan(id){document.querySelectorAll('.plan').forEach(function(el){el.classList.remove('selected')});var c=document.getElementById('pl-'+id);if(c)c.classList.add('selected')}
-
-// ═══ STRIPE EMBEDDED CHECKOUT ═══
-var stripeInstance=null;
-var embeddedCheckout=null;
-var STRIPE_PK=''; // Set your Stripe publishable key here or in ssp-config.js
-
-function getStripePK(){
-  // Try ssp-config first, then fallback
-  if(typeof SSP_CONFIG!=='undefined'&&SSP_CONFIG.stripe&&SSP_CONFIG.stripe.publishableKey)return SSP_CONFIG.stripe.publishableKey;
-  if(STRIPE_PK)return STRIPE_PK;
-  // Fallback test key — replace with your real publishable key
-  return 'pk_test_REPLACE_WITH_YOUR_KEY';
-}
-
-function choosePlan(planId,planName,monthlyPrice){
-  sessionStorage.setItem('ssp_plan',planName);
-  sessionStorage.setItem('ssp_plan_id',planId);
-
-  // Update checkout header
-  document.getElementById('checkout-plan-name').textContent=planName+' Plan — $'+monthlyPrice+'/mo';
-  document.getElementById('checkout-plan-desc').textContent='Enter your payment details below. You can cancel anytime.';
-
-  // Hide plans, show checkout
-  document.getElementById('plans-section').classList.remove('visible');
-  document.getElementById('plans-section').style.display='none';
-  document.getElementById('checkout-section').style.display='block';
-  document.getElementById('checkout-error').style.display='none';
-
-  window.scrollTo({top:document.getElementById('stepper').offsetTop-80,behavior:'smooth'});
-
-  // Initialize Stripe embedded checkout
-  initEmbeddedCheckout(planId);
-}
-
-function backToPlans(){
-  // Destroy existing checkout if any
-  if(embeddedCheckout){embeddedCheckout.destroy();embeddedCheckout=null}
-  document.getElementById('checkout-mount').innerHTML='';
-  document.getElementById('checkout-section').style.display='none';
-  document.getElementById('plans-section').style.display='';
-  document.getElementById('plans-section').classList.add('visible');
-  window.scrollTo({top:document.getElementById('stepper').offsetTop-80,behavior:'smooth'});
-}
-
-async function initEmbeddedCheckout(planId){
-  // Clear previous checkout
-  if(embeddedCheckout){embeddedCheckout.destroy();embeddedCheckout=null}
-  document.getElementById('checkout-mount').innerHTML='<p style="text-align:center;color:var(--text3);padding:40px 0;">Loading secure payment form...</p>';
+  btn.disabled=true;
+  btn.textContent='Creating account…';
 
   try{
-    if(!stripeInstance){
-      stripeInstance=Stripe(getStripePK());
-    }
-
-    var saved=JSON.parse(sessionStorage.getItem('ssp_contractor')||'{}');
-
-    // Call our serverless function to create checkout session
-    var resp=await fetch('/api/create-checkout-session',{
+    var resp=await fetch('/api/create-contractor',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        planId:planId,
-        email:saved.em||'',
-        name:(saved.fn||'')+' '+(saved.ln||''),
-        phone:saved.ph||'',
-        companyName:saved.biz||''
+        email:em,
+        firstName:fn,
+        lastName:ln,
+        phone:ph,
+        companyName:biz,
+        serviceZips:zip,
+        serviceCategories:cats
       })
     });
+    var data=await resp.json().catch(function(){return {}});
+    if(!resp.ok) throw new Error(data.message||data.error||'Could not create account');
 
-    if(!resp.ok){
-      var errData=await resp.json();
-      throw new Error(errData.error||'Failed to create checkout session');
-    }
+    document.getElementById('si1').classList.remove('active');
+    document.getElementById('si1').classList.add('done');
+    document.getElementById('sn1').textContent='✓';
+    document.getElementById('sline1').classList.add('done');
+    document.getElementById('si2').classList.add('active');
+    document.getElementById('form-section').style.display='none';
+    document.getElementById('success-section').style.display='block';
 
-    var data=await resp.json();
+    var msg=data.email_sent===false
+      ? 'Your account was created, but the setup email could not be sent. Use “Forgot password” on the sign-in page to request a new link.'
+      : 'Check your email for the secure link to set your password. After that, sign in and finish your contractor profile.';
 
-    embeddedCheckout=await stripeInstance.initEmbeddedCheckout({
-      clientSecret:data.clientSecret,
-      onComplete:function(){handleCheckoutComplete()}
-    });
-
-    document.getElementById('checkout-mount').innerHTML='';
-    embeddedCheckout.mount('#checkout-mount');
-  }catch(err){
-    console.error('Checkout error:',err);
-    document.getElementById('checkout-mount').innerHTML='';
-    var errEl=document.getElementById('checkout-error');
-    errEl.textContent='Payment setup failed: '+err.message+'. Please try again.';
-    errEl.style.display='block';
-  }
-}
-
-function handleCheckoutComplete(){
-  // Payment succeeded — send plan selection to GHL
-  var planName=sessionStorage.getItem('ssp_plan')||'';
-  var saved=sessionStorage.getItem('ssp_contractor');
-  if(saved){
-    var d=JSON.parse(saved);
-    /* removed: redundant client-side GHL webhook — handled server-side via /api/create-contractor */
-  }
-
-  // Destroy checkout and show payment confirmation
-  if(embeddedCheckout){embeddedCheckout.destroy();embeddedCheckout=null}
-  document.getElementById('checkout-mount').innerHTML='';
-  document.getElementById('checkout-error').style.display='none';
-
-  // Show payment confirmed message in the checkout section
-  var fn='';
-  if(saved){fn=JSON.parse(saved).fn||''}
-  document.getElementById('checkout-header').innerHTML='<div style="text-align:center;padding:20px 0"><div style="width:72px;height:72px;background:#e8f5e9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:36px;color:#1a8a4a;font-weight:700">\u2713</div><h2 class="form-title" style="color:#1a8a4a">Payment Successful!</h2><p class="form-sub" style="margin-top:8px">Your '+planName+' membership is now active'+(fn?', '+fn:'')+'.</p><p style="font-size:13px;color:var(--text3);margin-top:4px">Redirecting to your profile setup...</p></div>';
-
-  // Remove the back button during confirmation
-  var backBtn=document.querySelector('#checkout-section .btn-submit');
-  if(backBtn)backBtn.style.display='none';
-
-  // After 3 seconds, create the contractor account + redirect to dashboard
-  setTimeout(function(){
-    document.getElementById('checkout-section').style.display='none';
-    completeSignupAfterPayment();
-  },3000);
-}
-
-// ═══ POST-PAYMENT ACCOUNT CREATION ═══
-// Called from the #success hash handler once Stripe confirms payment.
-// Creates the Supabase auth user + contractor row with Step 1 data only
-// (no profile fields yet — those get filled in inside the dashboard).
-// On success, redirects straight to /contractor-dashboard.html?welcome=1
-// where the magic-link session carries the contractor into their portal.
-async function completeSignupAfterPayment(){
-  var saved = JSON.parse(sessionStorage.getItem('ssp_contractor')||'{}');
-  var planName = sessionStorage.getItem('ssp_plan')||'Basic';
-  var fn=saved.fn||'', ln=saved.ln||'', em=saved.em||'';
-  var biz=saved.biz||'', ph=saved.ph||'';
-  var svcs=saved.svcs||'', cats=saved.cats||'', zip=saved.zip||'';
-
-  if(!em || !fn || !ln){
-    console.error('Missing Step 1 data in sessionStorage', saved);
-    alert('Something went wrong carrying your info over. Please email support@selectservicepros.com and we will get you set up right away.');
-    return;
-  }
-
-  // Show "Creating your account..." splash on the success section
-  document.getElementById('success-section').style.display='block';
-  document.getElementById('success-card').innerHTML =
-    '<div class="success-wrap">'
-    + '<div class="s-icon" style="animation:popIn .4s ease">\u2713</div>'
-    + '<div class="s-title">Payment received'+(fn?', '+fn:'')+'!</div>'
-    + '<p class="s-msg">Setting up your <strong>'+planName+'</strong> account\u2026</p>'
-    + '</div>';
-
-  try{
-    var resp = await fetch('/api/create-contractor', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        email: em,
-        firstName: fn,
-        lastName: ln,
-        phone: ph,
-        companyName: biz,
-        planName: planName,
-        serviceZips: zip,
-        services: svcs,
-        serviceCategories: cats
-        // Profile fields (description, years, employees, license, website)
-        // intentionally omitted — contractor fills them in on the dashboard.
-      })
-    });
-
-    var data = await resp.json();
-    if(!resp.ok){
-      throw new Error(data.error||'Failed to create account');
-    }
-
-    // Clear sessionStorage — data is now in Supabase
-    sessionStorage.removeItem('ssp_contractor');
-    sessionStorage.removeItem('ssp_plan');
-    sessionStorage.removeItem('ssp_plan_id');
-
-    // Happy path: redirect user directly to the Supabase password-reset URL
-    // we got back from /api/create-contractor. This lands them on
-    // /reset-password.html with a valid recovery session, where they set
-    // a password and get logged into the dashboard.
-    if (data.passwordResetUrl) {
-      window.location.href = data.passwordResetUrl;
-    } else {
-      // Fallback: no URL returned (shouldn't happen). Send them to login
-      // where "Forgot password?" will resend the link.
-      window.location.href = '/contractor-login.html?welcome=1&email=' + encodeURIComponent(em);
-    }
-  }catch(err){
-    console.error('Account creation error:', err);
-    document.getElementById('success-card').innerHTML =
+    document.getElementById('success-card').innerHTML=
       '<div class="success-wrap">'
-      + '<div class="s-title" style="color:#c0392b">Something went wrong</div>'
-      + '<p class="s-msg">Your payment was received, but we had trouble setting up your account. Please email <a href="mailto:support@selectservicepros.com" style="color:var(--orange)">support@selectservicepros.com</a> and we will get you set up right away. Include your email: <strong>'+em+'</strong></p>'
-      + '</div>';
+      +'<div class="s-icon">✓</div>'
+      +'<div class="s-title">Account created'+(fn?', '+escapeHTML(fn):'')+'</div>'
+      +'<p class="s-msg">'+escapeHTML(msg)+'</p>'
+      +'<p class="s-msg" style="margin-top:8px"><strong>No monthly fee.</strong> Lead prices are shown before you accept.</p>'
+      +'<a class="btn-submit" style="display:inline-block;text-align:center;margin-top:16px" href="/contractor-login.html?email='+encodeURIComponent(em)+'">Go to contractor sign in</a>'
+      +'</div>';
+    sessionStorage.removeItem('ssp_contractor');
+    window.scrollTo({top:document.getElementById('stepper').offsetTop-80,behavior:'smooth'});
+  }catch(err){
+    console.error('Account creation error:',err);
+    alert(err.message||'Could not create account. Please try again.');
+    btn.disabled=false;
+    btn.textContent='Create free account →';
   }
 }
 
+function escapeHTML(v){
+  return String(v==null?'':v)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
 // ═══ FAQ ═══
 function toggleFaq(el){var item=el.closest('.faq-item');var isOpen=item.classList.contains('open');document.querySelectorAll('.faq-item').forEach(function(i){i.classList.remove('open')});if(!isOpen)item.classList.add('open')}
@@ -658,71 +433,9 @@ function toggleMobileMenu(){document.getElementById('mobile-menu').classList.tog
 
 // ═══ INIT ═══
 function init(){
-  document.getElementById('cat-pills').innerHTML=CATS.map(function(c){return '<button type="button" class="cpill" onclick="toggleCat(this)">'+c+'</button>'}).join('');
-  var hash=window.location.hash;
-  if(hash.indexOf('#success')===0){
-    // Returned from Stripe payment redirect — show payment confirmation, then create account
-    var planName=sessionStorage.getItem('ssp_plan')||'';
-    var saved=sessionStorage.getItem('ssp_contractor');
-    var fn='';
-    if(saved){fn=JSON.parse(saved).fn||''}
-
-    // Update stepper — both steps done
-    document.getElementById('si1').classList.remove('active');document.getElementById('si1').classList.add('done');document.getElementById('sn1').textContent='\u2713';
-    document.getElementById('sline1').classList.add('done');
-    document.getElementById('si2').classList.remove('active');document.getElementById('si2').classList.add('done');document.getElementById('sn2').textContent='\u2713';
-
-    // Hide form and plans
-    document.getElementById('form-section').style.display='none';
-    document.getElementById('plans-section').style.display='none';
-    document.getElementById('checkout-section').style.display='none';
-
-    // Brief "Payment Successful" splash
-    document.getElementById('success-section').style.display='block';
-    document.getElementById('success-card').innerHTML='<div class="success-wrap"><div style="width:80px;height:80px;background:#e8f5e9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:40px;color:#1a8a4a;font-weight:700;animation:popIn .4s ease">\u2713</div><h2 class="form-title" style="color:#1a8a4a;font-size:26px">Payment Successful!</h2><p class="form-sub" style="margin-top:8px;font-size:15px">Your <strong>'+planName+'</strong> membership is now active'+(fn?', '+fn:'')+'. Setting up your account\u2026</p></div>';
-
-    // After 2 seconds, create the account + redirect to dashboard
-    setTimeout(function(){completeSignupAfterPayment()},2000);
-
-  }else if(hash==='#step2'){
-    showPlansQuiet();
-  }
-}
-function showPlansQuiet(){
-  document.getElementById('si1').classList.remove('active');document.getElementById('si1').classList.add('done');document.getElementById('sn1').textContent='\u2713';document.getElementById('sline1').classList.add('done');document.getElementById('si2').classList.add('active');document.getElementById('form-section').style.display='none';document.getElementById('plans-section').classList.add('visible');renderPlans();
+  document.getElementById('cat-pills').innerHTML=CATS.map(function(c){return '<button type="button" class="cpill" onclick="toggleCat(this)">'+escapeHTML(c)+'</button>'}).join('');
 }
 window.addEventListener('load',init);
-window.addEventListener('hashchange',function(){
-  var hash=window.location.hash;
-  if(hash.indexOf('#success')===0){
-    // Stripe just completed payment and changed the hash.
-    // Destroy the checkout if still mounted.
-    if(embeddedCheckout){embeddedCheckout.destroy();embeddedCheckout=null}
-    document.getElementById('checkout-mount').innerHTML='';
-    document.getElementById('checkout-section').style.display='none';
-
-    var planName=sessionStorage.getItem('ssp_plan')||'';
-    var saved=sessionStorage.getItem('ssp_contractor');
-    var fn='';
-    if(saved){fn=JSON.parse(saved).fn||''}
-
-    // Update stepper — both steps done
-    document.getElementById('si1').classList.remove('active');document.getElementById('si1').classList.add('done');document.getElementById('sn1').textContent='\u2713';
-    document.getElementById('sline1').classList.add('done');
-    document.getElementById('si2').classList.remove('active');document.getElementById('si2').classList.add('done');document.getElementById('sn2').textContent='\u2713';
-
-    // Hide form/plans
-    document.getElementById('form-section').style.display='none';
-    document.getElementById('plans-section').style.display='none';
-
-    // Brief "Payment Successful" splash + then create account + redirect
-    document.getElementById('success-section').style.display='block';
-    document.getElementById('success-card').innerHTML='<div class="success-wrap"><div style="width:80px;height:80px;background:#e8f5e9;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:40px;color:#1a8a4a;font-weight:700;animation:popIn .4s ease">\u2713</div><h2 class="form-title" style="color:#1a8a4a;font-size:26px">Payment Successful!</h2><p class="form-sub" style="margin-top:8px;font-size:15px">Your <strong>'+planName+'</strong> membership is now active'+(fn?', '+fn:'')+'. Setting up your account\u2026</p></div>';
-
-    window.scrollTo({top:document.getElementById('stepper').offsetTop-80,behavior:'smooth'});
-    setTimeout(function(){completeSignupAfterPayment()},2000);
-  }
-});
 </script>
 <!--/email_off-->
 </body>
