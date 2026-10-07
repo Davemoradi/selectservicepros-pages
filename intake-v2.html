@@ -167,7 +167,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <section class="step active" data-step="1">
       <p class="step-eyebrow">Let's get started</p>
       <h1>What do you need help with?</h1>
-      <p class="step-hint">Pick a service category. We'll match you with licensed pros in your area.</p>
+      <p class="step-hint">Pick a service category. We'll look for local service professionals who cover your area.</p>
       <div class="cat-grid" id="cat-grid"><!-- populated by JS --></div>
       <div class="field" id="zip-field">
         <label for="f-zip">Your ZIP code</label>
@@ -256,8 +256,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div class="success-card">
         <div class="success-icon">✓</div>
         <h1>You're all set!</h1>
-        <p>We've received your request and are matching you with a licensed <strong id="success-cat">pro</strong> in ZIP <strong id="success-zip">—</strong>.</p>
-        <p>A contractor will reach out to you directly within minutes. Keep an eye on your phone and email.</p>
+        <p>We've received your request and are looking for an available <strong id="success-cat">pro</strong> serving ZIP <strong id="success-zip">—</strong>.</p>
+        <p>We'll let you know when a service professional accepts your request. Response time depends on local availability.</p>
         <div style="margin-top:24px">
           <a href="/" class="btn btn-primary" style="display:inline-block;text-decoration:none;padding:14px 28px">Back to home</a>
         </div>
@@ -267,6 +267,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </main>
 
+<script src="/ssp-taxonomy-v1.js"></script>
 <script>
 // ============================================================
 //  CONFIG — categories + issues per category
@@ -285,18 +286,11 @@ const CATEGORIES = [
   { name: 'Painting',         icon: '🎨' }
 ];
 
-const ISSUES = {
-  'HVAC': ['AC not cooling','AC blowing warm air','AC making noise','AC leaking water','No heat / furnace issue','Heat pump not working','AC replacement / new system','Furnace replacement','Duct cleaning or repair','Thermostat install / replace','Mini split install','Maintenance / tune-up','Other'],
-  'Plumbing': ['Leaky faucet or pipe','Clogged drain / slow drain','Water heater not working','Water heater replacement','Tankless water heater install','Toilet running / leaking','Garbage disposal issue','Sewer line backup','Sump pump issue','Gas line repair','Water pressure issue','Pipe repair / repiping','Other'],
-  'Electrical': ['Outlet or switch not working','Light fixture install','Recessed lighting install','Ceiling fan install','Panel / breaker upgrade','Wiring repair or upgrade','Generator install','EV charger install','Smoke / CO detector install','Landscape / outdoor lighting','Flickering or dimming lights','Other'],
-  'Roofing': ['Roof leak repair','Shingle repair / replacement','Full roof replacement','Flat roof repair','Storm / hail damage','Gutter install or repair','Gutter cleaning','Roof inspection','Skylight install or repair','Other'],
-  'Handyman': ['Drywall repair / patching','TV mounting','Furniture assembly','Shelf / curtain rod install','Door repair or adjustment','Fence / gate repair','Pressure washing','Caulking / weatherstripping','Deck repair','Tile / grout repair','Other'],
-  'Appliance Repair': ['Refrigerator not cooling','Washer not spinning / draining','Dryer not heating','Dishwasher not cleaning','Oven / stove not heating','Ice maker not working','Garbage disposal jammed','Other'],
-  'Construction': ['Kitchen remodel','Bathroom remodel','Flooring installation','Tile installation','Room addition','Basement finishing','Deck / patio build','Cabinet install / reface','Countertop installation','Other'],
-  'Pool & Spa': ['Pool cleaning / maintenance','Pool pump or filter repair','Pool leak detection','Pool heater repair','Pool resurfacing','Spa / hot tub service','Other'],
-  'Windows & Doors': ['Window replacement','Window repair','Door installation','Door repair','Sliding door repair','Storm door install','Screen repair / replace','Other'],
-  'Painting': ['Interior painting (full room)','Interior touch-up / accent wall','Exterior painting','Cabinet painting / refinishing','Deck / fence staining','Wallpaper removal','Popcorn ceiling removal','Other']
-};
+const ISSUES = (window.SSP_TAXONOMY_V1 && window.SSP_TAXONOMY_V1.issues) || {};
+if (!window.SSP_TAXONOMY_V1 || window.SSP_TAXONOMY_V1.version !== 'v1') {
+  console.error('SSP taxonomy v1 failed to load');
+}
+
 
 // ============================================================
 //  STATE
@@ -316,10 +310,12 @@ const state = {
   lat: null,
   lng: null,
   placeId: null,     // Google place_id
-  service: null,     // specific issue picked at step 3
+  service: null,     // canonical display label picked at step 3
+  issueCode: null,   // stable taxonomy key sent to create-lead
   urgency: null,
   details: '',
   leadId: null,      // set after partial capture at step 2
+  leadToken: null,   // signed server token authorizing finalization of that partial row
   partialSent: false
 };
 
@@ -635,8 +631,11 @@ async function sendPartialLead() {
   });
   if (!resp.ok) throw new Error('HTTP ' + resp.status);
   const data = await resp.json();
-  if (data && data.leadId) {
+  if (data && data.leadId && data.leadToken) {
     state.leadId = data.leadId;
+    state.leadToken = data.leadToken;
+  } else {
+    throw new Error('Partial save did not return an authorization token');
   }
   state.partialSent = true;
 }
@@ -648,23 +647,31 @@ function renderIssuesForCategory(cat) {
   document.getElementById('eyebrow-cat').textContent = cat;
   const issues = ISSUES[cat] || [];
   const host = document.getElementById('issue-pills');
-  host.innerHTML = issues.map(i => `<button class="issue-pill" data-issue="${i.replace(/"/g,'&quot;')}">${i}</button>`).join('');
+  host.innerHTML = issues.map(i => {
+    const code = String(i.code || '').replace(/"/g, '&quot;');
+    const label = String(i.label || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return `<button class="issue-pill" data-code="${code}">${label}</button>`;
+  }).join('');
   host.onclick = (e) => {
     const btn = e.target.closest('.issue-pill');
     if (!btn) return;
+    const selected = issues.find(i => i.code === btn.dataset.code);
+    if (!selected) return;
     document.querySelectorAll('.issue-pill').forEach(p => p.classList.remove('selected'));
     btn.classList.add('selected');
-    state.service = btn.dataset.issue;
+    state.service = selected.label;
+    state.issueCode = selected.code;
     document.getElementById('next-3').disabled = false;
     // Auto-advance after a brief pause so the user sees their selection highlight.
     setTimeout(() => {
-      if (state.currentStep === 3 && state.service === btn.dataset.issue) {
+      if (state.currentStep === 3 && state.issueCode === selected.code) {
         goToStep(4);
       }
     }, 400);
   };
   document.getElementById('next-3').disabled = true;
   state.service = null;
+  state.issueCode = null;
   document.getElementById('next-3').onclick = () => goToStep(4);
 }
 
@@ -687,7 +694,7 @@ function wireStep4() {
 }
 
 async function onFinalSubmit() {
-  if (!state.urgency) return;
+  if (!state.urgency || !state.service || !state.issueCode) return;
   const btn = document.getElementById('submit-final');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Submitting...';
@@ -705,10 +712,12 @@ async function onFinalSubmit() {
     lng: state.lng,
     place_id: state.placeId,
     service: state.service,
+    issue_code: state.issueCode,
     urgency: state.urgency,
     details: state.details || '',
     category: state.category,
-    leadId: state.leadId,        // pass the partial lead ID if we have one (backend may dedupe)
+    leadId: state.leadId,        // partial row id; server requires the paired signed token
+    leadToken: state.leadToken,
     partial: false
   };
 
