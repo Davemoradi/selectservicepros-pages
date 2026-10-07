@@ -1,79 +1,108 @@
-const { createClient } = require('@supabase/supabase-js');
+// api/admin-data.js — authenticated SSP operations snapshot. No shared password.
+const { requireAdmin } = require("./_admin-auth");
 
-module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-
-  var password = req.body.password;
-  if (password !== 'ssp2025') {
-    return res.status(401).json({ error: 'Invalid password' });
+module.exports = async function handler(req, res) {
+  res.setHeader("Content-Type", "application/json");
+  res.setHeader("Cache-Control", "no-store");
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
+    return res.status(204).end();
   }
+  if (req.method !== "GET") return res.status(405).json({ ok:false, error:"method_not_allowed" });
 
-  var supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+  let ctx;
+  try { ctx = await requireAdmin(req); }
+  catch (e) { return res.status(e.status || 500).json({ ok:false, error:e.message || "admin_auth_failed" }); }
+  const { supabase, user } = ctx;
 
   try {
-    var contractorsResult = await supabase.from('contractors')
-      .select('id, email, first_name, last_name, company_name, phone, membership_tier, status, services, service_categories, service_zips, lead_count, acceptance_rate, avg_response_time, total_lead_charges, created_at')
-      .order('created_at', { ascending: false });
+    const [contractorsR, licensesR, leadsR, offersR, walletR, pricingR, disputesR] = await Promise.all([
+      supabase.from("contractors")
+        .select("id,email,first_name,last_name,company_name,phone,status,service_categories,service_zips,promo_credits_cents,lead_balance_cents,insurance_verified,insurance_expiration,insurance_doc_url,created_at")
+        .order("created_at", { ascending:false }),
+      supabase.from("contractor_licenses")
+        .select("id,contractor_id,trade_category,license_type,license_state,license_number,expiration_date,document_url,verified,verified_at")
+        .order("created_at", { ascending:false }),
+      supabase.from("leads")
+        .select("id,created_at,homeowner_name,homeowner_phone,homeowner_email,homeowner_zip,service_category,service_type,issue_code,urgency,status,pricing_version,pricing_band,price_cents,matching_expires_at")
+        .order("created_at", { ascending:false }).limit(250),
+      supabase.from("lead_offers")
+        .select("id,lead_id,contractor_id,status,price_cents,offered_at,expires_at,responded_at,transaction_id")
+        .order("offered_at", { ascending:false }).limit(1000),
+      supabase.from("wallet_transactions")
+        .select("id,contractor_id,type,amount_cents,promo_delta_cents,paid_delta_cents,lead_id,description,created_by,idempotency_key,created_at")
+        .order("created_at", { ascending:false }).limit(2000),
+      supabase.from("band_map")
+        .select("version,category,issue_code,label,band,price_cents,requires_clarification")
+        .eq("version","v1").order("category", { ascending:true }),
+      supabase.from("lead_disputes")
+        .select("id,contractor_id,lead_id,debit_transaction_id,reason,evidence,submitted_at,decided_at,decision,decided_by,restored_promo_cents,restored_paid_cents,reversal_transaction_id")
+        .order("submitted_at", { ascending:false }).limit(250),
+    ]);
 
-    var leadsResult = await supabase.from('leads')
-      .select('id, created_at, homeowner_name, homeowner_phone, homeowner_email, homeowner_zip, service_type, service_category, description, urgency, status, assigned_contractor_id, accepted_at, lead_fee, paid, response_time_seconds')
-      .order('created_at', { ascending: false })
-      .limit(100);
+    for (const [name, r] of Object.entries({contractorsR,licensesR,leadsR,offersR,walletR,pricingR})) {
+      if (r.error) throw new Error(`${name}:${r.error.message}`);
+    }
+    // lead_disputes may not exist until the core migration is present. Keep the
+    // rest of operations usable and surface an empty queue instead of 500.
+    const disputes = disputesR.error ? [] : (disputesR.data || []);
 
-    var contractors = contractorsResult.data || [];
-    var leads = leadsResult.data || [];
+    const contractors = contractorsR.data || [];
+    const licenses = licensesR.data || [];
+    const leads = leadsR.data || [];
+    const offers = offersR.data || [];
+    const wallet = walletR.data || [];
+    const pricing = pricingR.data || [];
 
-    // Compute real stats per contractor from leads data
-    var contractorLeadStats = {};
-    leads.forEach(function(l) {
-      var cid = l.assigned_contractor_id;
-      if (!cid) return;
-      if (!contractorLeadStats[cid]) contractorLeadStats[cid] = { total: 0, accepted: 0, passed: 0, responseTimes: [] };
-      contractorLeadStats[cid].total++;
-      if (l.status === 'Accepted') contractorLeadStats[cid].accepted++;
-      if (l.status === 'Passed') contractorLeadStats[cid].passed++;
-      if (l.response_time_seconds > 0) contractorLeadStats[cid].responseTimes.push(l.response_time_seconds);
-    });
+    const licenseByContractor = new Map();
+    for (const l of licenses) {
+      if (!licenseByContractor.has(l.contractor_id)) licenseByContractor.set(l.contractor_id, []);
+      licenseByContractor.get(l.contractor_id).push(l);
+    }
 
-    // Enrich contractors with computed stats
-    contractors = contractors.map(function(c) {
-      var stats = contractorLeadStats[c.id] || { total: 0, accepted: 0, passed: 0, responseTimes: [] };
-      var avgResp = stats.responseTimes.length > 0 ? Math.round(stats.responseTimes.reduce(function(a, b) { return a + b }, 0) / stats.responseTimes.length) : 0;
-      c.computed_leads = stats.total;
-      c.computed_accepted = stats.accepted;
-      c.computed_passed = stats.passed;
-      c.computed_rate = stats.total > 0 ? Math.round((stats.accepted / stats.total) * 100) : 0;
-      c.computed_avg_response = avgResp;
-      return c;
-    });
+    const contractorsOut = contractors.map((c) => ({
+      ...c,
+      licenses: licenseByContractor.get(c.id) || [],
+    }));
 
-    var totalMRR = contractors.reduce(function(sum, c) {
-      var prices = { Basic: 49, Pro: 99, Elite: 199 };
-      return sum + (prices[c.membership_tier] || 0);
-    }, 0);
-
-    var totalLeadCharges = leads.filter(function(l) {
-      return l.status === 'Accepted' && l.lead_fee;
-    }).reduce(function(sum, l) { return sum + (parseFloat(l.lead_fee) || 0); }, 0);
+    const acceptedOffers = offers.filter((o) => o.status === "accepted");
+    const leadCharges = wallet.filter((t) => t.type === "lead_charge");
+    const topups = wallet.filter((t) => t.type === "topup");
+    const promoGrants = wallet.filter((t) => t.type === "promo_grant");
+    const founding25Grants = promoGrants.filter((t) => String(t.idempotency_key || "").startsWith("founding25:v1:"));
 
     return res.status(200).json({
-      success: true,
-      contractors: contractors,
-      leads: leads,
+      ok: true,
+      admin: { email: user.email || null },
+      contractors: contractorsOut,
+      leads,
+      offers,
+      wallet_transactions: wallet,
+      pricing,
+      disputes,
       stats: {
-        totalContractors: contractors.length,
-        totalLeads: leads.length,
-        totalMRR: totalMRR,
-        totalLeadCharges: totalLeadCharges,
-        totalRevenue: totalMRR + totalLeadCharges
-      }
+        contractors_total: contractors.length,
+        contractors_active: contractors.filter((c) => c.status === "Active").length,
+        contractors_pending_review: contractors.filter((c) => c.status === "Pending Review").length,
+        leads_total_loaded: leads.length,
+        leads_offering: leads.filter((l) => l.status === "Offering").length,
+        leads_matched: leads.filter((l) => l.status === "Matched").length,
+        leads_unmatched: leads.filter((l) => l.status === "Unmatched").length,
+        accepted_offers: acceptedOffers.length,
+        paid_wallet_cents: contractors.reduce((n,c) => n + Number(c.lead_balance_cents || 0), 0),
+        promo_wallet_cents: contractors.reduce((n,c) => n + Number(c.promo_credits_cents || 0), 0),
+        lead_charge_cents: leadCharges.reduce((n,t) => n + Math.abs(Number(t.amount_cents || 0)), 0),
+        stripe_topup_cents: topups.reduce((n,t) => n + Math.max(0, Number(t.amount_cents || 0)), 0),
+        promo_grant_cents: promoGrants.reduce((n,t) => n + Math.max(0, Number(t.amount_cents || 0)), 0),
+        founding25_grants: founding25Grants.length,
+        pricing_rows: pricing.length,
+        pricing_held: pricing.filter((r) => r.requires_clarification).length,
+        disputes_open: disputes.filter((d) => !d.decision).length,
+      },
     });
   } catch (err) {
-    console.error('Admin data error:', err);
-    return res.status(500).json({ error: 'Server error: ' + err.message });
+    console.error("admin-data:", err && err.message);
+    return res.status(500).json({ ok:false, error:"admin_data_failed" });
   }
 };
