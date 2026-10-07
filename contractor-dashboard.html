@@ -1,81 +1,22 @@
 <!DOCTYPE html>
 <!--
-============================================================
-SUPABASE MIGRATION — RUN ONCE IN SQL EDITOR BEFORE DEPLOYING
-============================================================
+  ============================================================================
+  SCHEMA / SECURITY MIGRATIONS ARE NOT MAINTAINED IN THIS FILE.
 
--- 1) New columns on existing contractors table
-ALTER TABLE contractors
-  ADD COLUMN IF NOT EXISTS state text,
-  ADD COLUMN IF NOT EXISTS num_technicians int,
-  ADD COLUMN IF NOT EXISTS num_vehicles int,
-  ADD COLUMN IF NOT EXISTS business_hours jsonb,
-  ADD COLUMN IF NOT EXISTS scheduling_system text,
-  ADD COLUMN IF NOT EXISTS phone_answered_by text,
-  ADD COLUMN IF NOT EXISTS payment_methods text[],
-  ADD COLUMN IF NOT EXISTS services_detail jsonb,
-  ADD COLUMN IF NOT EXISTS insurance_carrier text,
-  ADD COLUMN IF NOT EXISTS insurance_policy_number text,
-  ADD COLUMN IF NOT EXISTS insurance_expiration date,
-  ADD COLUMN IF NOT EXISTS insurance_doc_url text,
-  ADD COLUMN IF NOT EXISTS insurance_verified bool DEFAULT false,
-  ADD COLUMN IF NOT EXISTS insurance_verified_at timestamptz,
-  ADD COLUMN IF NOT EXISTS agreement_accepted_at timestamptz,
-  ADD COLUMN IF NOT EXISTS agreement_accepted_ip text,
-  ADD COLUMN IF NOT EXISTS agreement_version text,
-  ADD COLUMN IF NOT EXISTS agreement_signed_name text,
-  ADD COLUMN IF NOT EXISTS number_of_employees text;
+  Executable SQL previously lived here and drifted out of sync with the real
+  database. Canonical, versioned migrations:
 
--- 2) New contractor_licenses table
-CREATE TABLE IF NOT EXISTS contractor_licenses (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  contractor_id uuid REFERENCES contractors(id) ON DELETE CASCADE,
-  trade_category text,
-  license_type text,
-  license_state text,
-  license_number text,
-  expiration_date date,
-  document_url text,
-  verified bool DEFAULT false,
-  verified_at timestamptz,
-  verified_by text,
-  notes text,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_contractor_licenses_contractor
-  ON contractor_licenses(contractor_id);
+    supabase/migrations/20260916_01_contractor_schema_security.sql
+      contractors + contractor_licenses columns, indexes, PRIVATE
+      contractor-docs storage, RLS, COLUMN-LEVEL privileges, verification
+      reset triggers.
 
--- 3) RLS: contractors can only see/edit their own licenses
-ALTER TABLE contractor_licenses ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Contractors manage own licenses" ON contractor_licenses
-  FOR ALL
-  USING (contractor_id IN (SELECT id FROM contractors WHERE auth_id = auth.uid()))
-  WITH CHECK (contractor_id IN (SELECT id FROM contractors WHERE auth_id = auth.uid()));
+    supabase/migrations/20260916_02_notification_outbox.sql
+      notification_outbox, claim RPC (FOR UPDATE SKIP LOCKED), and the DB
+      triggers that emit every outbound event.
 
--- 4) Supabase Storage bucket + RLS
-INSERT INTO storage.buckets (id, name, public)
-  VALUES ('contractor-docs', 'contractor-docs', true)
-  ON CONFLICT (id) DO NOTHING;
-
-CREATE POLICY "Contractors upload to own folder" ON storage.objects
-  FOR INSERT
-  WITH CHECK (
-    bucket_id = 'contractor-docs'
-    AND (storage.foldername(name))[1] IN (SELECT id::text FROM contractors WHERE auth_id = auth.uid())
-  );
-CREATE POLICY "Contractors read own folder" ON storage.objects
-  FOR SELECT
-  USING (
-    bucket_id = 'contractor-docs'
-    AND (storage.foldername(name))[1] IN (SELECT id::text FROM contractors WHERE auth_id = auth.uid())
-  );
-CREATE POLICY "Contractors update own folder" ON storage.objects
-  FOR UPDATE
-  USING (
-    bucket_id = 'contractor-docs'
-    AND (storage.foldername(name))[1] IN (SELECT id::text FROM contractors WHERE auth_id = auth.uid())
-  );
+  Do not paste SQL back into this file.
+  ============================================================================
 -->
 <html lang="en">
 <head>
@@ -125,10 +66,6 @@ input,select,textarea{font-family:inherit;font-size:14px;color:var(--text1)}
 .nav-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--orange),#f38961);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
 .nav-name{color:#fff;font-size:13px;font-weight:600;line-height:1}
 .nav-meta{display:flex;gap:6px;margin-top:3px}
-.tier-badge{font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em;background:linear-gradient(180deg,#f4c44a,#d39a21);color:#3a2700}
-.tier-badge.basic{background:rgba(255,255,255,.18);color:#fff}
-.tier-badge.pro{background:linear-gradient(180deg,#9ec8f5,#5e92d0);color:#0a1628}
-.tier-badge.elite{background:linear-gradient(180deg,#f4c44a,#d39a21);color:#3a2700}
 .status-pill{font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;letter-spacing:.02em}
 .status-pill.pending{background:rgba(217,119,6,.2);color:#fbd38d}
 .status-pill.review{background:rgba(37,99,235,.22);color:#a5c4f7}
@@ -537,8 +474,7 @@ body.show-tweaks .tweaks{display:block}
   .tabs-top{padding:0 16px}
   .nav{padding:0 14px}
   .nav-contractor .nav-name{display:none}
-  .tier-badge,.status-pill{font-size:9px}
-}
+  }
 
 /* ===== CREDENTIALS ===== */
 .licenses-list{display:flex;flex-direction:column;gap:14px}
@@ -560,6 +496,31 @@ body.show-tweaks .tweaks{display:block}
   .lic-card{padding:14px 15px}
   .add-license-select{min-width:0;width:100%}
 }
+
+/* ---- offer card states (wallet / pay-per-accepted-lead model) ---- */
+.lead-focus{
+  box-shadow:0 0 0 2px var(--orange), 0 2px 12px rgba(240,85,40,.18);
+  border-radius:12px;
+  animation:leadFocusPulse 1.6s ease-out 2;
+}
+@keyframes leadFocusPulse{
+  0%{box-shadow:0 0 0 2px var(--orange),0 0 0 0 rgba(240,85,40,.35);}
+  70%{box-shadow:0 0 0 2px var(--orange),0 0 0 10px rgba(240,85,40,0);}
+  100%{box-shadow:0 0 0 2px var(--orange),0 0 0 0 rgba(240,85,40,0);}
+}
+.lead-countdown{
+  display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;
+  font-size:11px;font-weight:600;letter-spacing:.01em;
+  background:#fff3ee;color:#c2410c;border:1px solid #fed7c3;
+}
+.lead-countdown.expired{ background:#f1f5f9;color:#64748b;border-color:#e2e8f0; }
+.locked-panel{
+  background:#f8fafc;border:1px dashed var(--border-strong,#d8d6d0);
+  border-radius:10px;padding:14px 16px;
+}
+.locked-panel .fact-lbl{ color:var(--text3); }
+.locked-panel .fact-val{ color:var(--text2);font-weight:500;line-height:1.5; }
+.btn[disabled]{ opacity:.45;cursor:not-allowed;pointer-events:none; }
 </style>
 </head>
 <body data-banner="stepper" data-nav="sidebar" data-loading="true">
@@ -584,7 +545,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div>
         <div class="nav-name" id="navName">—</div>
         <div class="nav-meta">
-          <span class="tier-badge pro" id="navTier">Pro</span>
           <span class="status-pill pending" id="navStatus">Pending Profile</span>
         </div>
       </div>
@@ -630,7 +590,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Fired on webhook trigger when contractor submits for review.
-const GHL_REVIEW_WEBHOOK = 'https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/pE4n0vYz4liHlmJuvi6T';
+// Review + deletion workflows are fired server-side by /api/contractor-workflow.
+// The webhook URL lives in a Vercel env var, never in browser source.
 
 // ---------- STATE ----------
 // UI-level defaults. The prototype's tweak panel used to mutate these at
@@ -645,7 +606,6 @@ const state = {
   // session / backend
   contractorId: null,
   authUser: null,
-  tierBadge: 'Basic',
   state: 'pending',        // 'pending' | 'review' | 'active' (mapped from DB status)
   pct: 0,                  // derived from completion later
   leadsVolume: 'many',     // not tweaked anymore — leads tab reads from state.leads
@@ -660,8 +620,15 @@ const state = {
   // to true so the step content renders instead.
   editingAfterDone: false,
   expandedLead: null,
+  focusLead: null,         // deep-link highlight target (navigation only)
   leadFilter: 'all',
   searchQuery: '',
+
+  // wallet (prepaid). promo drains before paid; promo is non-refundable.
+  walletPromoCents: 0,
+  walletPaidCents: 0,
+  walletLedger: [],
+  walletLoaded: false,
 
   // profile (populated by loadContractor)
   categories: new Set(),
@@ -683,7 +650,8 @@ const state = {
     insurance:{ carrier:'', policy:'', exp:'', file:'', verified:false },
     licenses:[],
   },
-  notifs:{email:true,sms:true,digest:false},
+  // SMS defaults OFF. Affirmative opt-in only; never enrol silently.
+  notifs:{email:true,sms:false,digest:false},
   agreement:{
     open:false, scrolledEnd:false, readAgreed:false, authorized:false, typedName:'',
   },
@@ -703,10 +671,10 @@ function defaultHours(){
 }
 
 // ---------- LICENSING ----------
-// Three trades require a verified license on file to receive leads.
-const LICENSED_TRADES = ['HVAC','Plumbing','Electrical'];
-// All others are insurance-only.
-const UNLICENSED_TRADES = ['Roofing','Handyman','Appliance Repair','Painting','Windows & Doors','Construction / Remodeling','Pool & Spa'];
+// SSP currently collects license documentation for these Houston-pilot categories.
+const SSP_LICENSE_COLLECTION_TRADES = ['HVAC','Plumbing','Electrical'];
+// Other categories may still have legal licensing/certification requirements by scope or jurisdiction.
+const OTHER_SERVICE_TRADES = ['Roofing','Handyman','Appliance Repair','Painting','Windows & Doors','Construction / Remodeling','Pool & Spa'];
 
 // Generic, state-agnostic license type options.
 const LICENSE_TYPES = [
@@ -754,20 +722,43 @@ const PHONE_ANSWERED_OPTIONS = ['Owner','Office manager','Dispatcher','Answering
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 // ---------- AGREEMENT ----------
-const AGREEMENT_VERSION = 'v1';
+// ==================== OUTPUT ENCODING ====================
+// Every database- or user-controlled value interpolated into HTML must pass
+// through esc() (element text) or attr() (attribute values / URL components).
+// Homeowner free text and contractor profile fields are attacker-reachable:
+// a homeowner types the description, a contractor types their company name.
+function escapeHTML(v){
+  if(v === null || v === undefined) return '';
+  return String(v)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+const esc = escapeHTML;
+// Attribute-safe: same escaping, used where the value lands inside quotes.
+function attr(v){ return escapeHTML(v); }
+// For values placed into href/src URLs (tel:, mailto:, query strings).
+function urlAttr(v){ return escapeHTML(encodeURIComponent(v === null || v === undefined ? '' : String(v))); }
+
+// v2 (wallet / pay-per-accepted-lead). v1 described monthly membership tiers
+// and per-lead charges to a card on file; that model is retired. Contractors
+// who signed v1 must re-accept before the commercial terms differ materially.
+const AGREEMENT_VERSION = 'v2';
 const AGREEMENT_TEXT = `# SELECTSERVICEPROS — CONTRACTOR SERVICE AGREEMENT
 
 This Contractor Service Agreement ("Agreement") is entered into between SelectServicePros ("SSP," "Platform," "we," "us") and the contractor accepting this Agreement ("Contractor," "you") effective as of the date Contractor electronically accepts this Agreement (the "Effective Date"). The parties agree as follows:
 
 ## 1. Nature of the Platform and Relationship
 
-a) SSP operates an online marketplace that connects homeowners seeking home services with licensed contractors. SSP is **not** a service provider, contractor, or agent for either party, does not perform or supervise services, and is not a party to any service contract between Contractor and a homeowner.
+a) SSP operates an online marketplace that connects homeowners seeking home services with independent local service professionals and contractors. Licensing requirements vary by trade and jurisdiction; Contractor must hold every licence and certification legally required for the work Contractor performs. SSP is **not** a service provider, contractor, or agent for either party, does not perform or supervise services, and is not a party to any service contract between Contractor and a homeowner.
 
 b) Contractor is, at all times, an independent business operating on its own account. Nothing in this Agreement creates an employer/employee, joint venture, partnership, agency, or franchise relationship between the parties. Neither party has authority to bind, commit, or incur liability on behalf of the other.
 
 c) Contractor is solely responsible for all aspects of the services Contractor performs for homeowners, including pricing, scope of work, scheduling, workmanship, warranties, customer communications, and collection of payment from the homeowner.
 
-d) SSP's role is limited to: (i) providing a platform to receive and present lead information; (ii) collecting membership and per-lead fees from Contractor; (iii) operating and supporting the platform. SSP makes no representations or warranties about the volume, quality, or conversion rate of leads.
+d) SSP's role is limited to: (i) providing a platform to receive and present lead information; (ii) collecting per-lead fees from Contractor's prepaid wallet when Contractor accepts a Lead; (iii) operating and supporting the platform. SSP makes no representations or warranties about the volume, quality, or conversion rate of leads.
 
 ## 2. Contractor Obligations — General
 
@@ -795,7 +786,7 @@ d) A homeowner who retains Contractor through a Lead becomes a customer of Contr
 
 a) For the duration of this Agreement and for twenty-four (24) months after its termination, Contractor agrees not to: (i) solicit or encourage any homeowner sourced through SSP to bypass the platform on any future inquiry; (ii) offer incentives, discounts, or inducements to homeowners to contract outside the platform on leads that originated through the platform; (iii) use any mechanism designed to avoid the per-lead fee structure.
 
-b) Contractor acknowledges that SSP invests substantial resources in acquiring homeowner traffic and that circumvention directly harms SSP. In the event of a material breach of this section, SSP may, in addition to any other remedies: (i) immediately suspend or terminate Contractor's membership; (ii) invoice Contractor for the per-lead fee that would have been charged if the lead had flowed through the platform; (iii) pursue all legal and equitable remedies.
+b) Contractor acknowledges that SSP invests substantial resources in acquiring homeowner traffic and that circumvention directly harms SSP. In the event of a material breach of this section, SSP may, in addition to any other remedies: (i) immediately suspend or terminate Contractor's account; (ii) invoice Contractor for the per-lead fee that would have been charged if the lead had flowed through the platform; (iii) pursue all legal and equitable remedies.
 
 ## 5. Compliance with Laws
 
@@ -837,21 +828,29 @@ f) All certificates of insurance shall provide for at least thirty (30) days wri
 
 g) Failure to maintain the required insurance coverage is a material breach and grounds for immediate suspension or termination.
 
-## 8. Membership Tiers, Fees, and Payment
+## 8. Lead Pricing, Wallet, and Payment
 
-a) Contractor selects a membership tier at signup (Basic, Pro, or Elite, or any other tier SSP may offer from time to time). Each tier carries a monthly membership fee and a per-accepted-lead fee, as displayed at the time of signup and in Contractor's dashboard.
+a) There is no fee to join and no recurring subscription of any kind. Contractor pays only a per-lead fee for each Lead Contractor affirmatively accepts.
 
-b) Monthly membership fees are billed in advance and are non-refundable except as required by applicable law.
+b) Contractor maintains a prepaid wallet balance. Funds Contractor adds to the wallet remain Contractor's funds until a per-lead fee is charged against them.
 
-c) Per-lead fees are charged when Contractor accepts a Lead through the platform. A Lead is "accepted" when Contractor affirmatively clicks "Accept" or takes equivalent action through the platform.
+c) Each Lead displays its price before Contractor accepts. Prices vary by job type. The price shown at the time a Lead is offered is the price charged; it is fixed at that amount for that Lead and does not change afterward.
 
-d) SSP may adjust fees prospectively upon thirty (30) days' notice. Continued use of the platform after a fee change constitutes acceptance of the new fees. Fee changes do not retroactively apply to already-charged periods or already-accepted Leads.
+d) A Lead is "accepted" when Contractor affirmatively clicks "Accept" through the platform. The per-lead fee is debited from Contractor's wallet at that moment. Customer contact details are released only after the debit succeeds. If Contractor's wallet balance is insufficient, the Lead is not accepted and no charge occurs.
 
-e) All fees are collected through the payment processor(s) designated by SSP (currently Stripe). Contractor authorizes SSP and its payment processor to charge the payment method on file for all amounts due.
+e) SSP may from time to time issue promotional credit to Contractor's wallet. Promotional credit is applied to Lead fees before purchased funds. Promotional credit has no cash value and is not refundable.
 
-f) If a charge fails or is reversed, SSP may suspend Contractor's account until the amount is paid. Fees in collection may accrue interest at the lesser of 1.5% per month or the maximum allowed by law, plus reasonable collection costs.
+f) Contractor only receives Lead offers Contractor's available balance can cover. If the balance is insufficient, Contractor stops receiving offers until funds are added.
 
-g) Contractor is responsible for all taxes arising from Contractor's business, including income, self-employment, sales, use, employment, withholding, and unemployment taxes. SSP does not withhold or remit taxes on Contractor's behalf.
+g) SSP may adjust Lead prices prospectively. Price changes do not apply retroactively to Leads already offered or already accepted.
+
+h) Funds are added through the payment processor designated by SSP (currently Stripe). SSP does not require Contractor to keep a payment method on file and does not charge Contractor automatically.
+
+i) If Contractor believes a Lead was invalid — false or invalid contact information, the customer never requested the service, outside Contractor's selected service area or trades, a duplicate of a Lead already charged, or a project already completed or withdrawn before delivery — Contractor may dispute the charge within seven (7) calendar days of delivery. Approved disputes are credited back to Contractor's wallet in the same proportion of promotional and purchased funds originally charged. Not winning a job, a customer choosing another provider, or a customer declining a price are not grounds for a dispute.
+
+j) On account closure, SSP returns any unused purchased funds. Promotional credit is forfeited and has no cash redemption value.
+
+k) Contractor is responsible for all taxes arising from Contractor's business, including income, self-employment, sales, use, employment, withholding, and unemployment taxes. SSP does not withhold or remit taxes on Contractor's behalf.
 
 ## 9. Workmanship and Customer Relationship
 
@@ -885,15 +884,15 @@ e) Contractor's obligations under this Section survive termination of this Agree
 
 ## 12. Term, Renewal, Termination, and Effects of Termination
 
-a) This Agreement commences on the Effective Date and continues on a month-to-month basis corresponding to Contractor's billing cycle, renewing automatically each month unless terminated as set forth below.
+a) This Agreement commences on the Effective Date and continues until terminated as set forth below. There is no subscription term, no billing cycle, and no automatic renewal.
 
-b) Either party may terminate this Agreement at any time by providing written notice (including through the platform's account settings). Termination takes effect at the end of the then-current billing period. Contractor is responsible for all fees accrued through the termination date.
+b) Either party may terminate this Agreement at any time by providing written notice (including through the platform's account settings). Termination takes effect immediately. Contractor is responsible for per-lead fees already charged for Leads Contractor accepted before termination.
 
-c) SSP may suspend or terminate this Agreement immediately, without prior notice, for: (i) material breach of Sections 3, 4, 5, 6, 7, or 9; (ii) failure to pay fees when due; (iii) Contractor's insolvency, bankruptcy, or cessation of business; (iv) conduct that, in SSP's reasonable judgment, harms homeowners, SSP, or the platform's reputation.
+c) SSP may suspend or terminate this Agreement immediately, without prior notice, for: (i) material breach of Sections 3, 4, 5, 6, 7, or 9; (ii) repeated chargebacks or abuse of the dispute process; (iii) Contractor's insolvency, bankruptcy, or cessation of business; (iv) conduct that, in SSP's reasonable judgment, harms homeowners, SSP, or the platform's reputation.
 
 d) For non-material breaches, SSP will provide Contractor with written notice and a ten (10) day opportunity to cure. Failure to cure within that period is grounds for termination.
 
-e) Upon termination: (i) Contractor's access to the platform ends; (ii) Contractor shall cease using any SSP intellectual property; (iii) obligations that by their nature survive termination (including Sections 3, 4, 11, 14, and 16) continue; (iv) outstanding fees remain due; (v) membership fees already paid are not refunded except as required by law.
+e) Upon termination: (i) Contractor's access to the platform ends; (ii) Contractor shall cease using any SSP intellectual property; (iii) obligations that by their nature survive termination (including Sections 3, 4, 11, 14, and 16) continue; (iv) per-lead fees already charged remain due; (v) unused purchased wallet funds are returned in accordance with Section 8(j), and promotional credit is forfeited.
 
 f) Contractor shall immediately notify SSP of Contractor's insolvency, bankruptcy, or material financial instability.
 
@@ -941,7 +940,7 @@ Any notice or other written communication under this Agreement is deemed given: 
 
 a) This Agreement is governed by the laws of the State of Texas, without regard to its conflict-of-laws principles.
 
-b) Any dispute arising out of or relating to this Agreement shall be resolved in the state or federal courts located in Harris County, Texas, and the parties consent to the exclusive jurisdiction and venue of such courts. *(Lawyer note: consider whether to require mandatory arbitration via AAA Commercial Rules instead of litigation. SSP preference TBD.)*
+b) Any dispute arising out of or relating to this Agreement shall be resolved in the state or federal courts located in Harris County, Texas, and the parties consent to the exclusive jurisdiction and venue of such courts.
 
 c) To the extent permitted by law, both parties waive any right to a trial by jury in any proceeding arising out of or relating to this Agreement.
 
@@ -975,7 +974,7 @@ By clicking "I Accept" and typing Contractor's full legal name below, Contractor
 - Contractor agrees to be legally bound by this Agreement;
 - Contractor's electronic signature constitutes a valid and binding signature.
 
-**Agreement Version:** v1
+**Agreement Version:** v2
 **Effective Date:** Date of electronic acceptance
 **Record:** SSP captures and stores the accepting party's typed name, timestamp, IP address, user agent, and agreement version at the moment of acceptance.`;
 
@@ -988,18 +987,17 @@ const STEPS = [
     for(const c of state.categories){
       if((state.servicesDetail[c]||[]).length===0) return false;
       // Licensed trades: must have a complete license record for that trade.
-      if(LICENSED_TRADES.includes(c) && !licenseForTrade(c)) return false;
+      if(SSP_LICENSE_COLLECTION_TRADES.includes(c) && !licenseForTrade(c)) return false;
     }
     return true;
   }},
   {key:'zips', title:'Service areas', sub:'ZIPs you cover', check:()=>state.zips.length>0},
   {key:'operations', title:'Operations', sub:'Hours, team, payments', check:()=>state.operations.technicians>0 && state.operations.phoneAnswered && state.operations.payments.size>0 && state.operations.hoursConfirmed && DAYS.some(d=>state.operations.hours[d].open||state.operations.hours[d].open24)},
-  {key:'licenses', title:'Trade licenses', sub:LICENSED_TRADES.join(', ')+' only', check:()=>{
-    const licensedSelected = [...state.categories].filter(c=>LICENSED_TRADES.includes(c));
+  {key:'licenses', title:'Trade licenses', sub:SSP_LICENSE_COLLECTION_TRADES.join(', ')+' only', check:()=>{
+    const licensedSelected = [...state.categories].filter(c=>SSP_LICENSE_COLLECTION_TRADES.includes(c));
     if(licensedSelected.length===0) return true; // no licensed trades selected -> auto-complete
     return licensedSelected.every(c=>{
-      const l = licenseForTrade(c);
-      return l && l.number && l.type && l.state && l.exp && l.file;
+      const l = licenseForTrade(c);      return l && l.number && l.type && l.state && l.exp && l.file;
     });
   }},
   {key:'insurance', title:'Insurance', sub:'Carrier, policy, expiration, COI', check:()=>{
@@ -1008,7 +1006,7 @@ const STEPS = [
   }},
 ];
 
-const CATEGORIES = [...LICENSED_TRADES, ...UNLICENSED_TRADES];
+const CATEGORIES = [...SSP_LICENSE_COLLECTION_TRADES, ...OTHER_SERVICE_TRADES];
 
 // ---------- LICENSE HELPERS ----------
 function licenseForTrade(trade){
@@ -1062,7 +1060,7 @@ function removeLicense(id){
   const l = state.credentials.licenses.find(x=>x.id===id);
   if(!l) return;
   state.credentials.licenses = state.credentials.licenses.filter(x=>x.id!==id);
-  if(l.trade && state.categories.has(l.trade) && LICENSED_TRADES.includes(l.trade)){
+  if(l.trade && state.categories.has(l.trade) && SSP_LICENSE_COLLECTION_TRADES.includes(l.trade)){
     state.categories.delete(l.trade);
     delete state.servicesDetail[l.trade];
   }
@@ -1088,7 +1086,7 @@ const TABS = [
   {key:'profile', label:'Profile', icon:iconUser},
   {key:'operations', label:'Operations', icon:iconClock},
   {key:'credentials', label:'Credentials', icon:iconShield},
-  {key:'billing', label:'Billing & Plan', icon:iconCard},
+  {key:'billing', label:'Wallet', icon:iconCard},
   {key:'settings', label:'Settings', icon:iconGear},
 ];
 
@@ -1145,10 +1143,6 @@ function render(){
 }
 
 function updateNav(){
-  const tierEl = document.getElementById('navTier');
-  const tier = state.tierBadge || 'Basic';
-  tierEl.textContent = tier;
-  tierEl.className = 'tier-badge ' + tier.toLowerCase();
   const pillEl = document.getElementById('navStatus');
   const map = {
     pending: ['pending','Pending Profile'],
@@ -1222,15 +1216,15 @@ function overviewHTML(){
   const rate = total>0 ? Math.round((accepted/total)*100) : 0;
   const avgRespMins = leads.filter(l=>l.status==='accepted').reduce((s,l)=>s+l.mins,0) / Math.max(1, accepted);
 
-  const activeGreeting = `Good afternoon, ${state.profile.company.split(' ')[0]}`;
+  const activeGreeting = `Good afternoon, ${esc(String(state.profile.company||'').split(' ')[0])}`;
   const firstName = (state.profile.firstName||'').trim();
-  const nameSuffix = firstName ? `, ${firstName}` : '';
+  const nameSuffix = firstName ? `, ${esc(firstName)}` : '';
   const pendingGreeting = state.state==='review'
-    ? `Thanks${nameSuffix} — we've got it from here`
-    : `Welcome to SSP${nameSuffix}`;
+    ? `Thanks${esc(nameSuffix)} — we've got it from here`
+    : `Welcome to SSP${esc(nameSuffix)}`;
   const pendingSub = state.state==='review'
-    ? `Your profile is with our review team. We'll ping you as soon as you're live — typically within one business day.`
-    : `Finish setup and you'll start seeing homeowner leads in your inbox. Takes about 4 minutes.`;
+    ? `Your profile is with our review team. We'll email you when the review is complete.`
+    : `Finish setup so we can review your profile for lead eligibility.`;
 
   let html = `
     <div class="page-header">
@@ -1252,8 +1246,8 @@ function overviewHTML(){
         ${statCard('Total leads', total, `This month`, iconInbox())}
         ${statCard('Accepted', accepted, `${rate}% acceptance`, iconCheck(16))}
         ${statCard('Avg response', isFinite(avgRespMins)?fmtSeconds(Math.round(avgRespMins*60)):'—', 'time to respond', svgBase('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'))}
-        ${statCard('This period', `$${99+accepted*29}`, `$99 plan · ${accepted} × $29`, iconCard(), false, 'accent')}
-        ${statCard('Plan', 'Pro', 'Active · next charge Apr 28', svgBase('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'))}
+        ${statCard('Wallet balance', fmtMoney(walletTotalCents()), walletBalanceSub(), iconCard(), false, 'accent')}
+        ${statCard('Spent on leads', fmtMoney(walletSpentCents()), `${accepted} accepted`, svgBase('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'))}
       </div>
 
       <div class="section">
@@ -1264,7 +1258,6 @@ function overviewHTML(){
         ${leadsListHTML(leads.slice(0,5), true)}
       </div>
 
-      ${billingPreviewHTML(accepted)}
     `;
   } else if(state.state==='review'){
     html += `
@@ -1352,8 +1345,8 @@ function wizardDoneHTML(){
   return `
     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:360px;padding:20px">
       ${readyIllustration()}
-      <h3 style="font-family:'DM Sans',sans-serif;font-weight:800;font-size:26px;color:var(--navy);margin-top:18px;letter-spacing:-.025em">Looking good${(state.profile.firstName||'').trim() ? ', '+state.profile.firstName.trim() : ''}.</h3>
-      <p style="font-size:14px;color:var(--text3);max-width:420px;margin-top:8px;line-height:1.55">Your profile and credentials are complete. Hit submit and we'll verify with the state and get you live — usually within one business day.</p>
+      <h3 style="font-family:'DM Sans',sans-serif;font-weight:800;font-size:26px;color:var(--navy);margin-top:18px;letter-spacing:-.025em">Looking good${(state.profile.firstName||'').trim() ? ', '+esc(state.profile.firstName.trim()) : ''}.</h3>
+      <p style="font-size:14px;color:var(--text3);max-width:420px;margin-top:8px;line-height:1.55">Your profile and credentials are complete. Submit them for review and we'll email you when the review is complete.</p>
       <button class="btn btn-primary btn-lg" style="margin-top:22px" onclick="submitForReview()">Submit for review</button>
       <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="state.editingAfterDone=true;state.currentStep=0;render()">Edit details</button>
     </div>
@@ -1420,7 +1413,7 @@ function missingFieldsFor(key){
           if((state.servicesDetail[c]||[]).length===0){
             out.push(`At least one specific service under "${c}"`);
           }
-          if(LICENSED_TRADES.includes(c) && !licenseForTrade(c)){
+          if(SSP_LICENSE_COLLECTION_TRADES.includes(c) && !licenseForTrade(c)){
             out.push(`A license record for ${c} (added on the Licenses step)`);
           }
         }
@@ -1446,7 +1439,7 @@ function missingFieldsFor(key){
       break;
     }
     case 'licenses': {
-      const licensedSelected = [...state.categories].filter(c=>LICENSED_TRADES.includes(c));
+      const licensedSelected = [...state.categories].filter(c=>SSP_LICENSE_COLLECTION_TRADES.includes(c));
       if(licensedSelected.length===0) break;
       for(const c of licensedSelected){
         const l = licenseForTrade(c);
@@ -1474,7 +1467,7 @@ function missingFieldsFor(key){
 function stepHelper(k){
   const M = {
     description:"This is what homeowners see first on your profile card. Keep it human, mention what makes you different.",
-    years:"Contractors with 3+ years of history book 40% more leads on SSP.",
+    years:"Homeowners often ask how long you have been in business. Filling this in saves them asking.",
     categories:"Pick only what you actually handle. Licensed trades (HVAC, Plumbing, Electrical) require a verified state license.",
     zips:"We only route leads whose ZIP is in your list. Add as many as you cover.",
     operations:"Hours, team size, and how you handle payments. Helps homeowners pick the right pro.",
@@ -1488,7 +1481,7 @@ function stepDescription(){
   return `
     <div class="field">
       <label>Business description</label>
-      <textarea class="textarea" oninput="state.profile.description=this.value;markSaving()" placeholder="Third-generation family HVAC outfit. Same-day service...">${state.profile.description||''}</textarea>
+      <textarea class="textarea" oninput="state.profile.description=this.value;markSaving()" placeholder="Third-generation family HVAC outfit. Same-day service...">${esc(state.profile.description||'')}</textarea>
       <div class="hint">${(state.profile.description||'').length} characters · aim for 60–200</div>
     </div>
   `;
@@ -1498,16 +1491,16 @@ function stepYears(){
     <div class="field-row">
       <div class="field">
         <label>Years in business</label>
-        <input class="input" type="number" min="0" value="${state.profile.years}" oninput="state.profile.years=+this.value;markSaving()">
+        <input class="input" type="number" min="0" value="${attr(state.profile.years)}" oninput="state.profile.years=+this.value;markSaving()">
       </div>
       <div class="field">
         <label>Number of employees</label>
-        <input class="input" type="number" min="1" value="${state.profile.employees}" oninput="state.profile.employees=+this.value;markSaving()">
+        <input class="input" type="number" min="1" value="${attr(state.profile.employees)}" oninput="state.profile.employees=+this.value;markSaving()">
       </div>
     </div>
     <div class="field">
       <label>Company phone</label>
-      <input class="input" type="tel" value="${state.profile.phone}" oninput="state.profile.phone=this.value;markSaving()">
+      <input class="input" type="tel" value="${attr(state.profile.phone)}" oninput="state.profile.phone=this.value;markSaving()">
     </div>
   `;
 }
@@ -1522,8 +1515,8 @@ function stepCategoriesAccordion(){
 }
 
 function categoryAccordionHTML(){
-  const licensedHTML = LICENSED_TRADES.map(cat=>categoryRowHTML(cat,true)).join('');
-  const unlicensedHTML = UNLICENSED_TRADES.map(cat=>categoryRowHTML(cat,false)).join('');
+  const licensedHTML = SSP_LICENSE_COLLECTION_TRADES.map(cat=>categoryRowHTML(cat,true)).join('');
+  const otherTradesHTML = OTHER_SERVICE_TRADES.map(cat=>categoryRowHTML(cat,false)).join('');
   return `
     <div class="cat-group-head">
       <div class="cat-group-title">Licensed trades</div>
@@ -1535,7 +1528,7 @@ function categoryAccordionHTML(){
       <div class="cat-group-title">Unlicensed trades <span class="cat-group-pill">insurance required</span></div>
       <div class="cat-group-sub">Check any that apply. Platform-wide insurance on file still required.</div>
     </div>
-    <div class="cat-accordion">${unlicensedHTML}</div>
+    <div class="cat-accordion">${otherTradesHTML}</div>
 
     <div class="legal-note">Licensing requirements vary by state. You are responsible for maintaining all licenses required by law for your business. See Section 6 of the Service Agreement.</div>
   `;
@@ -1610,8 +1603,8 @@ function licenseInlineFormHTML(trade){
   if(!lic){
     return `
       <div class="lic-form missing">
-        <div class="lic-form-title">License required</div>
-        <div class="lic-form-sub">Add your ${trade} license details before this trade can go active. We'll verify it manually — usually within one business day.</div>
+        <div class="lic-form-title">License documentation required by SSP</div>
+        <div class="lic-form-sub">Add your ${trade} license details before SSP can approve this category for leads. We'll review the documentation manually.</div>
         <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();addLicenseAndRender('${trade}')">+ Add ${trade} license</button>
       </div>
     `;
@@ -1628,17 +1621,17 @@ function licenseInlineFormHTML(trade){
       </div>
       <div class="field-row-3">
         <div class="field"><label>License type</label>
-          <select class="select" onchange="updateLicense('${lic.id}','type',this.value)">
+          <select class="select" onchange="updateLicense('${esc(lic.id)}','type',this.value)">
             ${LICENSE_TYPES.map(t=>`<option ${lic.type===t?'selected':''}>${t}</option>`).join('')}
           </select>
         </div>
         <div class="field"><label>Issuing state</label>
-          ${stateSelectHTML(lic.state, v=>`updateLicense('${lic.id}','state','${v}')`, lic.id+'-state')}
+          ${stateSelectHTML(lic.state, v=>`updateLicense('${esc(lic.id)}','state','${v}')`, lic.id+'-state')}
         </div>
-        <div class="field"><label>Expiration</label><input class="input" type="date" value="${lic.exp||''}" onchange="updateLicense('${lic.id}','exp',this.value)"></div>
+        <div class="field"><label>Expiration</label><input class="input" type="date" value="${attr(lic.exp||'')}" onchange="updateLicense('${esc(lic.id)}','exp',this.value)"></div>
       </div>
       <div class="field-row">
-        <div class="field"><label>License number</label><input class="input" value="${lic.number||''}" oninput="updateLicense('${lic.id}','number',this.value)" onblur="render()"></div>
+        <div class="field"><label>License number</label><input class="input" value="${attr(lic.number||'')}" oninput="updateLicense('${esc(lic.id)}','number',this.value)" onblur="render()"></div>
         <div class="field"><label>License document</label>${licenseUploaderHTML(lic)}</div>
       </div>
       ${expiryBadge(lic.exp)?`<div style="margin-top:4px">${expiryBadge(lic.exp)}</div>`:''}
@@ -1667,9 +1660,10 @@ const LICENSE_FIELD_MAP = {
   number: 'license_number',
   exp: 'expiration_date',
   file: 'document_url',
-  verified: 'verified',
-  verifiedAt: 'verified_at',
   notes: 'notes',
+  // verified / verified_at / verified_by are intentionally UNMAPPED. They are
+  // admin-controlled; a DB trigger resets them when the contractor edits a
+  // license field or replaces the document.
 };
 const _licPersistQueue = {}; // licId -> {pending: {col:val,...}, timer}
 function updateLicense(id, field, value){
@@ -1693,12 +1687,13 @@ function updateLicense(id, field, value){
   if(!col) return;
   let dbVal = value;
   if(field === 'exp') dbVal = value || null;
-  if(field === 'verified') dbVal = !!value;
   if(!_licPersistQueue[id]) _licPersistQueue[id] = { pending:{}, timer:null };
   const q = _licPersistQueue[id];
   q.pending[col] = dbVal;
-  // Also reset verification server-side when the user edits a field.
-  if(field !== 'verified' && field !== 'verifiedAt') q.pending.verified = false;
+  // No verification reset written from here. A BEFORE UPDATE trigger on
+  // contractor_licenses clears verified/verified_at/verified_by whenever the
+  // contractor changes license details or the document, so it happens
+  // regardless of what the client sends.
   clearTimeout(q.timer);
   q.timer = setTimeout(async ()=>{
     const payload = q.pending;
@@ -1728,19 +1723,19 @@ function licenseUploaderHTML(lic){
         <div class="file-row">
           <div class="file-thumb">${svgBase('<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>')}</div>
           <div class="file-info">
-            <div class="file-name">${lic.file}</div>
+            <div class="file-name">${esc(lic.file)}</div>
             <div class="file-meta">${lic.verified?'Verified':'Pending verification'}</div>
           </div>
           <div class="file-actions">
-            <button class="btn btn-ghost btn-sm" onclick="fakeLicenseUpload('${lic.id}',true)">Replace</button>
-            <button class="btn btn-ghost btn-sm" onclick="updateLicense('${lic.id}','file','')">Remove</button>
+            <button class="btn btn-ghost btn-sm" onclick="fakeLicenseUpload('${esc(lic.id)}',true)">Replace</button>
+            <button class="btn btn-ghost btn-sm" onclick="updateLicense('${esc(lic.id)}','file','')">Remove</button>
           </div>
         </div>
       </div>
     `;
   }
   return `
-    <div class="uploader compact" onclick="fakeLicenseUpload('${lic.id}')">
+    <div class="uploader compact" onclick="fakeLicenseUpload('${esc(lic.id)}')">
       <div class="uploader-ico sm">${svgBase('<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>')}</div>
       <div class="uploader-title sm">Upload license document</div>
       <div class="uploader-sub sm">PDF, JPG, or PNG · up to 10 MB</div>
@@ -1773,22 +1768,22 @@ function stepZips(){
   `;
 }
 function stepLicenses(){
-  const licensedSelected = [...state.categories].filter(c=>LICENSED_TRADES.includes(c));
+  const licensedSelected = [...state.categories].filter(c=>SSP_LICENSE_COLLECTION_TRADES.includes(c));
   if(licensedSelected.length===0){
     return `
       <div class="card pad" style="background:var(--green-soft);border-color:transparent">
         <div style="display:flex;gap:12px;align-items:flex-start">
           <div style="color:var(--green);flex-shrink:0;margin-top:2px">${iconCheck(18)}</div>
           <div>
-            <div style="font-weight:600;color:var(--navy)">No licensed trades selected</div>
-            <p style="font-size:13px;color:var(--text2);margin-top:4px">You're not offering HVAC, Plumbing, or Electrical — so no trade license is required. Just make sure your insurance is on file in the next step.</p>
+            <div style="font-weight:600;color:var(--navy)">No SSP license-documentation categories selected</div>
+            <p style="font-size:13px;color:var(--text2);margin-top:4px">You're not offering HVAC, Plumbing, or Electrical — so SSP does not collect a licence document for this category during onboarding. Just make sure your insurance is on file in the next step.</p>
           </div>
         </div>
       </div>
     `;
   }
   return `
-    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Add license details for each licensed trade you offer. Each one is verified manually — usually within one business day.</p>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Add license details for each category where SSP currently collects license documentation. Each record is reviewed before approval.</p>
     ${licensedSelected.map(trade=>`
       <div class="card pad" style="margin-bottom:14px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
@@ -1807,10 +1802,10 @@ function stepLicenses(){
 function stepInsuranceFull(){
   const i = state.credentials.insurance;
   return `
-    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Every contractor on SSP carries current general liability, regardless of trade. Upload your ACORD 25 certificate.</p>
+    <p style="font-size:13px;color:var(--text3);margin-bottom:14px">Current general liability coverage is required for SSP onboarding. Upload your ACORD 25 certificate.</p>
     <div class="field-row-3">
-      <div class="field"><label>Carrier</label><input class="input" value="${i.carrier||''}" oninput="state.credentials.insurance.carrier=this.value;markSaving()"></div>
-      <div class="field"><label>Policy number</label><input class="input" value="${i.policy||''}" oninput="state.credentials.insurance.policy=this.value;markSaving()"></div>
+      <div class="field"><label>Carrier</label><input class="input" value="${esc(i.carrier||'')}" oninput="state.credentials.insurance.carrier=this.value;markSaving()"></div>
+      <div class="field"><label>Policy number</label><input class="input" value="${esc(i.policy||'')}" oninput="state.credentials.insurance.policy=this.value;markSaving()"></div>
       <div class="field"><label>Expiration</label><input class="input" type="date" value="${i.exp||''}" onchange="state.credentials.insurance.exp=this.value;markSaving()"></div>
     </div>
     <div class="field"><label>Certificate of insurance</label>${uploaderHTML('insurance','Certificate of insurance')}</div>
@@ -1826,12 +1821,12 @@ function uploaderHTML(kind, label){
         <div class="file-row">
           <div class="file-thumb">${svgBase('<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>')}</div>
           <div class="file-info">
-            <div class="file-name">${file}</div>
+            <div class="file-name">${esc(file)}</div>
             <div class="file-meta">Uploaded · awaiting verification</div>
           </div>
           <div class="file-actions">
             <button class="btn btn-ghost btn-sm" onclick="fakeUpload('${kind}',true)">Replace</button>
-            <button class="btn btn-ghost btn-sm" onclick="state.credentials.${kind}.file='';render();toast('Removed')">Remove</button>
+            <button class="btn btn-ghost btn-sm" onclick="removeDoc('${kind}')">Remove</button>
           </div>
         </div>
       </div>
@@ -1847,7 +1842,8 @@ function uploaderHTML(kind, label){
 }
 
 // Opens a hidden file input, uploads the chosen file to Supabase Storage
-// under the contractor's folder, and writes the public URL back to the DB.
+// under the contractor's folder, and writes the storage PATH back to the DB.
+// The bucket is PRIVATE; views go through a short-lived signed URL.
 function fakeUpload(kind, replace){
   // Legacy name kept — only 'insurance' is still supported; license uploads
   // go through fakeLicenseUpload below.
@@ -1857,8 +1853,17 @@ function fakeUpload(kind, replace){
     try {
       const url = await uploadDoc(file, 'insurance.' + fileExt(file));
       state.credentials.insurance.file = url;
+      // Only the document path is written here. insurance_verified is an
+      // admin-controlled column and the contractor holds no UPDATE grant on
+      // it — see SSP-contractor-privileges.sql.
+      //
+      // Verification reset is handled by the DB trigger
+      // trg_reset_insurance_verification: any change to insurance_doc_url (or
+      // carrier / policy / expiration) sets insurance_verified = false. The
+      // trigger is the security boundary — it holds regardless of what this
+      // client sends or omits.
       await sb.from('contractors')
-        .update({ insurance_doc_url: url, insurance_verified: false })
+        .update({ insurance_doc_url: url })
         .eq('id', state.contractorId);
       state.credentials.insurance.verified = false;
       render();
@@ -1874,11 +1879,11 @@ async function fakeLicenseUpload(licId, replace){
   pickFile(async (file)=>{
     if(!validateUpload(file)) return;
     try {
-      const url = await uploadDoc(file, `license-${licId}.${fileExt(file)}`);
+      const url = await uploadDoc(file, `license-${licId}.${esc(fileExt(file))}`);
       const lic = state.credentials.licenses.find(l=>l.id===licId);
       if(lic){ lic.file = url; lic.verified = false; }
       await sb.from('contractor_licenses')
-        .update({ document_url: url, verified: false })
+        .update({ document_url: url })   // trigger resets verification
         .eq('id', licId);
       render();
       toast(replace?'File replaced · we\'ll verify soon':'Uploaded · we\'ll verify soon','success');
@@ -1909,14 +1914,70 @@ function fileExt(file){
   const map = {'application/pdf':'pdf','image/jpeg':'jpg','image/jpg':'jpg','image/png':'png'};
   return map[file.type] || 'bin';
 }
+// Insurance certificates and license documents are private. The bucket must
+// NOT be public: these are business identity documents. We store only the
+// object path and mint a short-lived signed URL when one is actually viewed.
 async function uploadDoc(file, pathSuffix){
   if(!state.contractorId) throw new Error('No contractorId');
   const path = `${state.contractorId}/${pathSuffix}`;
   const { error: upErr } = await sb.storage.from('contractor-docs')
     .upload(path, file, { upsert: true, contentType: file.type });
   if(upErr) throw upErr;
-  const { data: urlData } = sb.storage.from('contractor-docs').getPublicUrl(path);
-  return urlData.publicUrl;
+  // Return the storage PATH, never a public URL.
+  return path;
+}
+
+// Mint a signed URL valid for 5 minutes, at view time only.
+// Removing a document must PERSIST. Clearing only local state left the DB
+// still pointing at the old object, so the contractor saw "removed" while the
+// stale certificate remained the record of truth and kept its verification.
+//
+// OBJECT RETENTION (deliberate): the storage object is NOT deleted. Insurance
+// certificates and licences are evidence — if a dispute or a regulator asks
+// what was on file in March, the file has to still exist. The bucket is
+// private and unreferenced objects are unreachable without a signed URL.
+// Purging superseded documents is a retention-policy job, not a UI action.
+async function removeDoc(kind){
+  if(!state.contractorId) return;
+  if(!confirm('Remove this document? Your verification status will reset.')) return;
+  try {
+    if(kind === 'insurance'){
+      const { error } = await sb.from('contractors')
+        .update({ insurance_doc_url: null })   // trigger clears insurance_verified
+        .eq('id', state.contractorId);
+      if(error) throw error;
+      state.credentials.insurance.file = '';
+      state.credentials.insurance.verified = false;
+    } else {
+      state.credentials[kind].file = '';
+    }
+    render();
+    toast('Removed. Verification reset.','success');
+  } catch(e){
+    console.error('removeDoc failed', e);
+    toast('Could not remove that document. Please try again.','error',true);
+  }
+}
+
+async function signedDocUrl(path, seconds){
+  if(!path) return null;
+  // Tolerate legacy rows that stored a full public URL before this change.
+  if(/^https?:\/\//i.test(path)){
+    const m = path.match(/contractor-docs\/(.+)$/);
+    if(!m) return path;
+    path = decodeURIComponent(m[1]);
+  }
+  const { data, error } = await sb.storage.from('contractor-docs')
+    .createSignedUrl(path, seconds || 300);
+  if(error){ console.error('signedDocUrl failed', error); return null; }
+  return data && data.signedUrl ? data.signedUrl : null;
+}
+
+// Click handler for document links: resolve a signed URL, then open it.
+async function openDoc(path){
+  const url = await signedDocUrl(path, 300);
+  if(!url){ toast('Could not open that document. Please try again.','error',true); return; }
+  window.open(url, '_blank', 'noopener');
 }
 
 function toggleCategory(c){
@@ -1932,11 +1993,10 @@ function toggleCategory(c){
     state.expandedCategory = c;
     // If this is a licensed trade and no license record exists yet, seed one
     // so the inline form appears immediately.
-    if(LICENSED_TRADES.includes(c) && !licenseForTrade(c)){
+    if(SSP_LICENSE_COLLECTION_TRADES.includes(c) && !licenseForTrade(c)){
       addLicenseForTrade(c);
     }
-  }
-  render();
+  }  render();
   markSaving();
 }
 function addZip(){
@@ -1982,70 +2042,54 @@ async function acceptAgreement(){
   if(!canSignAgreement()) return;
   const signedName = state.agreement.typedName.trim();
 
-  // 1) IP capture (best-effort).
-  let ip = '';
-  try {
-    const r = await fetch('https://api.ipify.org?format=json');
-    if(r.ok){ const j = await r.json(); ip = j.ip||''; }
-  } catch(e){ /* non-fatal */ }
+  // No client-side IP lookup and no local pseudo-record. The server owns the
+  // legal artifact: it sets accepted_at from its own clock, the IP from
+  // x-forwarded-for, the user agent from the request header, and the version
+  // from a server constant. A browser-captured IP is trivially spoofable and
+  // a browser-captured timestamp is trivially backdated.
 
-  const now = new Date().toISOString();
-  state.agreementRecord = {
-    agreement_accepted_at: now,
-    agreement_accepted_ip: ip,
-    agreement_version: AGREEMENT_VERSION,
-    agreement_signed_name: signedName,
-  };
-
-  // 2) Persist to contractors row + flip status.
+  // 2) Agreement record + status transition + GHL workflow — all server-side.
+  //    The contractor holds no UPDATE privilege on status or on the
+  //    agreement_* columns. Those are a legal artifact: the accepted_at
+  //    timestamp, IP, and version are set by the server so they cannot be
+  //    forged or backdated from the browser. Only the typed signature name
+  //    travels from the client, and the server length-caps it.
   try {
-    const { error } = await sb.from('contractors').update({
-      agreement_accepted_at: now,
-      agreement_accepted_ip: ip,
-      agreement_version: AGREEMENT_VERSION,
-      agreement_signed_name: signedName,
-      status: 'Pending Review',
-    }).eq('id', state.contractorId);
-    if(error){
-      console.error('acceptAgreement DB failed', error);
-      toast('Could not submit — try again','error');
+    const headers = await authHeaders();
+    if(!headers){ toast('Your session expired. Please sign in again.','error',true); return; }
+    const resp = await fetch('/api/contractor-workflow', {
+      method:'POST', headers,
+      body: JSON.stringify({ action:'submit_for_review', signed_name: signedName })
+    });
+    const body = await resp.json().catch(()=>({}));
+    if(!resp.ok || !body.ok){
+      console.error('submit_for_review failed', resp.status, body && body.error);
+      toast((body && body.message) || 'Could not submit — try again','error');
       return;
     }
+    // Render the status the SERVER reports, not the one we hoped for. If an
+    // admin rejected or suspended this account between page load and submit,
+    // showing "under review" would be a lie.
+    if(body.status){
+      state.status = uiStatusFrom(body.status);
+      state.dbStatus = body.status;
+      if(isBlockedStatus(body.status)){
+        toast('Your account status changed. Contact support.','error',true);
+        render();
+        return;
+      }
+    }
   } catch(e){
-    console.error('acceptAgreement exception', e);
+    console.error('submit_for_review request failed', e);
     toast('Could not submit — try again','error');
     return;
   }
-
-  // 3) GHL webhook (best-effort — don't block UX on failure).
-  try {
-    if(GHL_REVIEW_WEBHOOK && !GHL_REVIEW_WEBHOOK.startsWith('TODO')){
-      await fetch(GHL_REVIEW_WEBHOOK, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          type:'submit_for_review',
-          contractor_id: state.contractorId,
-          firstName: state.profile.firstName,
-          lastName: state.profile.lastName,
-          name: `${state.profile.firstName} ${state.profile.lastName}`.trim(),
-          company: state.profile.company,
-          email: state.profile.email,
-          phone: state.profile.phone,
-          tier: state.tierBadge,
-          agreement_version: AGREEMENT_VERSION,
-          signed_at: now,
-          signed_ip: ip,
-        }),
-      });
-    }
-  } catch(e){ console.error('GHL webhook failed', e); }
 
   state.state = 'review';
   state.agreement.open = false;
   renderModal();
   render();
-  toast("Your account is under review. You'll hear from us within 24 hours.",'success');
+  toast("Your account is under review. We'll email you when the review is complete.",'success');
 }
 
 function onAgreementScroll(e){
@@ -2069,7 +2113,7 @@ function renderModal(){
   if(!state.agreement.open){ host.innerHTML=''; document.body.style.overflow=''; return; }
   document.body.style.overflow='hidden';
   const a = state.agreement;
-  const legalName = `${state.profile.firstName} ${state.profile.lastName}`;
+  const legalName = `${esc(state.profile.firstName)} ${esc(state.profile.lastName)}`;
   host.innerHTML = `
     <div class="modal-bg" onclick="if(event.target===this) closeAgreement()">
       <div class="modal" role="dialog" aria-modal="true" aria-label="Service agreement">
@@ -2095,7 +2139,7 @@ function renderModal(){
           </label>
           <div class="field" style="margin-top:6px;margin-bottom:0">
             <label>Type your full legal name to sign</label>
-            <input class="input" placeholder="${legalName}" value="${a.typedName}" ${a.scrolledEnd?'':'disabled'} oninput="state.agreement.typedName=this.value;updateAgreementButtons()">
+            <input class="input" placeholder="${esc(legalName)}" value="${esc(a.typedName)}" ${a.scrolledEnd?'':'disabled'} oninput="state.agreement.typedName=this.value;updateAgreementButtons()">
             <div class="hint">Type your full legal name as it should appear on the signed agreement (first and last).</div>
           </div>
           <div class="modal-actions">
@@ -2151,7 +2195,7 @@ function leadsHTML(){
       ${chip('expired','Expired',counts.expired)}
       <div class="search">
         ${svgBase('<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>')}
-        <input placeholder="Search by name, ZIP, service..." value="${state.searchQuery}" oninput="state.searchQuery=this.value;render();document.querySelector('.search input').focus()">
+        <input placeholder="Search by name, ZIP, service..." value="${attr(state.searchQuery)}" oninput="state.searchQuery=this.value;render();document.querySelector('.search input').focus()">
       </div>
     </div>
     ${filtered.length ? leadsListHTML(filtered) : leadsEmpty()}
@@ -2175,45 +2219,74 @@ function leadRowHTML(l, compact){
     passed:'<span class="lead-status s-passed">Passed</span>',
     expired:'<span class="lead-status s-expired">Expired</span>',
   }[s];
-  const urg = `<span class="urg ${l.urgency.toLowerCase()}">${l.urgency}</span>`;
+  const urg = `<span class="urg ${attr(String(l.urgency||'').toLowerCase())}">${esc(l.urgency)}</span>`;
+
+  // Pre-accept cards show STRUCTURED FIELDS ONLY: category, issue, urgency,
+  // ZIP, frozen price, countdown. No homeowner name, phone, email, street or
+  // free-text description — not even masked. Contact details appear only after
+  // a successful paid accept unlocks them via get_accepted_lead().
+  const left = minsLeft(l);
+  // Local expiry guard. The server re-checks on accept, but a dead offer must
+  // not present a live Accept button.
+  const offerDead = (s==='new' && left !== null && left <= 0) || l.busy;
+  const countdown = (s==='new' && left !== null)
+    ? (left > 0
+        ? `<span class="lead-countdown">${left} min left</span>`
+        : `<span class="lead-countdown expired">expired</span>`)
+    : '';
+  const highlight = state.focusLead===l.id ? ' lead-focus' : '';
 
   let row = `
-    <div class="lead-row ${isExpanded?'expanded':''}" onclick="toggleLead('${l.id}')">
+    <div class="lead-row ${isExpanded?'expanded':''}${highlight}" id="lead-${l.id}" onclick="toggleLead('${l.id}')">
       <div class="lead-ico">${iconInbox()}</div>
       <div class="lead-main">
         <div class="lead-head-row">
-          <span class="lead-svc">${l.service}</span>
+          <span class="lead-svc">${esc(l.service)}</span>
           ${urg}
           ${statusChip}
         </div>
-        <div class="lead-sub">${l.name} · ${l.zip} · ${timeAgo(l.mins)}</div>
+        <div class="lead-sub">${esc(l.issue || l.service)} · ZIP ${esc(l.zip)} · ${timeAgo(l.mins)} ${countdown}</div>
       </div>
       <div class="lead-meta">
-        <div class="lead-fee">${s==='accepted'?'$'+l.fee+' charged':(s==='new'?'$'+l.fee+' if accepted':'—')}</div>
-        <div class="lead-time">${s==='new'?'per-lead fee':(s==='accepted'?'paid':'no charge')}</div>
+        <div class="lead-fee">${s==='accepted'?'$'+l.fee+' charged':(s==='new'?'$'+l.fee:'—')}</div>
+        <div class="lead-time">${s==='new'?'lead price':(s==='accepted'?'paid':'no charge')}</div>
       </div>
       <div class="lead-cta">
         ${s==='new' ? `
-          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();acceptLead('${l.id}')">Accept</button>
-          <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();passLead('${l.id}')">Pass</button>
-        ` : (s==='accepted' && l.phone ? `<a href="tel:${l.phone}" class="btn btn-navy btn-sm" onclick="event.stopPropagation()">Call</a>` : '')}
+          <button class="btn btn-primary btn-sm" ${offerDead?'disabled':''} onclick="event.stopPropagation();acceptLead('${attr(l.id)}')">${offerDead?'Offer expired':`Accept Lead — $${l.fee}`}</button>
+          <button class="btn btn-ghost btn-sm" ${offerDead?'disabled':''} onclick="event.stopPropagation();passLead('${attr(l.id)}')">Pass</button>
+        ` : (s==='accepted' && l.phone ? `<a href="tel:${attr(l.phone)}" class="btn btn-navy btn-sm" onclick="event.stopPropagation()">Call</a>` : '')}
       </div>
     </div>
   `;
 
   if(isExpanded){
+    const unlocked = (s==='accepted' && l.unlocked);
     row += `
       <div class="lead-expand">
         <div class="lead-detail-grid">
           <div>
-            <div class="fact-lbl">The ask</div>
-            <p class="lead-desc">${l.desc}</p>
+            <div class="fact-lbl">Job</div>
+            <p class="lead-desc">${esc(l.issue || l.service)}${l.urgency?` · ${esc(l.urgency)}`:''}</p>
+            ${unlocked && l.desc ? `<div class="fact-lbl" style="margin-top:14px">What they described</div><p class="lead-desc">${esc(l.desc)}</p>` : ''}
           </div>
           <div class="lead-facts">
-            ${l.status==='accepted' && l.phone ? `<div class="fact"><div><div class="fact-lbl">Call homeowner</div><div class="phone-big"><a href="tel:${l.phone}">${l.phone}</a></div></div></div>`:''}
-            <div class="fact"><div><div class="fact-lbl">Budget</div><div class="fact-val">${l.budget}</div></div></div>
-            <div class="fact"><div><div class="fact-lbl">Property</div><div class="fact-val">${l.prop}</div></div></div>
-            <div class="fact"><div><div class="fact-lbl">Contact preference</div><div class="fact-val">${l.contact}</div></div></div>
+            ${unlocked ? `
+              <div class="fact"><div><div class="fact-lbl">Call homeowner</div><div class="phone-big"><a href="tel:${attr(l.phone)}">${esc(l.phone)}</a></div></div></div>
+              <div class="fact"><div><div class="fact-lbl">Name</div><div class="fact-val">${esc(l.name)}</div></div></div>
+              ${l.email?`<div class="fact"><div><div class="fact-lbl">Email</div><div class="fact-val">${esc(l.email)}</div></div></div>`:''}
+              ${l.address?`<div class="fact"><div><div class="fact-lbl">Address</div><div class="fact-val">${esc(l.address)}</div></div></div>`:''}
+              <div class="fact"><div><div class="fact-lbl">Lead charge</div><div class="fact-val">${fmtMoney(l.priceCents)}</div><button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="event.stopPropagation();openLeadDispute('${attr(l.id)}')">Dispute lead charge</button></div></div>
+            ` : `
+              <div class="fact locked-panel">
+                <div>
+                  <div class="fact-lbl">🔒 Customer contact details</div>
+                  <div class="fact-val">Customer contact details unlock when you accept this lead.</div>
+                </div>
+              </div>
+              <div class="fact"><div><div class="fact-lbl">Service area</div><div class="fact-val">ZIP ${esc(l.zip)}</div></div></div>
+              <div class="fact"><div><div class="fact-lbl">Lead price</div><div class="fact-val">$${l.fee}</div></div></div>
+            `}
           </div>
         </div>
       </div>
@@ -2224,80 +2297,204 @@ function leadRowHTML(l, compact){
 
 function toggleLead(id){ state.expandedLead = state.expandedLead===id?null:id; render(); }
 
+function closeLeadDispute(){
+  const host = document.getElementById('modalHost');
+  if(host) host.innerHTML='';
+  document.body.style.overflow='';
+}
+
+function openLeadDispute(leadId){
+  const l = state.leads.find(x=>x.id===leadId);
+  if(!l || l.status!=='accepted') return;
+  const host = document.getElementById('modalHost');
+  if(!host) return;
+  document.body.style.overflow='hidden';
+  host.innerHTML = `
+    <div class="modal-bg" onclick="if(event.target===this) closeLeadDispute()">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="Dispute lead charge">
+        <div class="modal-head">
+          <div><div class="modal-title">Dispute lead charge</div><div class="modal-sub">Lead ${esc(l.issue||l.service)} · ${fmtMoney(l.priceCents)}</div></div>
+          <button class="icon-btn" onclick="closeLeadDispute()" aria-label="Close">${iconX(16)}</button>
+        </div>
+        <div class="modal-scroll" style="padding:20px">
+          <p class="sub" style="margin-top:0">Use this only when the lead itself was invalid. Disputes must be submitted within 7 calendar days of acceptance.</p>
+          <div class="field">
+            <label>Reason</label>
+            <select id="leadDisputeReason" class="input">
+              <option value="">Select a reason</option>
+              <option value="invalid_contact">Invalid contact information</option>
+              <option value="never_requested">Customer says they never requested service</option>
+              <option value="out_of_area">Outside my selected service area or trade</option>
+              <option value="duplicate">Duplicate lead</option>
+              <option value="already_completed">Project already completed or withdrawn</option>
+              <option value="cap_exceeded">Lead was delivered after the contractor cap was reached</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label>Evidence or notes <span class="sub">(optional)</span></label>
+            <textarea id="leadDisputeEvidence" class="input" rows="4" maxlength="2000" placeholder="Briefly explain what happened"></textarea>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeLeadDispute()">Cancel</button>
+            <button id="leadDisputeSubmit" class="btn btn-primary" onclick="submitLeadDispute('${attr(leadId)}')">Submit dispute</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function submitLeadDispute(leadId){
+  const reasonEl=document.getElementById('leadDisputeReason');
+  const evidenceEl=document.getElementById('leadDisputeEvidence');
+  const btn=document.getElementById('leadDisputeSubmit');
+  const reason=reasonEl?reasonEl.value:'';
+  const evidence=evidenceEl?evidenceEl.value.trim():'';
+  if(!reason){ toast('Choose a dispute reason.','error',true); return; }
+  if(btn){ btn.disabled=true; btn.textContent='Submitting…'; }
+  try{
+    const headers=await authHeaders();
+    if(!headers){ toast('Your session expired. Please sign in again.','error',true); return; }
+    const res=await fetch('/api/lead-dispute',{
+      method:'POST',headers,body:JSON.stringify({lead_id:leadId,reason,evidence})
+    });
+    const body=await res.json().catch(()=>({}));
+    if(!res.ok||!body.ok){
+      const messages={
+        dispute_window_closed:'The 7-day dispute window has closed.',
+        dispute_already_filed:'A dispute has already been filed for this lead.',
+        no_accepted_charge:'This accepted lead charge could not be verified.'
+      };
+      throw new Error(body.message||messages[body.error]||'Could not submit the dispute.');
+    }
+    closeLeadDispute();
+    toast('Dispute submitted. SSP will review it.','success',true);
+  }catch(e){
+    console.error('submitLeadDispute failed',e);
+    toast(e.message||'Could not submit the dispute.','error',true);
+    if(btn){ btn.disabled=false; btn.textContent='Submit dispute'; }
+  }
+}
+
 let lastLeadAction = null;
-async function acceptLead(id, fee){
-  const l = state.leads.find(x=>x.id===id); if(!l) return;
-  const prev = l.status;
-  const now = new Date().toISOString();
-  const responseSeconds = l.created_at ? Math.floor((Date.now() - new Date(l.created_at).getTime())/1000) : null;
-  const useFee = (typeof fee==='number') ? fee : (l.fee || 29);
-  l.status = 'Accepted';
-  lastLeadAction = {id, prev, fee:useFee};
-  render();
-  try {
-    await sb.from('leads').update({
-      status: 'Accepted', accepted_at: now, responded_at: now,
-      lead_fee: useFee, response_time_seconds: responseSeconds
-    }).eq('id', id);
- } catch(e){ console.error('acceptLead failed', e); }
-
-  // Fire GHL "Homeowner — Matched With Pro" workflow so Email 6 goes out.
-  fireHomeownerMatched(l).catch(e => console.error('homeowner_matched webhook failed (non-fatal):', e));
-
-  toast(`Accepted — $${useFee} charged. Homeowner's info is in your leads.`,'success',true);
-}
-
-async function fireHomeownerMatched(l){
-  if(!l || !l.email){
-    console.warn('homeowner_matched: no homeowner email on lead, skipping', l && l.id);
-    return;
-  }
-  const WEBHOOK = 'https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/cSb176GBaN3hMu0573QO';
-  const p = state.profile || {};
-  const firstName = (l.name||'').trim().split(/\s+/)[0] || '';
-  const contractorName = [p.firstName, p.lastName].filter(Boolean).join(' ').trim();
-  const payload = {
-    type: 'homeowner_matched',
-    lead_id: l.id,
-    homeowner_email: l.email,
-    homeowner_first_name: firstName,
-    homeowner_name: l.name || '',
-    homeowner_phone: l.phone || '',
-    homeowner_zip: l.zip || '',
-    homeowner_address: l.address || '',
-    service_type: l.service || '',
-    urgency: l.urgency || '',
-    contractor_id: state.contractorId,
-    contractor_name: contractorName,
-    contractor_company: p.company || '',
-    contractor_phone: p.phone || '',
-    contractor_email: p.email || '',
-    business_description: p.description || '',
-    years_in_business: p.years != null ? String(p.years) : '',
-    dashboard_url: window.location.origin + '/contractor-dashboard.html',
+// Current session access token. The API derives contractor identity from this
+// token; it never trusts a contractor id sent from the browser.
+async function authHeaders(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session || !session.access_token) return null;
+  return {
+    'Content-Type':'application/json',
+    'Authorization':'Bearer ' + session.access_token,
   };
-  const resp = await fetch(WEBHOOK, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if(!resp.ok){
-    throw new Error('homeowner_matched webhook HTTP ' + resp.status);
+}
+
+// Accept is server-side and atomic: the wallet debit and the offer claim commit
+// together, or neither does. No optimistic status flip — a failed debit or a
+// lost race must not look like a successful accept.
+async function acceptLead(id){
+  const l = state.leads.find(x=>x.id===id); if(!l) return;
+  if(l.busy) return;
+  l.busy = true; render();
+
+  try {
+    const headers = await authHeaders();
+    if(!headers){ toast('Your session expired. Please sign in again.','error',true); return; }
+
+    const res  = await fetch('/api/lead-accept', {
+      method:'POST', headers, body: JSON.stringify({ lead_id: id })
+    });
+    const json = await res.json().catch(()=>({}));
+
+    if(!res.ok || !json.ok){
+      toast(json.message || 'Could not accept this lead.','error',true);
+      await loadLeads();
+      return;
+    }
+
+    l.status = 'accepted';
+    l.rawStatus = 'accepted';
+    lastLeadAction = null;                 // server-side charge: no client undo
+
+    // Reveal homeowner details from the accept response, or fetch them.
+    if(json.lead){
+      l.unlocked = true;
+      l.name    = json.lead.homeowner_name || '';
+      l.phone   = json.lead.homeowner_phone || '';
+      l.email   = json.lead.homeowner_email || '';
+      l.address = json.lead.homeowner_address || json.lead.homeowner_street || '';
+      l.desc    = json.lead.description || '';
+    } else {
+      await unlockLead(id);
+    }
+
+    state.expandedLead = id;
+    await loadWallet();
+
+    // lead_accepted is emitted atomically by the database outbox trigger.
+    // The browser never sends GHL/customer notifications directly.
+
+    const charged = json.charged_cents ? (json.charged_cents/100).toFixed(2) : l.fee;
+    toast(`Accepted — $${charged} charged. Customer contact details are unlocked below.`,'success',true);
+  } catch(e){
+    console.error('acceptLead failed', e);
+    toast('Network error. Please try again.','error',true);
+  } finally {
+    l.busy = false; render();
   }
 }
+
 async function passLead(id){
   const l = state.leads.find(x=>x.id===id); if(!l) return;
-  const now = new Date().toISOString();
-  const responseSeconds = l.created_at ? Math.floor((Date.now() - new Date(l.created_at).getTime())/1000) : null;
-  lastLeadAction = {id, prev:l.status};
-  l.status='Passed';
-  render();
+  if(l.busy) return;
+  l.busy = true; render();
+
   try {
-    await sb.from('leads').update({
-      status: 'Passed', responded_at: now, response_time_seconds: responseSeconds
-    }).eq('id', id);
-  } catch(e){ console.error('passLead failed', e); }
-  toast(`Passed on ${l.name}'s request.`,'success',true);
+    const headers = await authHeaders();
+    if(!headers){ toast('Your session expired. Please sign in again.','error',true); return; }
+
+    const res  = await fetch('/api/lead-decline', {
+      method:'POST', headers, body: JSON.stringify({ lead_id: id })
+    });
+    const json = await res.json().catch(()=>({}));
+
+    if(!res.ok || !json.ok){
+      toast(json.message || 'Could not pass on this lead.','error',true);
+      await loadLeads();
+      return;
+    }
+
+    l.status = 'passed';
+    l.rawStatus = 'declined';
+    lastLeadAction = null;
+
+    // Cron is OFF, so nothing else will retry this. If the immediate refill
+    // failed, the freed slot would otherwise just disappear — the lead keeps a
+    // hole no contractor is ever offered. One safe retry, then log loudly.
+    // Retrying is safe: fill_offer_slots is idempotent on slot count.
+    if(json.refill_pending){
+      try {
+        const retry = await fetch('/api/lead-decline', {
+          method:'POST', headers,
+          body: JSON.stringify({ lead_id: id, refill_only: true })
+        });
+        const rj = await retry.json().catch(()=>({}));
+        if(!retry.ok || rj.refill_pending){
+          console.error('SSP-OPS: refill still pending after retry for lead', id,
+                        '- slot will remain unfilled until matching runs again');
+        }
+      } catch(e){
+        console.error('SSP-OPS: refill retry threw for lead', id, e);
+      }
+    }
+    // No homeowner name in the toast — passed offers never unlock PII.
+    toast(`Passed on the ${esc(l.service||'lead')} request in ${esc(l.zip)}.`,'success',true);
+  } catch(e){
+    console.error('passLead failed', e);
+    toast('Network error. Please try again.','error',true);
+  } finally {
+    l.busy = false; render();
+  }
 }
 function undoLast(){
   if(!lastLeadAction) return;
@@ -2343,17 +2540,17 @@ function profileHTML(){
       <div class="section-title" style="margin-bottom:18px;font-size:16px">About your business</div>
       <div class="field">
         <label>Business description</label>
-        <textarea class="textarea" oninput="state.profile.description=this.value;markSaving()">${p.description||''}</textarea>
+        <textarea class="textarea" oninput="state.profile.description=this.value;markSaving()">${esc(p.description||'')}</textarea>
         <div class="hint">Shown on your public profile card.</div>
       </div>
       <div class="field-row">
-        <div class="field"><label>Company name</label><input class="input" value="${p.company}" oninput="state.profile.company=this.value;markSaving()"></div>
-        <div class="field"><label>Website</label><input class="input" value="${p.website}" oninput="state.profile.website=this.value;markSaving()"></div>
+        <div class="field"><label>Company name</label><input class="input" value="${attr(p.company)}" oninput="state.profile.company=this.value;markSaving()"></div>
+        <div class="field"><label>Website</label><input class="input" value="${esc(p.website)}" oninput="state.profile.website=this.value;markSaving()"></div>
       </div>
       <div class="field-row-3">
-        <div class="field"><label>Phone</label><input class="input" type="tel" value="${p.phone}" oninput="state.profile.phone=this.value;markSaving()"></div>
-        <div class="field"><label>Years in business</label><input class="input" type="number" value="${p.years}" oninput="state.profile.years=+this.value;markSaving()"></div>
-        <div class="field"><label>Employees</label><input class="input" type="number" value="${p.employees}" oninput="state.profile.employees=+this.value;markSaving()"></div>
+        <div class="field"><label>Phone</label><input class="input" type="tel" value="${esc(p.phone)}" oninput="state.profile.phone=this.value;markSaving()"></div>
+        <div class="field"><label>Years in business</label><input class="input" type="number" value="${esc(p.years)}" oninput="state.profile.years=+this.value;markSaving()"></div>
+        <div class="field"><label>Employees</label><input class="input" type="number" value="${esc(p.employees)}" oninput="state.profile.employees=+this.value;markSaving()"></div>
       </div>
       <div class="field-row">
         <div class="field"><label>State</label>${simpleStateSelect(p.state||'TX',"state.profile.state=this.value;markSaving();render()")}</div>
@@ -2495,7 +2692,7 @@ function credentialsHTML(){
        </div>`
     : licenses.map(l=>licenseRowHTML(l)).join('');
 
-  const licensedNotSelected = LICENSED_TRADES.filter(t=>!licenseForTrade(t));
+  const licensedNotSelected = SSP_LICENSE_COLLECTION_TRADES.filter(t=>!licenseForTrade(t));
 
   return `
     <div class="page-header"><h1>Credentials</h1><p class="sub">Insurance and trade licenses. Verified once, good for the life of the policy.<span class="save-indicator" id="saveInd"><span class="dot-anim"></span>Saving</span></p></div>
@@ -2510,8 +2707,8 @@ function credentialsHTML(){
       </div>
       ${expiryBadge(i.exp)?`<div style="margin:6px 0 14px">${expiryBadge(i.exp)}</div>`:'<div style="height:8px"></div>'}
       <div class="field-row-3">
-        <div class="field"><label>Carrier</label><input class="input" value="${i.carrier||''}" oninput="state.credentials.insurance.carrier=this.value;state.credentials.insurance.verified=false;markSaving()"></div>
-        <div class="field"><label>Policy number</label><input class="input" value="${i.policy||''}" oninput="state.credentials.insurance.policy=this.value;state.credentials.insurance.verified=false;markSaving()"></div>
+        <div class="field"><label>Carrier</label><input class="input" value="${esc(i.carrier||'')}" oninput="state.credentials.insurance.carrier=this.value;state.credentials.insurance.verified=false;markSaving()"></div>
+        <div class="field"><label>Policy number</label><input class="input" value="${esc(i.policy||'')}" oninput="state.credentials.insurance.policy=this.value;state.credentials.insurance.verified=false;markSaving()"></div>
         <div class="field"><label>Expiration</label><input class="input" type="date" value="${i.exp||''}" onchange="state.credentials.insurance.exp=this.value;state.credentials.insurance.verified=false;markSaving();render()"></div>
       </div>
       <div class="field"><label>Certificate of insurance</label>${uploaderHTML('insurance','Certificate of insurance')}</div>
@@ -2544,8 +2741,8 @@ function licenseRowHTML(lic){
     <div class="lic-card">
       <div class="lic-card-head">
         <div>
-          <div class="lic-card-trade">${lic.trade} <span class="lic-card-type">· ${lic.type||'License'}</span></div>
-          <div class="lic-card-meta">${lic.state ? `${lic.state} · ` : ''}${lic.number || 'No number'} ${lic.exp ? ` · Expires ${fmtDate(lic.exp)}` : ''}</div>
+          <div class="lic-card-trade">${esc(lic.trade)} <span class="lic-card-type">· ${esc(lic.type||'License')}</span></div>
+          <div class="lic-card-meta">${lic.state ? `${esc(lic.state)} · ` : ''}${esc(lic.number || 'No number')} ${lic.exp ? ` · Expires ${fmtDate(lic.exp)}` : ''}</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           ${expiryBadge(lic.exp)}
@@ -2558,23 +2755,23 @@ function licenseRowHTML(lic){
       </div>
       <div class="field-row-3" style="margin-top:14px">
         <div class="field"><label>License type</label>
-          <select class="select" onchange="updateLicense('${lic.id}','type',this.value)">
+          <select class="select" onchange="updateLicense('${esc(lic.id)}','type',this.value)">
             ${LICENSE_TYPES.map(t=>`<option ${lic.type===t?'selected':''}>${t}</option>`).join('')}
           </select>
         </div>
         <div class="field"><label>Issuing state</label>
-          <select class="select" onchange="updateLicense('${lic.id}','state',this.value)">
+          <select class="select" onchange="updateLicense('${esc(lic.id)}','state',this.value)">
             ${US_STATES.map(([code,name])=>`<option value="${code}" ${lic.state===code?'selected':''}>${code} — ${name}</option>`).join('')}
           </select>
         </div>
-        <div class="field"><label>Expiration</label><input class="input" type="date" value="${lic.exp||''}" onchange="updateLicense('${lic.id}','exp',this.value)"></div>
+        <div class="field"><label>Expiration</label><input class="input" type="date" value="${attr(lic.exp||'')}" onchange="updateLicense('${esc(lic.id)}','exp',this.value)"></div>
       </div>
       <div class="field-row">
-        <div class="field"><label>License number</label><input class="input" value="${lic.number||''}" oninput="updateLicense('${lic.id}','number',this.value)" onblur="render()"></div>
+        <div class="field"><label>License number</label><input class="input" value="${attr(lic.number||'')}" oninput="updateLicense('${esc(lic.id)}','number',this.value)" onblur="render()"></div>
         <div class="field"><label>Document</label>${licenseUploaderHTML(lic)}</div>
       </div>
       <div style="display:flex;justify-content:flex-end;margin-top:8px">
-        <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="confirmRemoveLicense('${lic.id}')">Remove</button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="confirmRemoveLicense('${esc(lic.id)}')">Remove</button>
       </div>
     </div>
   `;
@@ -2601,80 +2798,151 @@ function verifBadge(s){
 
 // ==================== BILLING ====================
 function billingHTML(){
-  const tier = 'Pro';
-  const accepted = currentLeads().filter(l=>l.status==='accepted').length;
+  const promo = state.walletPromoCents, paid = state.walletPaidCents;
+  const total = promo + paid;
+  const low   = total < 7500;   // below the highest band price
+
   return `
-    <div class="page-header"><h1>Billing & Plan</h1><p class="sub">Your current plan and charges this period.</p></div>
+    <div class="page-header"><h1>Wallet</h1><p class="sub">You pay per lead you accept. No monthly fee, no contract.</p></div>
 
     <div class="plan-card" style="margin-bottom:18px">
       <div class="plan-card-inner">
-        <div class="plan-eyebrow">Your plan</div>
-        <div class="plan-name-big">Pro</div>
-        <div class="plan-price-big">$99/mo + $29 per accepted lead</div>
+        <div class="plan-eyebrow">Available balance</div>
+        <div class="plan-name-big">${fmtMoney(total)}</div>
+        <div class="plan-price-big">
+          ${promo>0 ? `${fmtMoney(promo)} promotional &middot; ` : ''}${fmtMoney(paid)} purchased
+        </div>
+        ${promo>0 ? `<p class="sub" style="margin-top:8px">Promotional credit is used first and is not refundable.</p>` : ''}
         <div class="plan-actions">
-          <button class="plan-btn primary" onclick="toast('Stripe portal would open here')">Manage subscription</button>
-          <button class="plan-btn" onclick="toast('Upgrade flow (demo)')">Upgrade to Elite</button>
-          <button class="plan-btn" onclick="toast('Downgrade flow (demo)')">Downgrade</button>
+          <button class="plan-btn primary" onclick="openTopUp(25000)" ${state.state==='active'?'':'disabled title="Account must be active"'}>Add $250</button>
         </div>
       </div>
     </div>
 
-    ${billingPreviewHTML(accepted, true)}
+    ${low ? `
+      <div class="callout" style="background:#fff7ed;border-left:4px solid var(--orange);padding:14px 18px;border-radius:8px;margin-bottom:18px">
+        <strong>Low balance.</strong> You only receive lead offers you can afford. Add funds to keep receiving leads.
+      </div>` : ''}
 
     <div class="section" style="margin-top:18px">
-      <div class="section-title" style="font-size:18px;margin-bottom:10px">Change your plan</div>
+      <div class="section-title" style="font-size:18px;margin-bottom:10px">Add funds</div>
       <div class="tiers">
-        ${tierCard('Basic','$49','mo','$39 per lead',['Standard listing','Up to 10 leads/mo','Email support'], tier==='Basic')}
-        ${tierCard('Pro','$99','mo','$29 per lead',['Priority listing','Unlimited leads','Chat + phone support','Customer reviews widget'], tier==='Pro')}
-        ${tierCard('Elite','$199','mo','$19 per lead',['Top of search','Unlimited leads','Dedicated account manager','Featured profile card'], tier==='Elite')}
+        ${topUpCard(10000)}
+        ${topUpCard(25000)}
+        ${topUpCard(50000)}
       </div>
+      <p class="sub" style="margin-top:10px">Secure one-time payment through Stripe. Funds are added only after Stripe confirms payment. No subscription.</p>
     </div>
 
-    <div class="danger-zone" style="background:#fff;border:1px solid var(--border);margin-top:20px">
-      <h3 style="color:var(--navy)">Cancel subscription</h3>
-      <p>You'll keep access until the end of your current billing period. You can come back anytime.</p>
-      <button class="btn btn-danger" onclick="confirmCancel()">Cancel subscription</button>
+    <div class="section" style="margin-top:18px">
+      <div class="section-head"><div class="section-title">Transaction history</div></div>
+      ${walletLedgerHTML()}
+    </div>
+
+    <div class="section" style="margin-top:18px">
+      <div class="section-title" style="font-size:18px;margin-bottom:10px">How pricing works</div>
+      <p class="sub">Every lead shows its price before you accept. You are only charged when you accept a lead.
+      Prices are set by job type: larger installation and replacement jobs cost more than small repairs.
+      If a lead is invalid, out of your area, a duplicate, or the customer never requested service,
+      you can dispute it within 7 days and approved disputes are credited back to your wallet.</p>
     </div>
   `;
 }
 
-function billingPreviewHTML(accepted, full){
-  const monthly = 99;
-  const perLead = 29;
-  const leadCharges = accepted*perLead;
+function topUpCard(cents){
+  const active = state.state === 'active';
   return `
-    <div class="card pad">
-      <div class="section-head" style="margin-bottom:0">
-        <div class="section-title" style="font-size:16px">This billing period</div>
-        <span class="muted" style="font-size:12px;color:var(--text4)">Apr 1 – Apr 30 · next charge Apr 28</span>
-      </div>
-      <div class="billing-break">
-        <div class="break-item"><div class="break-lbl">Monthly plan</div><div class="break-val">$${monthly}</div><div class="break-sub">Pro tier</div></div>
-        <div class="break-item"><div class="break-lbl">Lead charges</div><div class="break-val">$${leadCharges}</div><div class="break-sub">${accepted} × $${perLead}</div></div>
-        <div class="break-item" style="background:var(--navy);color:#fff">
-          <div class="break-lbl" style="color:rgba(255,255,255,.6)">Estimated total</div>
-          <div class="break-val" style="color:#fff">$${monthly+leadCharges}</div>
-          <div class="break-sub" style="color:rgba(255,255,255,.65)">charges to your card</div>
+    <div class="tier-card" ${active?'':'style="opacity:.55"'}>
+      <div class="tier-name">${fmtMoney(cents)}</div>
+      <div class="tier-price">One-time wallet funding</div>
+      <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="openTopUp(${cents})" ${active?'':'disabled title="Account must be active"'}>Add ${fmtMoney(cents)}</button>
+    </div>`;
+}
+
+function walletLedgerHTML(){
+  if(!state.walletLoaded) return `<p class="sub">Loading…</p>`;
+  if(!state.walletLedger.length) return `<p class="sub">No transactions yet.</p>`;
+  const label = {
+    topup:'Funds added', promo_grant:'Promotional credit', bonus:'Bonus credit',
+    lead_charge:'Lead accepted', reversal:'Dispute credited',
+    guarantee_refund:'Credit issued', adjustment:'Adjustment',
+  };
+  return `<div class="leads-list">${state.walletLedger.map(t=>{
+    const amt  = t.amount_cents;
+    const sign = amt < 0 ? '-' : '+';
+    const when = t.created_at ? new Date(t.created_at).toLocaleDateString() : '';
+    return `
+      <div class="lead-row">
+        <div class="lead-main">
+          <div class="lead-head-row"><span class="lead-svc">${esc(label[t.type]||t.type)}</span></div>
+          <div class="lead-sub">${esc(when)}${t.description?` · ${esc(t.description)}`:''}</div>
         </div>
-      </div>
-    </div>
-  `;
+        <div class="lead-meta">
+          <div class="lead-fee">${sign}${fmtMoney(Math.abs(amt))}</div>
+          <div class="lead-time">${t.promo_delta_cents ? 'promo' : 'purchased'}</div>
+        </div>
+      </div>`;
+  }).join('')}</div>`;
 }
 
-function tierCard(name, price, per, leadPrice, feats, current){
-  return `
-    <div class="tier ${current?'current':''}">
-      <div class="tier-name">${name}</div>
-      <div class="tier-price">${price}/${per} · ${leadPrice}</div>
-      <ul class="tier-ul">${feats.map(f=>`<li>${iconCheck(12)}${f}</li>`).join('')}</ul>
-      <button class="btn ${current?'btn-ghost':'btn-navy'} btn-sm" style="width:100%" ${current?'disabled':''} onclick="toast('${current?'':'Switching to '+name+'...'}')">${current?'Your plan':'Switch to '+name}</button>
-    </div>
-  `;
+// ---- wallet data ----
+function walletTotalCents(){ return state.walletPromoCents + state.walletPaidCents; }
+function walletSpentCents(){
+  return state.walletLedger
+    .filter(t=>t.type==='lead_charge')
+    .reduce((n,t)=>n+Math.abs(t.amount_cents),0);
+}
+function walletBalanceSub(){
+  const p = state.walletPromoCents;
+  return p>0 ? `${fmtMoney(p)} promotional included` : 'purchased funds';
+}
+function fmtMoney(cents){
+  return '$' + ((cents||0)/100).toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});
 }
 
-function confirmCancel(){
-  if(confirm("Are you sure? You'll keep access until the end of the period.")){
-    toast('Cancellation scheduled. You\'re good until Apr 30.','success');
+async function loadWallet(){
+  if(!state.contractorId) return;
+  const { data: c } = await sb.from('contractors')
+    .select('promo_credits_cents, lead_balance_cents').eq('id', state.contractorId).single();
+  if(c){
+    state.walletPromoCents = c.promo_credits_cents || 0;
+    state.walletPaidCents  = c.lead_balance_cents  || 0;
+  }
+  const { data: tx } = await sb.from('wallet_transactions')
+    .select('type, amount_cents, promo_delta_cents, paid_delta_cents, description, created_at')
+    .order('created_at', { ascending:false }).limit(50);
+  state.walletLedger = tx || [];
+  state.walletLoaded = true;
+}
+
+async function openTopUp(cents){
+  if(state.state !== 'active'){
+    toast('Wallet funding is available after your account is active.','error',true);
+    return;
+  }
+  if(![10000,25000,50000].includes(Number(cents))){
+    toast('That funding amount is not available.','error',true);
+    return;
+  }
+  try {
+    const { data:{ session } } = await sb.auth.getSession();
+    const token = session && session.access_token;
+    if(!token){ window.location.href='/contractor-login.html'; return; }
+    toast('Opening secure Stripe checkout…');
+    const resp = await fetch('/api/create-checkout-session', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+token },
+      body:JSON.stringify({ amount_cents:Number(cents) })
+    });
+    const body = await resp.json().catch(()=>({}));
+    if(!resp.ok || !body.url){
+      const msg = body.message || (body.error==='contractor_inactive' ? 'Your account must be active before funding.' : 'Could not open checkout. Please try again.');
+      throw new Error(msg);
+    }
+    window.location.href = body.url;
+  } catch(e){
+    console.error('wallet top-up checkout failed', e);
+    toast(e.message || 'Could not open checkout. Please try again.','error',true);
   }
 }
 
@@ -2690,24 +2958,32 @@ function settingsHTML(){
     <div class="card pad" style="margin-bottom:16px">
       <div class="section-title" style="font-size:16px;margin-bottom:14px">Account</div>
       <div class="field-row">
-        <div class="field"><label>Email (sign-in)</label><input class="input" value="${email}" disabled style="background:var(--bg);color:var(--text3)"></div>
-        <div class="field"><label>Phone</label><input class="input" type="tel" value="${state.profile.phone||''}" oninput="state.profile.phone=this.value;markSaving()"></div>
+        <div class="field"><label>Email (sign-in)</label><input class="input" value="${attr(email)}" disabled style="background:var(--bg);color:var(--text3)"></div>
+        <div class="field"><label>Phone</label><input class="input" type="tel" value="${attr(state.profile.phone||'')}" oninput="state.profile.phone=this.value;markSaving()"></div>
       </div>
     </div>
 
     <div class="card pad" style="margin-bottom:16px">
       <div class="section-title" style="font-size:16px">Notifications</div>
-      <div class="toggle-row">
-        <div class="toggle-info"><h4>Email alerts for new leads</h4><p>Ping within 30 seconds of a new lead hitting your inbox.</p></div>
-        <div class="switch ${n.email?'on':''}" onclick="state.notifs.email=!state.notifs.email;${notifsPersist};render();toast('Saved')"></div>
+      <p class="sub" style="margin:-4px 0 14px">
+        Lead notifications are not switched on yet. Offers appear in your Leads tab
+        as soon as they arrive. We will turn these on once delivery is live and tested —
+        we are not going to promise an alert we cannot yet send.
+      </p>
+      <div class="toggle-row" style="opacity:.55">
+        <div class="toggle-info">
+          <h4>Email alerts for new leads <span class="lead-countdown">Coming soon</span></h4>
+          <p>An email the moment a lead is offered to you.</p>
+        </div>
+        <div class="switch" aria-disabled="true" title="Not available yet"></div>
       </div>
-      <div class="toggle-row">
-        <div class="toggle-info"><h4>SMS alerts for new leads</h4><p>Same thing, but to your phone. Good for being in the field.</p></div>
-        <div class="switch ${n.sms?'on':''}" onclick="state.notifs.sms=!state.notifs.sms;${notifsPersist};render();toast('Saved')"></div>
-      </div>
-      <div class="toggle-row">
-        <div class="toggle-info"><h4>Weekly digest</h4><p>Monday morning summary of last week's leads and charges.</p></div>
-        <div class="switch ${n.digest?'on':''}" onclick="state.notifs.digest=!state.notifs.digest;${notifsPersist};render();toast('Saved')"></div>
+      <div class="toggle-row" style="opacity:.55">
+        <div class="toggle-info">
+          <h4>SMS alerts for new leads <span class="lead-countdown">Coming soon</span></h4>
+          <p>The same alert to your phone. Off unless you turn it on — we will never
+             enrol you in texts without you asking.</p>
+        </div>
+        <div class="switch" aria-disabled="true" title="Not available yet"></div>
       </div>
     </div>
 
@@ -2719,15 +2995,16 @@ function settingsHTML(){
           <p style="font-size:13px;color:var(--text3);margin-top:2px">We'll send a reset link to your email.</p>
         </div>
         <button class="btn btn-ghost" onclick="sendPasswordReset()">Send reset link</button>
-      </div>
-    </div>
+      </div>    </div>
 
     <div class="danger-zone">
-      <h3>Delete account</h3>
-      <p>Permanent. All your leads, credentials, and billing history go away. Type your business name to confirm.</p>
+      <h3>Request account deletion</h3>
+      <p>Your account will be deactivated and reviewed for deletion. Certain legal,
+         transaction, and compliance records may be retained where required. Type your
+         business name to confirm.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <input class="input" id="delConfirm" placeholder="Type '${companyName || 'your business name'}' to confirm" style="max-width:320px" oninput="document.getElementById('delBtn').disabled=this.value!==${JSON.stringify(companyName)}">
-        <button class="btn btn-danger" id="delBtn" disabled onclick="requestAccountDeletion()">Delete my account</button>
+        <input class="input" id="delConfirm" placeholder="Type '${attr(companyName || 'your business name')}' to confirm" style="max-width:320px" data-confirm="${attr(companyName||'')}" oninput="document.getElementById('delBtn').disabled=(this.value!==this.dataset.confirm)">
+        <button class="btn btn-danger" id="delBtn" disabled onclick="requestAccountDeletion()">Request account deletion</button>
       </div>
     </div>
   `;
@@ -2754,32 +3031,27 @@ async function sendPasswordReset(){
       redirectTo: window.location.origin + '/reset-password',
     });
     if(error){ toast(error.message,'error'); return; }
-    toast(`Password reset link sent to ${email}`,'success');
+    toast(`Password reset link sent to ${esc(email)}`,'success');
   } catch(e){
     console.error(e); toast('Could not send reset link','error');
   }
 }
 
 async function requestAccountDeletion(){
-  // We don't hard-delete from the client. Mark the row and fire a webhook so
-  // ops gets a ticket to purge within 30 days (per privacy policy).
-  if(!confirm('Are you absolutely sure? This cannot be undone.')) return;
+  // No client-side status write and no client-held webhook. The contractor
+  // does not hold UPDATE on contractors.status; /api/contractor-workflow
+  // applies the transition and notifies ops under the service role.
+  if(!confirm('Request account deletion? Your account will be deactivated and reviewed. Some records may be retained where legally required.')) return;
   try {
-    await sb.from('contractors').update({
-      status: 'Deletion Requested',
-      deletion_requested_at: new Date().toISOString(),
-    }).eq('id', state.contractorId);
-    if(GHL_REVIEW_WEBHOOK && !GHL_REVIEW_WEBHOOK.startsWith('TODO')){
-      fetch(GHL_REVIEW_WEBHOOK, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({
-          type:'account_deletion_requested',
-          contractor_id: state.contractorId,
-          email: state.profile.email,
-          company: state.profile.company,
-        }),
-      }).catch(()=>{});
+    const headers = await authHeaders();
+    if(!headers){ toast('Your session expired. Please sign in again.','error',true); return; }
+    const resp = await fetch('/api/contractor-workflow', {
+      method:'POST', headers,
+      body: JSON.stringify({ action:'request_deletion' })
+    });
+    if(!resp.ok){
+      console.error('request_deletion failed HTTP', resp.status);
+      toast('Could not submit deletion request','error'); return;
     }
     toast('Account deletion requested. You will receive a confirmation email.','error');
   } catch(e){
@@ -2852,7 +3124,10 @@ async function persistProfile(){
     insurance_carrier: i.carrier || null,
     insurance_policy_number: i.policy || null,
     insurance_expiration: i.exp || null,
-    insurance_verified: !!i.verified,
+    // insurance_verified is deliberately ABSENT. It is an admin-controlled
+    // column the contractor holds no UPDATE grant on, and including it here
+    // would make every autosave fail once privileges are hardened. A DB
+    // trigger resets it when insurance fields or the document change.
   };
   try {
     const { error } = await sb.from('contractors').update(payload).eq('id', state.contractorId);
@@ -2915,17 +3190,35 @@ function readyIllustration(){
 // ==================== STATUS MAPPING ====================
 // DB stores human-readable strings ("Pending Profile", "Pending Review",
 // "Active", "Deleted"). UI uses short keys ("pending", "review", "active").
+// EXACT map. Substring matching was wrong in a way that mattered:
+// 'Inactive'.includes('active') === true, so a deactivated contractor
+// rendered the full Active dashboard. Blocked states get their own key so
+// they cannot be shown ordinary onboarding UI. The API stays authoritative —
+// this only decides what is rendered.
+const DB_TO_UI_STATUS = {
+  'new':                 'pending',
+  'pending profile':     'pending',
+  'pending verification':'pending',   // legacy rows
+  'paid':                'pending',   // legacy rows
+  'pending review':      'review',
+  'active':              'active',
+  'inactive':            'blocked',
+  'rejected':            'blocked',
+  'suspended':           'blocked',
+  'deletion requested':  'blocked',
+  'deleted':             'blocked',
+};
 function uiStatusFrom(dbStatus){
-  const s = (dbStatus||'').toLowerCase();
-  if(s.includes('active')) return 'active';
-  if(s.includes('review')) return 'review';
-  return 'pending';
+  const key = String(dbStatus||'').trim().toLowerCase();
+  // Unknown status -> 'pending', never 'active'. Fail closed.
+  return DB_TO_UI_STATUS[key] || 'pending';
 }
 function dbStatusFrom(uiStatus){
   if(uiStatus==='active') return 'Active';
   if(uiStatus==='review') return 'Pending Review';
   return 'Pending Profile';
 }
+function isBlockedStatus(dbStatus){ return uiStatusFrom(dbStatus) === 'blocked'; }
 function syncUiState(){
   // Kept for back-compat — body.dataset already set once at boot.
   document.body.dataset.banner = state.banner;
@@ -2960,7 +3253,6 @@ async function loadContractor(authId){
 
   state.contractorId = data.id;
   state.state = uiStatusFrom(data.status);
-  state.tierBadge = data.membership_tier || 'Basic';
 
   state.profile = {
     firstName: data.first_name || '',
@@ -3014,10 +3306,12 @@ async function loadContractor(authId){
     verified: !!data.insurance_verified,
   };
 
-  // Notification prefs (default to on for email+sms, off for digest).
+  // Notification prefs. Email defaults on; SMS defaults OFF (opt-in only).
   state.notifs = {
     email: data.notif_email ?? true,
-    sms: data.notif_sms ?? true,
+    // FALSE, not ??true. A null column must never enable SMS: silent
+    // enrolment into texts is a consent problem, not a default.
+    sms: data.notif_sms === true,
     digest: data.notif_digest ?? false,
   };
 
@@ -3058,43 +3352,90 @@ async function loadContractor(authId){
   return true;
 }
 
+// Offers come from get_my_offers(), which returns STRUCTURED, NON-PII fields
+// only. Homeowner name / phone / email / address / free-text description are
+// absent until the offer is accepted, at which point get_accepted_lead()
+// supplies them. Never reintroduce a direct read of the `leads` table here.
 async function loadLeads(){
   if(!state.contractorId){ state.leads=[]; return; }
-  const { data, error } = await sb.from('leads')
-    .select('*')
-    .eq('assigned_contractor_id', state.contractorId)
-    .order('created_at', { ascending: false })
-    .limit(50);
+  const { data, error } = await sb.rpc('get_my_offers');
   if(error){ console.error('loadLeads failed', error); state.leads=[]; return; }
-  // Normalize DB row -> UI lead shape (adds .mins, .status lowercased for
-  // filter buttons, keeps .created_at for response-time math).
-  state.leads = (data||[]).map(r => normalizeLead(r));
+  const prev = state.leads || [];
+  state.leads = (data||[]).map(r => {
+    const mapped = normalizeOffer(r);
+    // Preserve homeowner details already unlocked this session so a refresh
+    // does not blank out contact info on an accepted lead.
+    const old = prev.find(p => p.id === mapped.id);
+    if(old && old.unlocked) Object.assign(mapped, {
+      unlocked:true, name:old.name, phone:old.phone, email:old.email,
+      address:old.address, desc:old.desc
+    });
+    return mapped;
+  });
+
+  // A contractor paid for these details, so they must survive a reload or a
+  // fresh sign-in — not just the session in which the accept happened.
+  // get_accepted_lead() re-gates each read on an accepted offer owned by the
+  // caller, so this cannot widen access.
+  const needUnlock = state.leads.filter(l => l.status==='accepted' && !l.unlocked);
+  if(needUnlock.length){
+    await Promise.all(needUnlock.map(l => unlockLead(l.id).catch(e =>
+      console.error('unlock on load failed for', l.id, e))));
+  }
 }
 
-function normalizeLead(r){
-  const createdMs = r.created_at ? new Date(r.created_at).getTime() : Date.now();
-  const mins = Math.max(0, Math.floor((Date.now() - createdMs)/60000));
-  const statusMap = { 'New':'new', 'Accepted':'accepted', 'Passed':'passed', 'Expired':'expired' };
-  const uiStatus = statusMap[r.status] || (r.status||'new').toLowerCase();
-  return {
-    ...r,
-    id: r.id,
-    service: r.service_category || r.service || '',
-    urgency: r.urgency || 'Soon',
-    name: r.homeowner_name || r.customer_name || r.name || '',
-    zip: r.homeowner_zip || r.customer_zip || r.zip || '',
-    phone: r.homeowner_phone || r.customer_phone || r.phone || '',
-    email: r.homeowner_email || r.customer_email || r.email || '',
-    address: r.homeowner_address || r.customer_address || r.address || '',
-    desc: r.description || r.desc || '',
-    budget: r.budget || '',
-    prop: r.property_type || r.prop || '',
-    contact: r.preferred_contact || r.contact || '',
-    fee: r.lead_fee || 29,
-    mins,
-    status: uiStatus,
-    created_at: r.created_at,
+// offer row -> UI shape. status maps offer-level states, not lead-level.
+function normalizeOffer(r){
+  const offeredMs = r.offered_at ? new Date(r.offered_at).getTime() : Date.now();
+  const mins = Math.max(0, Math.floor((Date.now() - offeredMs)/60000));
+  const statusMap = {
+    offered:'new', accepted:'accepted', declined:'passed',
+    expired:'expired', cap_reached:'expired',
   };
+  return {
+    id: r.lead_id,
+    offerId: r.offer_id,
+    service: r.service_category || '',
+    issue: r.service_type || r.issue_code || '',
+    urgency: r.urgency || 'Soon',
+    zip: r.zip || '',
+    priceCents: r.price_cents || 0,
+    fee: Math.round((r.price_cents || 0)/100),
+    offered_at: r.offered_at,
+    expires_at: r.expires_at,
+    responded_at: r.responded_at,
+    mins,
+    status: statusMap[r.status] || 'new',
+    rawStatus: r.status,
+    // PII placeholders — populated only by unlockLead() after a paid accept.
+    unlocked:false, name:'', phone:'', email:'', address:'', desc:'',
+  };
+}
+
+// Called after a successful authenticated accept. Pulls homeowner details
+// through get_accepted_lead(), which the database gates on an accepted offer
+// belonging to the calling contractor.
+async function unlockLead(leadId){
+  const { data, error } = await sb.rpc('get_accepted_lead', { p_lead_id: leadId });
+  if(error){ console.error('unlockLead failed', error); return null; }
+  const row = Array.isArray(data) ? data[0] : data;
+  if(!row) return null;
+  const l = state.leads.find(x=>x.id===leadId);
+  if(l){
+    l.unlocked = true;
+    l.name    = row.homeowner_name || '';
+    l.phone   = row.homeowner_phone || '';
+    l.email   = row.homeowner_email || '';
+    l.address = row.homeowner_address || row.homeowner_street || '';
+    l.desc    = row.description || '';
+  }
+  return row;
+}
+
+// Minutes remaining on a live offer (negative once past expiry).
+function minsLeft(l){
+  if(!l.expires_at) return null;
+  return Math.ceil((new Date(l.expires_at).getTime() - Date.now())/60000);
 }
 
 // Silent poll while on Leads tab
@@ -3137,18 +3478,6 @@ async function changePassword(){
   });
   if(error) toast('Could not send reset email','error');
   else toast('Check your email for a password reset link','success');
-}
-
-async function deleteAccount(){
-  if(!state.contractorId) return;
-  try {
-    await sb.from('contractors').update({ status: 'Deleted' }).eq('id', state.contractorId);
-    await sb.auth.signOut();
-    window.location.href = '/';
-  } catch(e){
-    console.error('deleteAccount failed', e);
-    toast('Could not delete account','error');
-  }
 }
 
 sb.auth.onAuthStateChange((event)=>{
@@ -3202,6 +3531,45 @@ async function init(){
   const ok = await loadContractor(session.user.id);
   if(!ok) return;
   await loadLeads();
+  await loadWallet();
+
+  // Email deep link: ?tab=leads&lead=<id>&action=accept
+  // NAVIGATION ONLY. We open the Leads tab, expand and highlight the offer,
+  // and scroll to it. We deliberately do NOT act on `action=accept` — a page
+  // load must never charge a wallet. The contractor accepts explicitly.
+  try {
+    const qs = new URLSearchParams(location.search);
+    const deepTab  = qs.get('tab');
+    const deepLead = qs.get('lead');
+    const topupResult = qs.get('topup');
+    if(deepTab) state.activeTab = deepTab;
+    if(topupResult){
+      state.activeTab = 'billing';
+      if(topupResult === 'success'){
+        toast('Payment received. Your wallet will update as soon as Stripe confirms it.');
+        // The Stripe webhook is authoritative. Poll only to refresh the UI;
+        // this browser code never credits money itself.
+        [1200,3000,6000].forEach(ms=>setTimeout(async()=>{ await loadWallet(); render(); },ms));
+      } else if(topupResult === 'cancelled'){
+        toast('Checkout cancelled. No funds were added.','error');
+      }
+      const clean = new URL(location.href);
+      clean.searchParams.delete('topup');
+      clean.searchParams.delete('session_id');
+      history.replaceState({},'',clean.pathname + clean.search + clean.hash);
+    }
+    if(deepLead){
+      state.activeTab   = 'leads';
+      state.leadFilter  = 'all';
+      state.expandedLead = deepLead;
+      state.focusLead    = deepLead;
+      setTimeout(()=>{
+        const el = document.getElementById('lead-'+deepLead);
+        if(el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+      }, 300);
+      setTimeout(()=>{ state.focusLead = null; render(); }, 4000);
+    }
+  } catch(e){ console.error('deep link parse failed (non-fatal)', e); }
 
   document.body.removeAttribute('data-loading');
   render();
@@ -3220,18 +3588,9 @@ document.addEventListener('keydown',(e)=>{
   }
 });
 
-// =======================================================================
-// TODO / MANUAL WIRING NEEDED BEFORE PRODUCTION
-// =======================================================================
-// 1. Set GHL_REVIEW_WEBHOOK above to the real GHL workflow webhook URL
-//    (workflow fires when contractor submits profile for review).
-// 2. Set STRIPE_PORTAL_URL (if you add "Manage Subscription" button) to
-//    the real Stripe customer portal URL.
-// 3. Run the migration SQL block at the top of this file in the Supabase
-//    SQL editor BEFORE deploying. Dashboard will error without it.
-// 4. Verify the storage bucket "contractor-docs" was created and the RLS
-//    policies are in place. Test upload with a known-good user.
-// =======================================================================
+// Deployment and remaining launch gates are maintained in SSP-PREDEPLOY-RUNBOOK.md.
+// Do not add one-off production wiring instructions here; the runbook is canonical.
 </script>
+<!--email_off-->
 </body>
 </html>
