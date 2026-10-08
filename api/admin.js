@@ -42,6 +42,11 @@ async function getData(ctx, res) {
     }
 
     const disputes = disputesR.error ? [] : (disputesR.data || []);
+    const [notesR, notificationsR] = await Promise.all([
+      supabase.from("contractor_admin_notes").select("id,contractor_id,body,created_at,created_by").order("created_at",{ascending:false}).limit(500),
+      supabase.from("notification_outbox").select("id,contractor_id,lead_id,event_type,status,attempt_count,sent_at,last_error,created_at").order("created_at",{ascending:false}).limit(500)
+    ]);
+    if(notesR.error || notificationsR.error) throw new Error("operations_history_unavailable");
     const contractors = contractorsR.data || [];
     const licenses = licensesR.data || [];
     const leads = leadsR.data || [];
@@ -75,6 +80,8 @@ async function getData(ctx, res) {
       wallet_transactions: wallet,
       pricing,
       disputes,
+      notes: notesR.data || [],
+      notifications: notificationsR.data || [],
       stats: {
         contractors_total: contractors.length,
         contractors_active: contractors.filter((c) => c.status === "Active").length,
@@ -238,6 +245,17 @@ async function decideDispute(ctx, res, b) {
   return res.status(200).json({ ok:true, result:data });
 }
 
+async function addContractorNote(ctx,res,b){
+ const contractorId=String(b.contractor_id||"").trim();
+ const body=String(b.body||"").trim();
+ if(!UUID_RE.test(contractorId)||!body||body.length>5000)return fail(res,400,"invalid_note");
+ const {data:contractor,error:lookupErr}=await ctx.supabase.from("contractors").select("id").eq("id",contractorId).maybeSingle();
+ if(lookupErr||!contractor)return fail(res,404,"contractor_not_found");
+ const {data,error}=await ctx.supabase.from("contractor_admin_notes").insert({contractor_id:contractorId,body,created_by:ctx.user.id}).select("id,contractor_id,body,created_at").single();
+ if(error){console.error("admin note insert",error.message);return fail(res,500,"note_save_failed");}
+ return res.status(200).json({ok:true,note:data});
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Cache-Control", "no-store");
@@ -271,6 +289,7 @@ module.exports = async function handler(req, res) {
   if (["set_status","activate","set_insurance_verified","set_license_verified","approve_founding25","grant_founding25"].includes(action)) {
     return contractorAction(ctx, res, b);
   }
+  if (action === "add_contractor_note") return addContractorNote(ctx, res, b);
   if (action === "document_url") return documentUrl(ctx, res, b);
   if (action === "decide_dispute") return decideDispute(ctx, res, b);
 
