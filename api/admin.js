@@ -43,7 +43,7 @@ async function getData(ctx, res) {
 
     const disputes = disputesR.error ? [] : (disputesR.data || []);
     const [notesR, notificationsR, profilesR, auditR] = await Promise.all([
-      supabase.from("contractor_admin_notes").select("id,contractor_id,body,created_at,created_by").order("created_at",{ascending:false}).limit(500),
+      supabase.from("contractor_admin_notes").select("id,contractor_id,body,created_at,created_by,author_email").order("created_at",{ascending:false}).limit(500),
       supabase.from("notification_outbox").select("id,contractor_id,lead_id,event_type,status,attempt_count,sent_at,last_error,created_at").order("created_at",{ascending:false}).limit(500),
       supabase.from("contractor_admin_profiles").select("*").limit(1000),
       supabase.from("contractor_admin_audit").select("id,contractor_id,actor_email,action,changes,created_at").order("created_at",{ascending:false}).limit(1000)
@@ -255,7 +255,7 @@ async function addContractorNote(ctx,res,b){
  if(!UUID_RE.test(contractorId)||!body||body.length>5000)return fail(res,400,"invalid_note");
  const {data:contractor,error:lookupErr}=await ctx.supabase.from("contractors").select("id").eq("id",contractorId).maybeSingle();
  if(lookupErr||!contractor)return fail(res,404,"contractor_not_found");
- const {data,error}=await ctx.supabase.from("contractor_admin_notes").insert({contractor_id:contractorId,body,created_by:ctx.user.id}).select("id,contractor_id,body,created_at").single();
+ const {data,error}=await ctx.supabase.from("contractor_admin_notes").insert({contractor_id:contractorId,body,created_by:ctx.user.id,author_email:ctx.user.email||""}).select("id,contractor_id,body,created_at").single();
  if(error){console.error("admin note insert",error.message);return fail(res,500,"note_save_failed");}
  return res.status(200).json({ok:true,note:data});
 }
