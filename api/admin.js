@@ -51,7 +51,7 @@ async function getData(ctx, res) {
       supabase.from("operations_task_events").select("id,task_id,actor_email,event_type,created_at").order("created_at",{ascending:false}).limit(1000),
       supabase.from("operations_task_notes").select("id,task_id,body,author_email,created_at").order("created_at",{ascending:false}).limit(2000),
       supabase.from("operations_task_attachments").select("id,task_id,file_name,size_bytes,uploader_email,created_at").order("created_at",{ascending:false}).limit(2000),
-      supabase.from("operations_staff").select("id,email,name,active,role,created_at").order("name")
+      supabase.from("operations_staff").select("id,email,name,first_name,last_name,active,role,created_at").order("name")
     ]);
     if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error || taskNotesR.error || taskFilesR.error || staffR.error) throw new Error("operations_history_unavailable");
     const contractors = contractorsR.data || [];
@@ -390,11 +390,11 @@ async function manageStaff(ctx,res,b){
  if(String(ctx.user.email||"").toLowerCase()!=="david@selectservicepros.com")return fail(res,403,"owner_required");
  const action=String(b.action||"");
  if(action==="create_staff"){
-  const name=String(b.name||"").trim(),email=String(b.email||"").trim().toLowerCase(),role=String(b.role||"Operations");
-  if(name.length<2||name.length>100||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)||!["Operations","Support","Verification","Finance","Manager"].includes(role))return fail(res,400,"invalid_staff");
-  const {data,error}=await ctx.supabase.from("operations_staff").insert({name,email,role,active:true}).select("*").single();
+  const first_name=String(b.first_name||"").trim(),last_name=String(b.last_name||"").trim(),name=(first_name+" "+last_name).trim(),email=String(b.email||"").trim().toLowerCase(),role=String(b.role||"Operations");
+  if(!first_name||!last_name||first_name.length>80||last_name.length>80||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)||!["Operations","Support","Verification","Finance","Manager"].includes(role))return fail(res,400,"invalid_staff");
+  const {data,error}=await ctx.supabase.from("operations_staff").insert({name,first_name,last_name,email,role,active:true}).select("*").single();
   if(error)return fail(res,error.code==="23505"?409:500,"staff_create_failed");
-  await ctx.supabase.from("operations_staff_audit").insert({staff_id:data.id,actor_id:ctx.user.id,actor_email:ctx.user.email,action:"created",changes:{name,email,role}});
+  await ctx.supabase.from("operations_staff_audit").insert({staff_id:data.id,actor_id:ctx.user.id,actor_email:ctx.user.email,action:"created",changes:{first_name,last_name,email,role}});
   return res.status(200).json({ok:true,staff:data});
  }
  if(action==="set_staff_active"){
