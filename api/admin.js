@@ -14,16 +14,17 @@ async function getData(ctx, res) {
   const { supabase, user } = ctx;
   if(ctx.isStaffOnly){
     try{
-      const [tasks,notes,files,events,staff,contractors]=await Promise.all([
+      const [tasks,notes,files,events,staff,contractors,alertReads]=await Promise.all([
         supabase.from("operations_tasks").select("*").order("created_at",{ascending:false}).limit(1000),
         supabase.from("operations_task_notes").select("id,task_id,body,author_email,created_at").order("created_at",{ascending:false}).limit(2000),
         supabase.from("operations_task_attachments").select("id,task_id,file_name,size_bytes,uploader_email,created_at").order("created_at",{ascending:false}).limit(2000),
         supabase.from("operations_task_events").select("id,task_id,actor_email,event_type,created_at").order("created_at",{ascending:false}).limit(1000),
         supabase.from("operations_staff").select("id,name,email,active,role,employment_status").eq("active",true),
-        supabase.from("contractors").select("id,contractor_number,company_name").limit(1000)
+        supabase.from("contractors").select("id,contractor_number,company_name").limit(1000),
+        supabase.from("operations_alert_reads").select("alert_key,read_at").eq("user_id",user.id).limit(3000)
       ]);
-      if([tasks,notes,files,events,staff,contractors].some(x=>x.error))return fail(res,500,"work_queue_unavailable");
-      return res.status(200).json({ok:true,admin:{email:user.email,staff_only:true},tasks:tasks.data||[],task_notes:notes.data||[],task_files:files.data||[],task_events:events.data||[],staff:staff.data||[],contractors:contractors.data||[]});
+      if([tasks,notes,files,events,staff,contractors,alertReads].some(x=>x.error))return fail(res,500,"work_queue_unavailable");
+      return res.status(200).json({ok:true,admin:{email:user.email,staff_only:true},tasks:tasks.data||[],task_notes:notes.data||[],task_files:files.data||[],task_events:events.data||[],staff:staff.data||[],contractors:contractors.data||[],alert_reads:alertReads.data||[]});
     }catch(e){return fail(res,500,"work_queue_unavailable")}
   }
   try {
@@ -56,7 +57,7 @@ async function getData(ctx, res) {
     }
 
     const disputes = disputesR.error ? [] : (disputesR.data || []);
-    const [notesR, notificationsR, profilesR, auditR, tasksR, taskEventsR, taskNotesR, taskFilesR, staffR] = await Promise.all([
+    const [notesR, notificationsR, profilesR, auditR, tasksR, taskEventsR, taskNotesR, taskFilesR, staffR, alertReadsR] = await Promise.all([
       supabase.from("contractor_admin_notes").select("id,contractor_id,body,created_at,created_by,author_email").order("created_at",{ascending:false}).limit(500),
       supabase.from("notification_outbox").select("id,contractor_id,lead_id,event_type,status,attempt_count,sent_at,last_error,created_at").order("created_at",{ascending:false}).limit(500),
       supabase.from("contractor_admin_profiles").select("*").limit(1000),
@@ -65,9 +66,10 @@ async function getData(ctx, res) {
       supabase.from("operations_task_events").select("id,task_id,actor_email,event_type,created_at").order("created_at",{ascending:false}).limit(1000),
       supabase.from("operations_task_notes").select("id,task_id,body,author_email,created_at").order("created_at",{ascending:false}).limit(2000),
       supabase.from("operations_task_attachments").select("id,task_id,file_name,size_bytes,uploader_email,created_at").order("created_at",{ascending:false}).limit(2000),
-      supabase.from("operations_staff").select("id,email,name,first_name,last_name,active,employment_status,role,created_at").order("name")
+      supabase.from("operations_staff").select("id,email,name,first_name,last_name,active,employment_status,role,created_at").order("name"),
+      supabase.from("operations_alert_reads").select("alert_key,read_at").eq("user_id",user.id).limit(3000)
     ]);
-    if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error || taskNotesR.error || taskFilesR.error || staffR.error) throw new Error("operations_history_unavailable");
+    if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error || taskNotesR.error || taskFilesR.error || staffR.error || alertReadsR.error) throw new Error("operations_history_unavailable");
     const contractors = contractorsR.data || [];
     const licenses = licensesR.data || [];
     const leads = leadsR.data || [];
@@ -109,6 +111,7 @@ async function getData(ctx, res) {
       task_notes: taskNotesR.data || [],
       task_files: taskFilesR.data || [],
       staff: staffR.data || [],
+      alert_reads: alertReadsR.data || [],
       notifications: notificationsR.data || [],
       stats: {
         contractors_total: contractors.length,
@@ -429,6 +432,14 @@ async function manageStaff(ctx,res,b){
  return fail(res,400,"invalid_action");
 }
 
+async function markOpsAlert(ctx,res,b){
+ const key=String(b.alert_key||"");if(!/^(task|application|dispute|notification):[0-9a-f-]{36}$/.test(key))return fail(res,400,"invalid_alert");
+ const read=b.read!==false;
+ const query=ctx.supabase.from("operations_alert_reads");
+ const {error}=read?await query.upsert({user_id:ctx.user.id,alert_key:key,read_at:new Date().toISOString()}):await query.delete().eq("user_id",ctx.user.id).eq("alert_key",key);
+ if(error)return fail(res,500,"alert_update_failed");
+ return res.status(200).json({ok:true});
+}
 module.exports = async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Cache-Control", "no-store");
@@ -458,11 +469,12 @@ module.exports = async function handler(req, res) {
 
   const b = req.body || {};
   const action = String(b.action || "");
-  if(ctx.isStaffOnly && !["create_task","update_task","add_task_note","init_task_upload","complete_task_upload","view_task_attachment"].includes(action))return fail(res,403,"staff_action_not_permitted");
+  if(ctx.isStaffOnly && !["mark_ops_alert","create_task","update_task","add_task_note","init_task_upload","complete_task_upload","view_task_attachment"].includes(action))return fail(res,403,"staff_action_not_permitted");
 
   if (["set_status","activate","set_insurance_verified","set_license_verified","approve_founding25","grant_founding25"].includes(action)) {
     return contractorAction(ctx, res, b);
   }
+  if(action==="mark_ops_alert")return markOpsAlert(ctx,res,b);
   if (["add_task_note","init_task_upload","complete_task_upload","view_task_attachment"].includes(action)) return taskSupplement(ctx,res,b);
   if (action === "create_task" || action === "update_task") return taskAction(ctx,res,b);
   if (["create_staff","set_staff_status"].includes(action)) return manageStaff(ctx,res,b);
