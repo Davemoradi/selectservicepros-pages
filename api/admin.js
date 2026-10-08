@@ -14,17 +14,18 @@ async function getData(ctx, res) {
   const { supabase, user } = ctx;
   if(ctx.isStaffOnly){
     try{
-      const [tasks,notes,files,events,staff,contractors,alertReads]=await Promise.all([
+      const [tasks,notes,files,events,staff,contractors,alertReads,aiReviews]=await Promise.all([
         supabase.from("operations_tasks").select("*").order("created_at",{ascending:false}).limit(1000),
         supabase.from("operations_task_notes").select("id,task_id,body,author_email,created_at").order("created_at",{ascending:false}).limit(2000),
         supabase.from("operations_task_attachments").select("id,task_id,file_name,size_bytes,uploader_email,created_at").order("created_at",{ascending:false}).limit(2000),
         supabase.from("operations_task_events").select("id,task_id,actor_email,event_type,created_at").order("created_at",{ascending:false}).limit(1000),
         supabase.from("operations_staff").select("id,name,email,active,role,employment_status").eq("active",true),
         supabase.from("contractors").select("id,contractor_number,company_name").limit(1000),
-        supabase.from("operations_alert_reads").select("alert_key,read_at").eq("user_id",user.id).limit(3000)
+        supabase.from("operations_alert_reads").select("alert_key,read_at").eq("user_id",user.id).limit(3000),
+        supabase.from("operations_ai_reviews").select("id,task_id,status,requested_at,completed_at,model_name,summary,proposed_action,reviewed_at").order("requested_at",{ascending:false}).limit(1000)
       ]);
-      if([tasks,notes,files,events,staff,contractors,alertReads].some(x=>x.error))return fail(res,500,"work_queue_unavailable");
-      return res.status(200).json({ok:true,admin:{email:user.email,staff_only:true},tasks:tasks.data||[],task_notes:notes.data||[],task_files:files.data||[],task_events:events.data||[],staff:staff.data||[],contractors:contractors.data||[],alert_reads:alertReads.data||[]});
+      if([tasks,notes,files,events,staff,contractors,alertReads,aiReviews].some(x=>x.error))return fail(res,500,"work_queue_unavailable");
+      return res.status(200).json({ok:true,admin:{email:user.email,staff_only:true},tasks:tasks.data||[],task_notes:notes.data||[],task_files:files.data||[],task_events:events.data||[],staff:staff.data||[],contractors:contractors.data||[],alert_reads:alertReads.data||[],ai_reviews:aiReviews.data||[]});
     }catch(e){return fail(res,500,"work_queue_unavailable")}
   }
   try {
@@ -57,7 +58,7 @@ async function getData(ctx, res) {
     }
 
     const disputes = disputesR.error ? [] : (disputesR.data || []);
-    const [notesR, notificationsR, profilesR, auditR, tasksR, taskEventsR, taskNotesR, taskFilesR, staffR, alertReadsR] = await Promise.all([
+    const [notesR, notificationsR, profilesR, auditR, tasksR, taskEventsR, taskNotesR, taskFilesR, staffR, alertReadsR, aiReviewsR] = await Promise.all([
       supabase.from("contractor_admin_notes").select("id,contractor_id,body,created_at,created_by,author_email").order("created_at",{ascending:false}).limit(500),
       supabase.from("notification_outbox").select("id,contractor_id,lead_id,event_type,status,attempt_count,sent_at,last_error,created_at").order("created_at",{ascending:false}).limit(500),
       supabase.from("contractor_admin_profiles").select("*").limit(1000),
@@ -67,9 +68,10 @@ async function getData(ctx, res) {
       supabase.from("operations_task_notes").select("id,task_id,body,author_email,created_at").order("created_at",{ascending:false}).limit(2000),
       supabase.from("operations_task_attachments").select("id,task_id,file_name,size_bytes,uploader_email,created_at").order("created_at",{ascending:false}).limit(2000),
       supabase.from("operations_staff").select("id,email,name,first_name,last_name,active,employment_status,role,created_at").order("name"),
-      supabase.from("operations_alert_reads").select("alert_key,read_at").eq("user_id",user.id).limit(3000)
+      supabase.from("operations_alert_reads").select("alert_key,read_at").eq("user_id",user.id).limit(3000),
+      supabase.from("operations_ai_reviews").select("id,task_id,status,requested_at,completed_at,model_name,summary,proposed_action,reviewed_at").order("requested_at",{ascending:false}).limit(1000)
     ]);
-    if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error || taskNotesR.error || taskFilesR.error || staffR.error || alertReadsR.error) throw new Error("operations_history_unavailable");
+    if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error || taskNotesR.error || taskFilesR.error || staffR.error || alertReadsR.error || aiReviewsR.error) throw new Error("operations_history_unavailable");
     const contractors = contractorsR.data || [];
     const licenses = licensesR.data || [];
     const leads = leadsR.data || [];
@@ -112,6 +114,7 @@ async function getData(ctx, res) {
       task_files: taskFilesR.data || [],
       staff: staffR.data || [],
       alert_reads: alertReadsR.data || [],
+      ai_reviews: aiReviewsR.data || [],
       notifications: notificationsR.data || [],
       stats: {
         contractors_total: contractors.length,
@@ -432,6 +435,19 @@ async function manageStaff(ctx,res,b){
  return fail(res,400,"invalid_action");
 }
 
+async function requestAiReview(ctx,res,b){
+ const id=String(b.task_id||"");if(!UUID_RE.test(id))return fail(res,400,"invalid_task");
+ const {data:task}=await ctx.supabase.from("operations_tasks").select("id,status,automation_key").eq("id",id).maybeSingle();
+ if(!task)return fail(res,404,"task_not_found");
+ if(["Done","Cancelled"].includes(task.status))return fail(res,409,"task_not_open");
+ const {data:existing}=await ctx.supabase.from("operations_ai_reviews").select("id").eq("task_id",id).in("status",["Queued","Running"]).maybeSingle();
+ if(existing)return res.status(200).json({ok:true,review_id:existing.id,existing:true,agent_connected:false});
+ const {data,error}=await ctx.supabase.from("operations_ai_reviews").insert({task_id:id,requested_by:ctx.user.id,source_event_key:task.automation_key||null}).select("id").single();
+ if(error&&error.code!=="23505")return fail(res,500,"ai_review_queue_failed");
+ const reviewId=data?.id||(await ctx.supabase.from("operations_ai_reviews").select("id").eq("task_id",id).eq("status","Queued").maybeSingle()).data?.id;
+ if(!reviewId)return fail(res,500,"ai_review_lookup_failed");
+ return res.status(200).json({ok:true,review_id:reviewId,agent_connected:false});
+}
 async function createAlertTask(ctx,res,b){
  const key=String(b.alert_key||"");
  const match=/^(application|dispute|notification|task):([0-9a-f-]{36})$/.exec(key);
@@ -519,11 +535,12 @@ module.exports = async function handler(req, res) {
 
   const b = req.body || {};
   const action = String(b.action || "");
-  if(ctx.isStaffOnly && !["mark_ops_alert","create_task","update_task","add_task_note","init_task_upload","complete_task_upload","view_task_attachment"].includes(action))return fail(res,403,"staff_action_not_permitted");
+  if(ctx.isStaffOnly && !["request_ai_review","mark_ops_alert","create_task","update_task","add_task_note","init_task_upload","complete_task_upload","view_task_attachment"].includes(action))return fail(res,403,"staff_action_not_permitted");
 
   if (["set_status","activate","set_insurance_verified","set_license_verified","approve_founding25","grant_founding25"].includes(action)) {
     return contractorAction(ctx, res, b);
   }
+  if(action==="request_ai_review")return requestAiReview(ctx,res,b);
   if(action==="create_alert_task")return createAlertTask(ctx,res,b);
   if(action==="mark_ops_alert")return markOpsAlert(ctx,res,b);
   if (["add_task_note","init_task_upload","complete_task_upload","view_task_attachment"].includes(action)) return taskSupplement(ctx,res,b);
