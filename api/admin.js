@@ -432,6 +432,49 @@ async function manageStaff(ctx,res,b){
  return fail(res,400,"invalid_action");
 }
 
+async function createAlertTask(ctx,res,b){
+ const key=String(b.alert_key||"");
+ const match=/^(application|dispute|notification|task):([0-9a-f-]{36})$/.exec(key);
+ if(!match||!UUID_RE.test(match[2]))return fail(res,400,"invalid_alert");
+ const [kind,id]=[match[1],match[2]];
+ const {supabase,user}=ctx;
+ if(kind==="task"){
+  const {data}=await supabase.from("operations_tasks").select("id").eq("id",id).maybeSingle();
+  return data?res.status(200).json({ok:true,task_id:data.id,existing:true}):fail(res,404,"task_not_found");
+ }
+ if(ctx.isStaffOnly)return fail(res,403,"staff_action_not_permitted");
+ const assigned_to=String(b.assigned_to||"").trim().toLowerCase();
+ if(!assigned_to)return fail(res,400,"employee_required");
+ const {data:employee}=await supabase.from("operations_staff").select("email").eq("email",assigned_to).eq("employment_status","Active").maybeSingle();
+ if(!employee)return fail(res,400,"assignee_not_employee");
+ let contractor_id=null,title="",details="",active=false;
+ if(kind==="application"){
+  const {data}=await supabase.from("contractors").select("id,company_name,status").eq("id",id).maybeSingle();
+  if(!data)return fail(res,404,"alert_not_found");
+  active=["Pending Review","Pending Verification"].includes(data.status);
+  contractor_id=data.id;title="Review contractor application: "+String(data.company_name||"Contractor").slice(0,105);details="Review contractor application and verification requirements.";
+ }else if(kind==="dispute"){
+  const {data}=await supabase.from("lead_disputes").select("id,contractor_id,decision").eq("id",id).maybeSingle();
+  if(!data)return fail(res,404,"alert_not_found");
+  active=!data.decision||String(data.decision).toLowerCase()==="pending";
+  contractor_id=data.contractor_id;title="Investigate lead dispute";details="Review dispute evidence and make a decision through the dispute workflow.";
+ }else{
+  const {data}=await supabase.from("notification_outbox").select("id,contractor_id,event_type,status").eq("id",id).maybeSingle();
+  if(!data)return fail(res,404,"alert_not_found");
+  active=["failed","error","dead","dead_letter"].includes(String(data.status||"").toLowerCase());
+  contractor_id=data.contractor_id;title="Investigate failed notification";details="Check notification delivery failure and retry through the approved communication workflow. Event: "+String(data.event_type||"").slice(0,200);
+ }
+ const automation_key="alert:"+key;
+ const {data:existing}=await supabase.from("operations_tasks").select("id,status").eq("automation_key",automation_key).maybeSingle();
+ if(existing)return res.status(200).json({ok:true,task_id:existing.id,existing:true,status:existing.status});
+ if(!active)return fail(res,409,"alert_already_resolved");
+ const {data,error}=await supabase.from("operations_tasks").upsert({contractor_id,title:title.slice(0,180),details,status:"Open",priority:"High",assigned_to,created_by:user.id,updated_by:user.id,automation_key},{onConflict:"automation_key",ignoreDuplicates:true}).select("id").maybeSingle();
+ if(error)return fail(res,500,"alert_task_create_failed");
+ const task_id=data?.id||(await supabase.from("operations_tasks").select("id").eq("automation_key",automation_key).single()).data?.id;
+ if(!task_id)return fail(res,500,"task_lookup_failed");
+ if(data){const {error:auditErr}=await supabase.from("operations_task_events").insert({task_id,actor_id:user.id,actor_email:user.email||"",event_type:"alert_converted",after_state:{alert_key:key,assigned_to}});if(auditErr)console.error("alert task audit",auditErr.message)}
+ return res.status(200).json({ok:true,task_id,existing:!data});
+}
 async function markOpsAlert(ctx,res,b){
  const key=String(b.alert_key||"");if(!/^(task|application|dispute|notification):[0-9a-f-]{36}$/.test(key))return fail(res,400,"invalid_alert");
  const read=b.read!==false;
@@ -474,6 +517,7 @@ module.exports = async function handler(req, res) {
   if (["set_status","activate","set_insurance_verified","set_license_verified","approve_founding25","grant_founding25"].includes(action)) {
     return contractorAction(ctx, res, b);
   }
+  if(action==="create_alert_task")return createAlertTask(ctx,res,b);
   if(action==="mark_ops_alert")return markOpsAlert(ctx,res,b);
   if (["add_task_note","init_task_upload","complete_task_upload","view_task_attachment"].includes(action)) return taskSupplement(ctx,res,b);
   if (action === "create_task" || action === "update_task") return taskAction(ctx,res,b);
