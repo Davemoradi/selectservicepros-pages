@@ -51,7 +51,7 @@ async function getData(ctx, res) {
       supabase.from("operations_task_events").select("id,task_id,actor_email,event_type,created_at").order("created_at",{ascending:false}).limit(1000),
       supabase.from("operations_task_notes").select("id,task_id,body,author_email,created_at").order("created_at",{ascending:false}).limit(2000),
       supabase.from("operations_task_attachments").select("id,task_id,file_name,size_bytes,uploader_email,created_at").order("created_at",{ascending:false}).limit(2000),
-      supabase.from("operations_staff").select("id,email,name,first_name,last_name,active,role,created_at").order("name")
+      supabase.from("operations_staff").select("id,email,name,first_name,last_name,active,employment_status,role,created_at").order("name")
     ]);
     if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error || taskNotesR.error || taskFilesR.error || staffR.error) throw new Error("operations_history_unavailable");
     const contractors = contractorsR.data || [];
@@ -392,18 +392,22 @@ async function manageStaff(ctx,res,b){
  if(action==="create_staff"){
   const first_name=String(b.first_name||"").trim(),last_name=String(b.last_name||"").trim(),name=(first_name+" "+last_name).trim(),email=String(b.email||"").trim().toLowerCase(),role=String(b.role||"Operations");
   if(!first_name||!last_name||first_name.length>80||last_name.length>80||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)||!["Operations","Support","Verification","Finance","Manager"].includes(role))return fail(res,400,"invalid_staff");
-  const {data,error}=await ctx.supabase.from("operations_staff").insert({name,first_name,last_name,email,role,active:true}).select("*").single();
+  const {data,error}=await ctx.supabase.from("operations_staff").insert({name,first_name,last_name,email,role,active:true,employment_status:"Active"}).select("*").single();
   if(error)return fail(res,error.code==="23505"?409:500,"staff_create_failed");
   await ctx.supabase.from("operations_staff_audit").insert({staff_id:data.id,actor_id:ctx.user.id,actor_email:ctx.user.email,action:"created",changes:{first_name,last_name,email,role}});
   return res.status(200).json({ok:true,staff:data});
  }
- if(action==="set_staff_active"){
-  const id=String(b.staff_id||"");if(!UUID_RE.test(id)||typeof b.active!=="boolean")return fail(res,400,"invalid_staff_update");
-  const {data:old}=await ctx.supabase.from("operations_staff").select("*").eq("id",id).maybeSingle();if(!old)return fail(res,404,"staff_not_found");
-  if(old.email==="david@selectservicepros.com"&&!b.active)return fail(res,409,"cannot_deactivate_owner");
-  const {data,error}=await ctx.supabase.from("operations_staff").update({active:b.active}).eq("id",id).select("*").single();
+ if(action==="set_staff_status"){
+  const id=String(b.staff_id||""),status=String(b.status||"");
+  if(!UUID_RE.test(id)||!["Active","Suspended","Deactivated"].includes(status))return fail(res,400,"invalid_staff_status");
+  const {data:old}=await ctx.supabase.from("operations_staff").select("*").eq("id",id).maybeSingle();
+  if(!old)return fail(res,404,"staff_not_found");
+  if(old.email==="david@selectservicepros.com"&&status!=="Active")return fail(res,409,"cannot_suspend_owner");
+  if(old.employment_status===status)return res.status(200).json({ok:true,unchanged:true});
+  const {data,error}=await ctx.supabase.from("operations_staff").update({employment_status:status,active:status==="Active"}).eq("id",id).select("*").single();
   if(error)return fail(res,500,"staff_update_failed");
-  await ctx.supabase.from("operations_staff_audit").insert({staff_id:id,actor_id:ctx.user.id,actor_email:ctx.user.email,action:"active_changed",changes:{before:old.active,after:data.active}});
+  const {error:auditErr}=await ctx.supabase.from("operations_staff_audit").insert({staff_id:id,actor_id:ctx.user.id,actor_email:ctx.user.email||"",action:"status_changed",changes:{before:old.employment_status,after:status}});
+  if(auditErr)return fail(res,500,"staff_audit_failed");
   return res.status(200).json({ok:true,staff:data});
  }
  return fail(res,400,"invalid_action");
@@ -444,7 +448,7 @@ module.exports = async function handler(req, res) {
   }
   if (["add_task_note","init_task_upload","complete_task_upload","view_task_attachment"].includes(action)) return taskSupplement(ctx,res,b);
   if (action === "create_task" || action === "update_task") return taskAction(ctx,res,b);
-  if (["create_staff","set_staff_active"].includes(action)) return manageStaff(ctx,res,b);
+  if (["create_staff","set_staff_status"].includes(action)) return manageStaff(ctx,res,b);
   if (action === "save_profile") return saveProfile(ctx,res,b);
   if (action === "add_contractor_note") return addContractorNote(ctx, res, b);
   if (action === "document_url") return documentUrl(ctx, res, b);
