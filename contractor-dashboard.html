@@ -2056,9 +2056,9 @@ function fileExt(file){
 // object path and mint a short-lived signed URL when one is actually viewed.
 async function uploadDoc(file, pathSuffix){
   if(!state.contractorId) throw new Error('No contractorId');
-  const path = `${state.contractorId}/${pathSuffix}`;
+  const path = `${state.contractorId}/${Date.now()}-${crypto.randomUUID()}-${pathSuffix}`;
   const { error: upErr } = await sb.storage.from('contractor-docs')
-    .upload(path, file, { upsert: true, contentType: file.type });
+    .upload(path, file, { upsert: false, contentType: file.type });
   if(upErr) throw upErr;
   // Return the storage PATH, never a public URL.
   return path;
