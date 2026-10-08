@@ -75,7 +75,7 @@ async function login(){const btn=document.getElementById('login-btn');btn.disabl
 async function adminGoogleSignIn(){
  const btn=document.getElementById('admin-google-btn');btn.disabled=true;
  try{
-  const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+'/admin-dashboard.html'}});
+  const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+'/admin-dashboard.html',queryParams:{prompt:'select_account'}}});
   if(error)throw error;
  }catch(e){showLogin('Google sign-in could not be started. Please try again or use password recovery.');btn.disabled=false;}
 }
