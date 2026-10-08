@@ -112,9 +112,17 @@ function collectOpsAlerts(d){
 }
 function operationsAlerts(d){
  const alerts=collectOpsAlerts(d), unread=alerts.filter(x=>!x.read).length;
+ const assignees=(d.staff||[]).filter(x=>x.active).map(x=>'<option value="'+esc(x.email)+'">'+esc(x.name||x.email)+'</option>').join('');
+ const taskFor=a=>a.kind==='task'?(d.tasks||[]).find(x=>x.id===a.id):(d.tasks||[]).find(x=>x.automation_key==='alert:'+a.key);
  return '<div class="pagehead"><div><h1>Operations Alerts</h1><p class="sub">Live exceptions from SSP records. Read status is personal to your login.</p></div><button class="btn secondary" onclick="load()">Refresh</button></div>'
  +'<div class="grid">'+metric('Unread alerts',unread)+metric('Total active alerts',alerts.length)+'</div>'
- +'<div class="section" style="padding:14px">'+(alerts.map(a=>'<div style="padding:13px;border-bottom:1px solid #e7ebef"><b>'+esc(a.title)+'</b> '+(a.read?'<span class="detail">Read</span>':'<span class="detail">● Unread</span>')+'<p class="detail">'+esc(a.detail)+' · '+date(a.when)+'</p><button class="btn small primary" onclick="openOpsAlert(\''+esc(a.kind)+'\',\''+esc(a.id)+'\')">Open record</button> <button class="btn small secondary" onclick="setOpsAlertRead(\''+esc(a.key)+'\','+(!a.read)+')">'+(a.read?'Mark unread':'Mark read')+'</button></div>').join('')||'<p>No active alerts.</p>')+'</div>';
+ +'<div class="section" style="padding:14px">'+(alerts.map(a=>'<div style="padding:13px;border-bottom:1px solid #e7ebef"><b>'+esc(a.title)+'</b> '+(a.read?'<span class="detail">Read</span>':'<span class="detail">● Unread</span>')+'<p class="detail">'+esc(a.detail)+' · '+date(a.when)+'</p>'+(taskFor(a)?'<button class="btn small primary" onclick="openOpsTask(\''+taskFor(a).id+'\')">View Task ('+esc(taskFor(a).status)+')</button> ':a.kind==='task'?'':'<select aria-label="Assign employee" id="alert-owner-'+esc(a.id)+'"><option value="">Assign employee…</option>'+assignees+'</select> <button class="btn small primary" onclick="convertOpsAlert(\''+esc(a.key)+'\',\''+esc(a.id)+'\')">Create Task</button> ')+'<button class="btn small secondary" onclick="openOpsAlert(\''+esc(a.kind)+'\',\''+esc(a.id)+'\')">Open record</button> <button class="btn small secondary" onclick="setOpsAlertRead(\''+esc(a.key)+'\','+(!a.read)+')">'+(a.read?'Mark unread':'Mark read')+'</button></div>').join('')||'<p>No active alerts.</p>')+'</div>';
+}
+async function convertOpsAlert(key,id){
+ const assigned_to=document.getElementById('alert-owner-'+id)?.value||'';
+ if(!assigned_to){toast('Choose an employee first.');return}
+ try{const r=await api('/api/admin',{method:'POST',body:JSON.stringify({action:'create_alert_task',alert_key:key,assigned_to})});await load();openOpsTask(r.task_id)}
+ catch(e){toast('Could not create task: '+e.message)}
 }
 async function setOpsAlertRead(key,read){try{await api('/api/admin',{method:'POST',body:JSON.stringify({action:'mark_ops_alert',alert_key:key,read})});await load()}catch(e){toast('Alert update failed: '+e.message)}}
 function openOpsAlert(kind,id){
