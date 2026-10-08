@@ -40,8 +40,8 @@ const SUPABASE_URL='https://kasqtxwbsmjlisbnebku.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_vNTt8FXb9XdBQ_Asd1QPTg_luc7D8Fz';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const state={tab:'overview',data:null,search:'',busy:false,selectedContractor:null,selectedTask:null};
-const initialTab=new URLSearchParams(location.search).get('tab');if(['overview','contractors','queue','communications','leads','pricing','disputes','staff'].includes(initialTab))state.tab=initialTab;
-const tabs=[['overview','Overview'],['contractors','Contractors'],['queue','Work Queue'],['communications','Communications'],['leads','Leads'],['pricing','Pricing'],['disputes','Disputes'],['staff','Employees']];
+const initialTab=new URLSearchParams(location.search).get('tab');if(['overview','contractors','queue','communications','leads','pricing','disputes','staff','alerts'].includes(initialTab))state.tab=initialTab;
+const tabs=[['overview','Overview'],['contractors','Contractors'],['queue','Work Queue'],['alerts','Alerts'],['communications','Communications'],['leads','Leads'],['pricing','Pricing'],['disputes','Disputes'],['staff','Employees']];
 function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function money(c){return '$'+((Number(c)||0)/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
 function date(v){if(!v)return '—';try{return new Date(v).toLocaleString()}catch{return esc(v)}}
@@ -50,8 +50,8 @@ function token(){return sb.auth.getSession().then(x=>x.data.session?.access_toke
 async function api(url,opts={}){const t=await token();if(!t)throw new Error('signed_out');const r=await fetch(url,{...opts,headers:{'Content-Type':'application/json','Authorization':'Bearer '+t,...(opts.headers||{})}});const b=await r.json().catch(()=>({}));if(r.status===401||r.status===403){if(b.error==='admin_required')throw new Error('admin_required')}if(!r.ok)throw new Error(b.error||'request_failed');return b}
 async function load(){state.busy=true;render();try{state.data=await api('/api/admin?action=data');document.getElementById('admin-email').textContent=state.data.admin?.email||''}catch(e){if(e.message==='admin_required'){const signed=await sb.auth.getUser();const used=signed.data?.user?.email||'this Google account';await sb.auth.signOut();showLogin('Signed in as '+used+', but this account is not authorized for SSP Operations. Sign in with david@selectservicepros.com.');return}console.error(e);toast('Could not load operations data.')}finally{state.busy=false;render()}}
 function setTab(t){state.tab=t;if(t!=='task-detail')state.selectedTask=null;const u=new URL(location.href);u.searchParams.set('tab',t==='task-detail'?'queue':t);history.replaceState(null,'',u);render()}
-function renderNav(){const allowed=state.data?.admin?.staff_only?[['queue','Work Queue']]:tabs;document.getElementById('nav').innerHTML=allowed.map(([k,l])=>`<button class="navbtn ${state.tab===k?'active':''}" onclick="setTab('${k}')">${l}</button>`).join('')}
-function render(){if(document.getElementById('app').classList.contains('hidden'))return;renderNav();const c=document.getElementById('content');if(state.busy&&!state.data){c.innerHTML='<div class="notice">Loading SSP operations…</div>';return}const d=state.data;if(!d){c.innerHTML='<div class="notice">No data loaded.</div>';return}if(d.admin?.staff_only&&state.tab!=='queue'&&state.tab!=='task-detail'){state.tab='queue';renderNav()}if(state.tab==='overview')c.innerHTML=overview(d);if(state.tab==='contractors')c.innerHTML=contractors(d);if(state.tab==='leads')c.innerHTML=leads(d);if(state.tab==='pricing')c.innerHTML=pricing(d);if(state.tab==='disputes')c.innerHTML=disputes(d);if(state.tab==='communications')c.innerHTML=communications(d);if(state.tab==='queue')c.innerHTML=workQueue(d);if(state.tab==='staff')c.innerHTML=employees(d);if(state.tab==='task-detail')c.innerHTML=taskDetail(d);if(state.tab==='detail')c.innerHTML=contractorDetail(d)}
+function renderNav(){const allowed=state.data?.admin?.staff_only?[['queue','Work Queue'],['alerts','Alerts']]:tabs;document.getElementById('nav').innerHTML=allowed.map(([k,l])=>`<button class="navbtn ${state.tab===k?'active':''}" onclick="setTab('${k}')">${l}</button>`).join('')}
+function render(){if(document.getElementById('app').classList.contains('hidden'))return;renderNav();const c=document.getElementById('content');if(state.busy&&!state.data){c.innerHTML='<div class="notice">Loading SSP operations…</div>';return}const d=state.data;if(!d){c.innerHTML='<div class="notice">No data loaded.</div>';return}if(d.admin?.staff_only&&state.tab!=='queue'&&state.tab!=='task-detail'&&state.tab!=='alerts'){state.tab='queue';renderNav()}if(state.tab==='overview')c.innerHTML=overview(d);if(state.tab==='contractors')c.innerHTML=contractors(d);if(state.tab==='leads')c.innerHTML=leads(d);if(state.tab==='pricing')c.innerHTML=pricing(d);if(state.tab==='disputes')c.innerHTML=disputes(d);if(state.tab==='communications')c.innerHTML=communications(d);if(state.tab==='queue')c.innerHTML=workQueue(d);if(state.tab==='alerts')c.innerHTML=operationsAlerts(d);if(state.tab==='staff')c.innerHTML=employees(d);if(state.tab==='task-detail')c.innerHTML=taskDetail(d);if(state.tab==='detail')c.innerHTML=contractorDetail(d)}
 function overview(d){const s=d.stats||{};return `<div class="pagehead"><div><h1>Overview</h1><p class="sub">Live operational state from Supabase. No tier/MRR model.</p></div><button class="btn secondary" onclick="load()">Refresh</button></div><div class="grid">${metric('Active contractors',s.contractors_active)}${metric('Pending review',s.contractors_pending_review)}${metric('Accepted offers',s.accepted_offers)}${metric('Open disputes',s.disputes_open)}${metric('Purchased wallet',money(s.paid_wallet_cents))}${metric('Promo wallet',money(s.promo_wallet_cents))}${metric('Founding 25',`${s.founding25_grants||0}/25`)}${metric('Lead charges',money(s.lead_charge_cents))}${metric('Stripe top-ups',money(s.stripe_topup_cents))}</div><div class="section"><div class="section-head"><h2>Matching snapshot</h2></div><div class="grid" style="padding:16px">${metric('Offering',s.leads_offering)}${metric('Matched',s.leads_matched)}${metric('Unmatched',s.leads_unmatched)}${metric('Pricing held',s.pricing_held)}</div></div>`}
 function metric(l,v){return `<div class="card"><div class="metric-label">${esc(l)}</div><div class="metric">${esc(v??0)}</div></div>`}
 function contractorFiltered(d){const q=state.search.trim().toLowerCase();return (d.contractors||[]).filter(c=>!q||[c.company_name,c.first_name,c.last_name,c.email,c.phone,c.status,c.contractor_number].some(v=>String(v||'').toLowerCase().includes(q)))}
@@ -79,6 +79,37 @@ async function sendEmployeeRecovery(id){
  catch(e){toast('Password recovery failed: '+(e.message||'Please retry later.'))}
 }
 async function saveEmployeeStatus(staff_id){const status=document.getElementById('employee-status-'+staff_id)?.value;if(!status)return;if(!confirm('Set employee status to '+status+'?'))return;try{await api('/api/admin',{method:'POST',body:JSON.stringify({action:'set_staff_status',staff_id,status})});await load()}catch(e){toast('Status update failed: '+e.message)}}
+
+
+function collectOpsAlerts(d){
+ const out=[];
+ const contractors=d.contractors||[];
+ const company=id=>contractors.find(c=>c.id===id)?.company_name||'Contractor';
+ (d.tasks||[]).filter(t=>!['Done','Cancelled'].includes(t.status)).forEach(t=>{
+  if(t.automation_key||t.priority==='Urgent'||t.due_at&&new Date(t.due_at)<new Date()){
+   out.push({key:'task:'+t.id,title:t.automation_key?'Document review: '+company(t.contractor_id):t.title,detail:t.automation_key?'Uploaded document requires verification':t.due_at&&new Date(t.due_at)<new Date()?'Overdue task':'Urgent task',when:t.updated_at||t.created_at,kind:'task',id:t.id});
+  }
+ });
+ if(!d.admin?.staff_only){
+  (d.contractors||[]).filter(c=>['Pending Review','Pending Verification'].includes(c.status)).forEach(c=>out.push({key:'application:'+c.id,title:'Contractor awaiting review: '+company(c.id),detail:c.status,when:c.created_at,kind:'contractor',id:c.id}));
+  (d.disputes||[]).filter(x=>!x.decision||x.decision==='pending').forEach(x=>out.push({key:'dispute:'+x.id,title:'Lead dispute: '+company(x.contractor_id),detail:'Awaiting decision',when:x.submitted_at,kind:'disputes',id:x.id}));
+  (d.notifications||[]).filter(x=>['failed','error','dead','dead_letter'].includes(String(x.status||'').toLowerCase())).forEach(x=>out.push({key:'notification:'+x.id,title:'Failed notification: '+x.event_type,detail:x.last_error||'Delivery failure',when:x.created_at,kind:'communications',id:x.id}));
+ }
+ const read=new Set((d.alert_reads||[]).map(x=>x.alert_key));
+ return out.map(x=>({...x,read:read.has(x.key)})).sort((a,b)=>Number(a.read)-Number(b.read)||new Date(b.when||0)-new Date(a.when||0));
+}
+function operationsAlerts(d){
+ const alerts=collectOpsAlerts(d), unread=alerts.filter(x=>!x.read).length;
+ return '<div class="pagehead"><div><h1>Operations Alerts</h1><p class="sub">Live exceptions from SSP records. Read status is personal to your login.</p></div><button class="btn secondary" onclick="load()">Refresh</button></div>'
+ +'<div class="grid">'+metric('Unread alerts',unread)+metric('Total active alerts',alerts.length)+'</div>'
+ +'<div class="section" style="padding:14px">'+(alerts.map(a=>'<div style="padding:13px;border-bottom:1px solid #e7ebef"><b>'+esc(a.title)+'</b> '+(a.read?'<span class="detail">Read</span>':'<span class="detail">● Unread</span>')+'<p class="detail">'+esc(a.detail)+' · '+date(a.when)+'</p><button class="btn small primary" onclick="openOpsAlert(\''+esc(a.kind)+'\',\''+esc(a.id)+'\')">Open record</button> <button class="btn small secondary" onclick="setOpsAlertRead(\''+esc(a.key)+'\','+(!a.read)+')">'+(a.read?'Mark unread':'Mark read')+'</button></div>').join('')||'<p>No active alerts.</p>')+'</div>';
+}
+async function setOpsAlertRead(key,read){try{await api('/api/admin',{method:'POST',body:JSON.stringify({action:'mark_ops_alert',alert_key:key,read})});await load()}catch(e){toast('Alert update failed: '+e.message)}}
+function openOpsAlert(kind,id){
+ if(kind==='task'){openOpsTask(id);return}
+ if(kind==='contractor'){state.selectedContractor=id;setTab('detail');return}
+ setTab(kind);
+}
 
 function workQueue(d){
  const tasks=d.tasks||[], contractors=d.contractors||[];
