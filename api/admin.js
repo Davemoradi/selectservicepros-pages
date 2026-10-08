@@ -468,8 +468,8 @@ async function createAlertTask(ctx,res,b){
  const {data:existing}=await supabase.from("operations_tasks").select("id,status").eq("automation_key",automation_key).maybeSingle();
  if(existing)return res.status(200).json({ok:true,task_id:existing.id,existing:true,status:existing.status});
  if(!active)return fail(res,409,"alert_already_resolved");
- const {data,error}=await supabase.from("operations_tasks").upsert({contractor_id,title:title.slice(0,180),details,status:"Open",priority:"High",assigned_to,created_by:user.id,updated_by:user.id,automation_key},{onConflict:"automation_key",ignoreDuplicates:true}).select("id").maybeSingle();
- if(error)return fail(res,500,"alert_task_create_failed");
+ const {data,error}=await supabase.from("operations_tasks").insert({contractor_id,title:title.slice(0,180),details,status:"Open",priority:"High",assigned_to,created_by:user.id,updated_by:user.id,automation_key}).select("id").maybeSingle();
+ if(error&&error.code!=="23505")return fail(res,500,"alert_task_create_failed");
  const task_id=data?.id||(await supabase.from("operations_tasks").select("id").eq("automation_key",automation_key).single()).data?.id;
  if(!task_id)return fail(res,500,"task_lookup_failed");
  if(data){const {error:auditErr}=await supabase.from("operations_task_events").insert({task_id,actor_id:user.id,actor_email:user.email||"",event_type:"alert_converted",after_state:{alert_key:key,assigned_to}});if(auditErr)console.error("alert task audit",auditErr.message)}
