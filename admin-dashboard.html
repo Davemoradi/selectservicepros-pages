@@ -21,6 +21,7 @@ button,input,select{font:inherit}.hidden{display:none!important}.shell{min-heigh
   <div class="field"><label>Email</label><input id="login-email" type="email" autocomplete="username"/></div>
   <div class="field"><label>Password</label><input id="login-password" type="password" autocomplete="current-password"/></div>
   <button id="login-btn" class="btn primary" style="width:100%">Sign in</button>
+  <button type="button" id="admin-google-btn" class="btn secondary" style="width:100%;margin-top:10px;border:1px solid #d6dee6;background:#fff">Continue with Google</button>
   <div style="margin-top:14px;text-align:center"><button type="button" id="forgot-btn" class="btn secondary">Forgot password / Set up admin access</button></div>
   <p id="reset-message" class="sub" role="status"></p>
   <div id="login-error" class="error"></div>
@@ -71,6 +72,13 @@ function toast(msg){alert(msg)}
 async function logout(){await sb.auth.signOut();location.reload()}
 function showLogin(msg=''){document.getElementById('app').classList.add('hidden');document.getElementById('login').classList.remove('hidden');document.getElementById('login-error').textContent=msg}
 async function login(){const btn=document.getElementById('login-btn');btn.disabled=true;document.getElementById('login-error').textContent='';const email=document.getElementById('login-email').value.trim();const password=document.getElementById('login-password').value;const {error}=await sb.auth.signInWithPassword({email,password});btn.disabled=false;if(error){showLogin('Sign-in failed.');return}await boot()}
+async function adminGoogleSignIn(){
+ const btn=document.getElementById('admin-google-btn');btn.disabled=true;
+ try{
+  const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+'/admin-dashboard.html'}});
+  if(error)throw error;
+ }catch(e){showLogin('Google sign-in could not be started. Please try again or use password recovery.');btn.disabled=false;}
+}
 async function requestAdminRecovery(){
  const email=document.getElementById('login-email').value.trim();
  const feedback=document.getElementById('reset-message');
@@ -83,7 +91,7 @@ async function requestAdminRecovery(){
  finally{btn.disabled=false;}
 }
 async function boot(){const {data:{session}}=await sb.auth.getSession();if(!session){showLogin();return}document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');await load()}
-document.getElementById('login-btn').addEventListener('click',login);document.getElementById('forgot-btn').addEventListener('click',requestAdminRecovery);document.getElementById('login-password').addEventListener('keydown',e=>{if(e.key==='Enter')login()});boot();
+document.getElementById('login-btn').addEventListener('click',login);document.getElementById('forgot-btn').addEventListener('click',requestAdminRecovery);document.getElementById('admin-google-btn').addEventListener('click',adminGoogleSignIn);document.getElementById('login-password').addEventListener('keydown',e=>{if(e.key==='Enter')login()});boot();
 </script>
 </body>
 </html>
