@@ -42,15 +42,17 @@ async function getData(ctx, res) {
     }
 
     const disputes = disputesR.error ? [] : (disputesR.data || []);
-    const [notesR, notificationsR, profilesR, auditR, tasksR, taskEventsR] = await Promise.all([
+    const [notesR, notificationsR, profilesR, auditR, tasksR, taskEventsR, taskNotesR, taskFilesR] = await Promise.all([
       supabase.from("contractor_admin_notes").select("id,contractor_id,body,created_at,created_by,author_email").order("created_at",{ascending:false}).limit(500),
       supabase.from("notification_outbox").select("id,contractor_id,lead_id,event_type,status,attempt_count,sent_at,last_error,created_at").order("created_at",{ascending:false}).limit(500),
       supabase.from("contractor_admin_profiles").select("*").limit(1000),
       supabase.from("contractor_admin_audit").select("id,contractor_id,actor_email,action,changes,created_at").order("created_at",{ascending:false}).limit(1000),
       supabase.from("operations_tasks").select("*").order("created_at",{ascending:false}).limit(1000),
-      supabase.from("operations_task_events").select("id,task_id,actor_email,event_type,created_at").order("created_at",{ascending:false}).limit(1000)
+      supabase.from("operations_task_events").select("id,task_id,actor_email,event_type,created_at").order("created_at",{ascending:false}).limit(1000),
+      supabase.from("operations_task_notes").select("id,task_id,body,author_email,created_at").order("created_at",{ascending:false}).limit(2000),
+      supabase.from("operations_task_attachments").select("id,task_id,file_name,size_bytes,uploader_email,created_at").order("created_at",{ascending:false}).limit(2000)
     ]);
-    if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error) throw new Error("operations_history_unavailable");
+    if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error || taskNotesR.error || taskFilesR.error) throw new Error("operations_history_unavailable");
     const contractors = contractorsR.data || [];
     const licenses = licensesR.data || [];
     const leads = leadsR.data || [];
@@ -89,6 +91,8 @@ async function getData(ctx, res) {
       audit: auditR.data || [],
       tasks: tasksR.data || [],
       task_events: taskEventsR.data || [],
+      task_notes: taskNotesR.data || [],
+      task_files: taskFilesR.data || [],
       notifications: notificationsR.data || [],
       stats: {
         contractors_total: contractors.length,
@@ -310,19 +314,71 @@ async function taskAction(ctx,res,b){
   return res.status(200).json({ok:true,task:data});
  }
  if(action==="update_task"){
-  const id=String(b.task_id||""),status=String(b.status||"");
-  if(!UUID_RE.test(id)||!["Open","In Progress","Done","Cancelled"].includes(status))return fail(res,400,"invalid_task_change");
+  const id=String(b.task_id||"");if(!UUID_RE.test(id))return fail(res,400,"invalid_task_change");
+  const patch={};
+  for(const [k,v] of Object.entries(b.fields||{})){
+   if(!["title","details","status","priority","assigned_to","due_at","contractor_id"].includes(k))return fail(res,400,"invalid_task_field");
+   if(k==="title"&&(typeof v!=="string"||v.trim().length<3||v.length>180))return fail(res,400,"invalid_title");
+   if(k==="details"&&(typeof v!=="string"||v.length>3000))return fail(res,400,"invalid_details");
+   if(k==="status"&&!["Open","In Progress","Done","Cancelled"].includes(v))return fail(res,400,"invalid_status");
+   if(k==="priority"&&!["Low","Normal","High","Urgent"].includes(v))return fail(res,400,"invalid_priority");
+   if(k==="assigned_to"&&v!==null&&(typeof v!=="string"||v.length>160))return fail(res,400,"invalid_assignee");
+   if(k==="contractor_id"&&v!==null&&!UUID_RE.test(v))return fail(res,400,"invalid_contractor");
+   if(k==="due_at"&&v!==null&&Number.isNaN(new Date(v).getTime()))return fail(res,400,"invalid_due");
+   patch[k]=v;
+  }
+  if(!Object.keys(patch).length)return fail(res,400,"empty_update");
   const {data:before,error:readErr}=await supabase.from("operations_tasks").select("*").eq("id",id).maybeSingle();
   if(readErr||!before)return fail(res,404,"task_not_found");
-  if(before.status===status)return res.status(200).json({ok:true,unchanged:true});
-  const {data,error}=await supabase.from("operations_tasks").update({status,updated_by:user.id,updated_at:new Date().toISOString()}).eq("id",id).eq("status",before.status).select("*").maybeSingle();
+  if(b.expected_updated_at&&b.expected_updated_at!==before.updated_at)return fail(res,409,"task_changed_refresh");
+  const changes={};for(const [k,v] of Object.entries(patch))if(JSON.stringify(before[k]??null)!==JSON.stringify(v))changes[k]={before:before[k]??null,after:v};
+  if(!Object.keys(changes).length)return res.status(200).json({ok:true,unchanged:true});
+  const {data,error}=await supabase.from("operations_tasks").update({...patch,updated_by:user.id,updated_at:new Date().toISOString()}).eq("id",id).eq("updated_at",before.updated_at).select("*").maybeSingle();
   if(error)return fail(res,500,"task_update_failed");
   if(!data)return fail(res,409,"task_changed_refresh");
-  const {error:auditErr}=await supabase.from("operations_task_events").insert({task_id:id,actor_id:user.id,actor_email:user.email||"",event_type:"status_changed",before_state:{status:before.status},after_state:{status}});
+  const {error:auditErr}=await supabase.from("operations_task_events").insert({task_id:id,actor_id:user.id,actor_email:user.email||"",event_type:"edited",before_state:changes,after_state:data});
   if(auditErr){console.error("task audit failure",auditErr.message);return fail(res,500,"task_audit_failed")}
   return res.status(200).json({ok:true,task:data});
  }
  return fail(res,400,"invalid_task_action");
+}
+
+
+async function taskSupplement(ctx,res,b){
+ const id=String(b.task_id||"");if(!UUID_RE.test(id))return fail(res,400,"invalid_task_id");
+ const {data:task}=await ctx.supabase.from("operations_tasks").select("id").eq("id",id).maybeSingle();
+ if(!task)return fail(res,404,"task_not_found");
+ if(b.action==="add_task_note"){
+  const body=String(b.body||"").trim();if(!body||body.length>5000)return fail(res,400,"invalid_note");
+  const {data,error}=await ctx.supabase.from("operations_task_notes").insert({task_id:id,body,author_id:ctx.user.id,author_email:ctx.user.email||""}).select("*").single();
+  if(error)return fail(res,500,"note_failed");return res.status(200).json({ok:true,note:data});
+ }
+ if(b.action==="init_task_upload"){
+  const name=String(b.file_name||"").replace(/[\\/]/g,"_").slice(0,180);
+  const type=String(b.content_type||"");const size=Number(b.size_bytes||0);
+  if(!name||!["application/pdf","image/png","image/jpeg","image/webp","text/plain"].includes(type)||!Number.isInteger(size)||size<1||size>10485760)return fail(res,400,"invalid_attachment");
+  const path=id+"/"+require("crypto").randomUUID()+"-"+name;
+  const {data,error}=await ctx.supabase.storage.from("ssp-operations-files").createSignedUploadUrl(path);
+  if(error||!data)return fail(res,500,"upload_url_failed");
+  return res.status(200).json({ok:true,path,token:data.token});
+ }
+ if(b.action==="complete_task_upload"){
+  const path=String(b.path||"");const name=String(b.file_name||"").slice(0,180),type=String(b.content_type||""),size=Number(b.size_bytes||0);
+  if(!path.startsWith(id+"/")||path.includes("..")||!name||!["application/pdf","image/png","image/jpeg","image/webp","text/plain"].includes(type)||!Number.isInteger(size)||size<1||size>10485760)return fail(res,400,"invalid_attachment");
+  const {data:list,error:listErr}=await ctx.supabase.storage.from("ssp-operations-files").list(id,{search:path.split("/").pop()});
+  if(listErr||!(list||[]).some(o=>o.name===path.split("/").pop()))return fail(res,409,"upload_not_found");
+  const {data,error}=await ctx.supabase.from("operations_task_attachments").insert({task_id:id,object_path:path,file_name:name,content_type:type,size_bytes:size,uploaded_by:ctx.user.id,uploader_email:ctx.user.email||""}).select("id").single();
+  if(error)return fail(res,500,"attachment_save_failed");return res.status(200).json({ok:true,id:data.id});
+ }
+ if(b.action==="view_task_attachment"){
+  const fid=String(b.attachment_id||"");if(!UUID_RE.test(fid))return fail(res,400,"invalid_attachment_id");
+  const {data:file}=await ctx.supabase.from("operations_task_attachments").select("object_path").eq("id",fid).eq("task_id",id).maybeSingle();
+  if(!file)return fail(res,404,"attachment_not_found");
+  const {data,error}=await ctx.supabase.storage.from("ssp-operations-files").createSignedUrl(file.object_path,180);
+  if(error||!data)return fail(res,500,"signed_url_failed");
+  return res.status(200).json({ok:true,url:data.signedUrl});
+ }
+ return fail(res,400,"invalid_action");
 }
 
 module.exports = async function handler(req, res) {
@@ -358,6 +414,7 @@ module.exports = async function handler(req, res) {
   if (["set_status","activate","set_insurance_verified","set_license_verified","approve_founding25","grant_founding25"].includes(action)) {
     return contractorAction(ctx, res, b);
   }
+  if (["add_task_note","init_task_upload","complete_task_upload","view_task_attachment"].includes(action)) return taskSupplement(ctx,res,b);
   if (action === "create_task" || action === "update_task") return taskAction(ctx,res,b);
   if (action === "save_profile") return saveProfile(ctx,res,b);
   if (action === "add_contractor_note") return addContractorNote(ctx, res, b);
