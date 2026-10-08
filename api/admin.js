@@ -15,7 +15,7 @@ async function getData(ctx, res) {
   try {
     const [contractorsR, licensesR, leadsR, offersR, walletR, pricingR, disputesR] = await Promise.all([
       supabase.from("contractors")
-        .select("id,email,first_name,last_name,company_name,phone,status,service_categories,service_zips,promo_credits_cents,lead_balance_cents,insurance_verified,insurance_expiration,insurance_doc_url,created_at")
+        .select("id,email,first_name,last_name,company_name,phone,status,service_categories,service_zips,promo_credits_cents,lead_balance_cents,insurance_verified,insurance_expiration,insurance_doc_url,insurance_carrier,insurance_policy_number,website_url,num_technicians,num_vehicles,scheduling_system,agreement_accepted_at,created_at")
         .order("created_at", { ascending:false }),
       supabase.from("contractor_licenses")
         .select("id,contractor_id,trade_category,license_type,license_state,license_number,expiration_date,document_url,verified,verified_at")
