@@ -1,235 +1,287 @@
-const { createClient } = require('@supabase/supabase-js');
-
-// Creates a new contractor account from the signup form.
+// api/create-contractor.js
+// Free-to-join contractor signup.
 //
-// Ownership / race considerations:
-//   - /api/create-checkout-session opens Stripe Checkout BEFORE this runs
-//   - On payment success, Stripe fires webhook → /api/stripe-webhook
-//   - stripe-webhook.js may INSERT a contractor row before this file finishes
-//   - This file creates the auth.users row + password reset link, and MUST
-//     converge on the same contractor row regardless of order.
+// SECURITY REWRITE — what was wrong before, and why each one mattered
 //
-// Flow:
-//   1. Create Supabase auth.users (always new — email is unique in auth)
-//   2. Generate password recovery link
-//   3. UPSERT contractor row keyed on email:
-//        - If no row yet → insert fresh (normal fast path)
-//        - If row already exists (stripe-webhook beat us) → update, adding
-//          auth_id + profile fields, preserving Stripe IDs that webhook set
-//   4. Fire WF5 welcome email with passwordResetUrl
-//   5. Fire GHL contact upsert webhook
+//   1. Math.random() generated the initial password. It is not a CSPRNG and
+//      its output is predictable from observed values. Now crypto.randomBytes.
+//
+//   2. The response returned a one-time Supabase recovery action_link to an
+//      UNAUTHENTICATED caller. Anyone who could POST this endpoint with an
+//      email address got back a link that sets that account's password —
+//      email ownership was never proven. The link is now emailed only.
+//
+//   3. Identity was matched with .ilike('email', ...). In PostgREST, ilike
+//      treats % and _ as wildcards, so a crafted address could match another
+//      contractor's row. Now normalized exact equality.
+//
+//   4. Database failures were logged and the endpoint still returned 200, so
+//      the signup page reported success on a failed signup. Real errors now
+//      return 5xx.
+//
+//   5. A failed contractor-row insert left an orphaned auth user, permanently
+//      blocking that email from signing up again. Now rolled back.
+//
+//   6. No durable rate limiting on a public endpoint that creates auth users
+//      and sends email. Now enforced through a shared Postgres counter.
+//
+//   7. licenseNumber / licenseType were written to columns on `contractors`
+//      the dashboard no longer reads. Licences belong in contractor_licenses,
+//      where the verification trigger applies.
+//
+//   8. Subscription assumptions — planName, checkout-before-contractor, the
+//      Stripe-webhook precreation race — are gone. Signup is free.
+//
+// NO GHL CALLS. An AFTER INSERT trigger on contractors enqueues
+// `contractor_created`, delivered by api/process-notifications.js, keyed on
+// contractor id so retries and races cannot produce a second welcome.
 
-module.exports = async (req, res) => {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+const { createClient } = require("@supabase/supabase-js");
+const crypto = require("crypto");
 
-  const {
-    email, firstName, lastName, phone,
-    companyName, planName,
-    businessDescription, yearsInBusiness, numEmployees,
-    licenseNumber, licenseType,
-    serviceZips, services, serviceCategories,
-    websiteUrl
-  } = req.body;
+const SUPABASE_URL = "https://kasqtxwbsmjlisbnebku.supabase.co";
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const RATE_LIMIT_SECRET = process.env.RATE_LIMIT_SECRET;
+const RESET_REDIRECT = "https://www.selectservicepros.com/reset-password.html";
 
-  if (!email || !firstName || !lastName) {
-    return res.status(400).json({ error: 'Missing required fields: email, firstName, lastName' });
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+// Durable rate limiting is database-backed so every serverless instance shares
+// the same counters. Raw IP/email values are HMACed before they reach the DB.
+function rateKey(kind, raw) {
+  return crypto.createHmac("sha256", RATE_LIMIT_SECRET)
+    .update(`${kind}|${String(raw || "").trim().toLowerCase()}`)
+    .digest("hex");
+}
+
+async function consumeLimit(supabase, scope, kind, raw, limit, windowSeconds) {
+  const { data, error } = await supabase.rpc("consume_api_rate_limit", {
+    p_scope: scope,
+    p_key_hash: rateKey(kind, raw),
+    p_limit: limit,
+    p_window_seconds: windowSeconds,
+  });
+  if (error || !Array.isArray(data) || !data[0]) {
+    console.error("create-contractor: durable rate limiter failed", error || data);
+    throw new Error("rate_limit_unavailable");
+  }
+  return data[0].allowed === true;
+}
+
+function normalizeEmail(raw) {
+  return String(raw || "").trim().toLowerCase();
+}
+
+module.exports = async function handler(req, res) {
+  res.setHeader("Content-Type", "application/json");
+
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    return res.status(204).end();
+  }
+  if (req.method !== "POST") {
+    return res.status(405).json({ success: false, error: "method_not_allowed" });
+  }
+  if (!SUPABASE_SERVICE_KEY || !RATE_LIMIT_SECRET) {
+    console.error("create-contractor: SUPABASE_SERVICE_ROLE_KEY or RATE_LIMIT_SECRET missing");
+    return res.status(500).json({ success: false, error: "server_misconfigured" });
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const b = req.body || {};
+  const email = normalizeEmail(b.email);
+  const firstName = String(b.firstName || "").trim().slice(0, 100);
+  const lastName = String(b.lastName || "").trim().slice(0, 100);
+  const phone = String(b.phone || "").trim().slice(0, 40);
+  const companyName = String(b.companyName || "").trim().slice(0, 200);
+  const serviceCategories = String(b.serviceCategories || "").trim().slice(0, 500);
+  const serviceZips = String(b.serviceZips || "").trim().slice(0, 2000);
+
+  if (!email || !EMAIL_RE.test(email)) {
+    return res.status(400).json({ success: false, error: "invalid_email" });
+  }
+  if (!firstName || !lastName) {
+    return res.status(400).json({ success: false, error: "missing_name" });
+  }
+
+  const ip = String(req.headers["x-forwarded-for"] || "").split(",")[0].trim() || "unknown";
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 
   try {
-    // 1. Create Supabase auth user with auto-confirm and random password.
-    // If the user already exists (e.g. someone retries signup), surface the
-    // error so the frontend can offer a login flow instead.
-    const randomPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email: email,
-      password: randomPassword,
-      email_confirm: true,
-      user_metadata: { firstName, lastName, companyName }
-    });
-
-    if (authError) {
-      console.error('Auth error:', authError.message);
-      return res.status(500).json({ error: 'Failed to create auth user: ' + authError.message });
-    }
-
-    const authId = authData.user.id;
-    console.log('Auth user created:', authId);
-
-    // 1b. Generate password recovery link (contractor clicks this to set their password)
-    let passwordResetUrl = 'https://www.selectservicepros.com/contractor-login.html';
-    try {
-      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-        type: 'recovery',
-        email: email,
-        options: {
-          // After Supabase verifies the recovery token, it redirects the
-          // browser here. Must be /reset-password.html so the user lands
-          // on the "Set a new password" form — NOT /contractor-login.html
-          // which just shows a sign-in form with no context.
-          redirectTo: 'https://www.selectservicepros.com/reset-password.html'
-        }
+    const [ipAllowed, emailAllowed] = await Promise.all([
+      consumeLimit(supabase, "contractor_signup_ip", "ip", ip, 5, 600),
+      consumeLimit(supabase, "contractor_signup_email", "email", email, 4, 3600),
+    ]);
+    if (!ipAllowed || !emailAllowed) {
+      return res.status(429).json({
+        success: false,
+        error: "rate_limited",
+        message: "Too many signup attempts. Please wait and try again.",
       });
-      if (linkError) {
-        console.error('Recovery link error:', linkError.message);
-      } else if (linkData && linkData.properties && linkData.properties.action_link) {
-        passwordResetUrl = linkData.properties.action_link;
-        console.log('Recovery link generated for:', email);
-      }
-    } catch (linkErr) {
-      console.error('Recovery link generation failed:', linkErr.message);
     }
+  } catch (e) {
+    return res.status(503).json({ success: false, error: "rate_limit_unavailable" });
+  }
 
-    // 2. UPSERT contractor profile into contractors table.
-    //
-    // Why upsert not insert: the Stripe webhook race. When the webhook fires
-    // first (common with fast Stripe events), it inserts a minimal contractor
-    // row with email + metadata + Stripe IDs. This file then runs and needs
-    // to ADD the rest of the profile data (license, services, insurance, etc)
-    // plus link the auth_id — not fail silently.
-    //
-    // We do "find-then-update-or-insert" manually rather than supabase's
-    // .upsert() because the natural key here is email (not id), and we want
-    // to preserve any Stripe IDs the webhook already wrote.
-    const profileFields = {
-      auth_id: authId,
-      first_name: firstName,
-      last_name: lastName,
-      phone: phone || null,
-      company_name: companyName || null,
-      membership_tier: planName || 'Basic',
-      business_description: businessDescription || null,
-      years_in_business: yearsInBusiness || null,
-      number_of_employees: numEmployees || null,
-      license_number: licenseNumber || null,
-      license_type: licenseType || null,
-      service_zips: serviceZips || null,
-      services: services || null,
-      service_categories: serviceCategories || null,
-      website_url: websiteUrl || null,
-      // Don't overwrite status if webhook already set it to 'Pending Verification'
-      // (meaning they paid). Only set 'Pending Profile' when row is brand new.
-    };
+  let createdAuthId = null;
+  let createdContractorId = null;
 
-    // Check if a row already exists for this email (likely pre-created by webhook)
-    const { data: existing, error: findErr } = await supabase
-      .from('contractors')
-      .select('id, status, stripe_customer_id, stripe_subscription_id')
-      .ilike('email', email)
+  try {
+    // ---- 1. Idempotency: exact, normalized match --------------------------
+    const { data: existing, error: lookupErr } = await supabase
+      .from("contractors")
+      .select("id, auth_id, email, status")
+      .eq("email", email)          // exact. never ilike — % and _ are wildcards
       .maybeSingle();
 
-    if (findErr) {
-      console.error('Contractor lookup error:', findErr.message);
+    if (lookupErr) {
+      console.error("create-contractor: lookup failed", lookupErr);
+      return res.status(500).json({ success: false, error: "lookup_failed" });
     }
 
-    if (existing && existing.id) {
-      // Row exists — update with profile data, keep Stripe IDs + Stripe-set status.
-      console.log('Contractor row exists (id=' + existing.id + '), updating with profile data');
-      const { error: updateErr } = await supabase
-        .from('contractors')
-        .update(Object.assign({}, profileFields, { updated_at: new Date().toISOString() }))
-        .eq('id', existing.id);
-      if (updateErr) {
-        console.error('Update error:', updateErr.message);
-      }
-    } else {
-      // No row yet — fresh insert with Pending Profile status.
-      const insertRow = Object.assign({}, profileFields, {
-        email: email,
-        status: 'Pending Profile',
-        lead_count: 0,
-        acceptance_rate: 0
+    if (existing) {
+      // Already registered. Do not disclose account state, and do not mint a
+      // recovery link for an unverified caller — that is an account-takeover
+      // path. Send them through the ordinary reset flow instead.
+      await supabase.auth
+        .resetPasswordForEmail(email, { redirectTo: RESET_REDIRECT })
+        .catch((e) => console.error("create-contractor: reset email failed", e && e.message));
+
+      return res.status(200).json({
+        success: true,
+        already_registered: true,
+        message: "That email is already registered. Check your inbox to set or reset your password.",
       });
-      const { error: insertError } = await supabase.from('contractors').insert(insertRow);
-      if (insertError) {
-        // Final fallback: maybe webhook inserted BETWEEN our lookup and insert
-        // (unlikely but possible). Retry as an update.
-        if (insertError.code === '23505' || /duplicate/i.test(insertError.message || '')) {
-          console.log('Insert race detected, retrying as update for ' + email);
-          const { error: retryErr } = await supabase
-            .from('contractors')
-            .update(Object.assign({}, profileFields, { updated_at: new Date().toISOString() }))
-            .ilike('email', email);
-          if (retryErr) console.error('Retry update error:', retryErr.message);
-        } else {
-          console.error('Insert error:', insertError.message);
-        }
-      }
     }
 
-    // 3. Call GHL webhooks server-side (reliable, no CORS issues)
-    const GHL_CONTACT_WEBHOOK = 'https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c';
-    const GHL_WF5_WEBHOOK = 'https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/Ny618W28bwWSntyu1DyL';
+    // ---- 2. Auth user with a CSPRNG placeholder password -------------------
+    // The contractor never learns this value; they set a real one through the
+    // emailed link.
+    const placeholder = crypto.randomBytes(32).toString("base64url");
 
-    const ghlPayload = {
-      name: firstName + ' ' + lastName,
-      firstName: firstName,
-      lastName: lastName,
-      phone: phone || '',
-      email: email,
-      companyName: companyName || '',
-      source: 'SelectServicePros.com — Contractor Signup',
-      type: 'contractor',
-      contractor_services: services || '',
-      contractor_service_categories: serviceCategories || '',
-      contractor_service_zips: serviceZips || '',
-      contractor_membership_tier: planName || 'Basic',
-      contractor_status: 'Pending Profile',
-      passwordResetUrl: passwordResetUrl,
-      lead_id: 'SSP-PAID-' + Date.now()
-    };
-
-    // 3a. Create/update GHL contact
-    try {
-      const ghlResp = await fetch(GHL_CONTACT_WEBHOOK, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(ghlPayload)
-      });
-      const ghlResult = await ghlResp.text();
-      console.log('GHL contact webhook:', ghlResp.status, ghlResult);
-    } catch (ghlErr) {
-      console.error('GHL contact webhook error:', ghlErr.message);
-    }
-
-    // 3b. Trigger WF5 welcome email workflow
-    try {
-      const wf5Resp = await fetch(GHL_WF5_WEBHOOK, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(ghlPayload)
-      });
-      const wf5Result = await wf5Resp.text();
-      console.log('GHL WF5 webhook:', wf5Resp.status, wf5Result);
-    } catch (wf5Err) {
-      console.error('GHL WF5 webhook error:', wf5Err.message);
-    }
-
-    console.log('Account created for:', email);
-
-    return res.status(200).json({
-      success: true,
-      message: 'Account created — check your email to set your password',
-      // passwordResetUrl is the one-time Supabase recovery link. The signup
-      // page redirects directly to this after payment so the contractor
-      // lands on /reset-password.html with a valid session and can set
-      // their password immediately — no email round-trip needed for the
-      // happy path. The same URL is also emailed via WF5 as a backup
-      // for contractors who close the tab before setting a password.
-      passwordResetUrl: passwordResetUrl,
-      loginUrl: 'https://www.selectservicepros.com/contractor-login.html'
+    const { data: authData, error: authErr } = await supabase.auth.admin.createUser({
+      email,
+      password: placeholder,
+      email_confirm: false,        // ownership is proven by the emailed link
+      user_metadata: { first_name: firstName, last_name: lastName, role: "contractor" },
     });
 
-  } catch (err) {
-    console.error('Server error:', err);
-    return res.status(500).json({ error: 'Server error: ' + err.message });
+    if (authErr) {
+      // Auth user exists but no contractor row: an earlier partial signup.
+      if (/already|exists|registered/i.test(authErr.message || "")) {
+        await supabase.auth
+          .resetPasswordForEmail(email, { redirectTo: RESET_REDIRECT })
+          .catch(() => {});
+        return res.status(200).json({
+          success: true,
+          already_registered: true,
+          message: "That email is already registered. Check your inbox to set or reset your password.",
+        });
+      }
+      console.error("create-contractor: auth create failed", authErr);
+      return res.status(500).json({ success: false, error: "auth_create_failed" });
+    }
+
+    createdAuthId = authData && authData.user && authData.user.id;
+    if (!createdAuthId) {
+      console.error("create-contractor: auth user created without an id");
+      return res.status(500).json({ success: false, error: "auth_create_failed" });
+    }
+
+    // ---- 3. Contractor row -------------------------------------------------
+    // The AFTER INSERT trigger enqueues contractor_created here — only once the
+    // auth relationship is real. No tier, no plan, no Stripe.
+    const { data: contractor, error: insErr } = await supabase
+      .from("contractors")
+      .insert({
+        auth_id: createdAuthId,
+        email,
+        first_name: firstName,
+        last_name: lastName,
+        phone: phone || null,
+        company_name: companyName || null,
+        service_categories: serviceCategories || null,
+        service_zips: serviceZips || null,
+        status: "Pending Profile",
+      })
+      .select("id")
+      .single();
+
+    if (insErr || !contractor) {
+      // Do not strand the auth user — it would block this email forever.
+      console.error("create-contractor: contractor insert failed", insErr);
+      try {
+        await supabase.auth.admin.deleteUser(createdAuthId);
+        createdAuthId = null;
+        console.warn("create-contractor: rolled back orphan auth user");
+      } catch (delErr) {
+        console.error("create-contractor: ORPHAN AUTH USER", createdAuthId,
+                      "- manual cleanup required:", delErr && delErr.message);
+      }
+      return res.status(500).json({ success: false, error: "contractor_create_failed" });
+    }
+    createdContractorId = contractor.id;
+
+    // ---- 4. Licences go in contractor_licenses ----------------------------
+    // Not onto columns of `contractors` the dashboard no longer reads. The
+    // insert trigger forces verified=false regardless of what is sent.
+    const licenses = Array.isArray(b.licenses) ? b.licenses.slice(0, 10) : [];
+    if (licenses.length) {
+      const rows = licenses
+        .filter((l) => l && (l.number || l.licenseNumber))
+        .map((l) => ({
+          contractor_id: contractor.id,
+          trade_category: String(l.trade || l.tradeCategory || "").slice(0, 100) || null,
+          license_type: String(l.type || l.licenseType || "").slice(0, 100) || null,
+          license_state: String(l.state || l.licenseState || "").slice(0, 10) || null,
+          license_number: String(l.number || l.licenseNumber || "").slice(0, 100),
+          expiration_date: l.expiration || l.expirationDate || null,
+        }));
+      if (rows.length) {
+        const { error: licErr } = await supabase.from("contractor_licenses").insert(rows);
+        // Non-fatal: the account exists and licences can be added in the
+        // dashboard. Failing the whole signup here would be worse.
+        if (licErr) console.error("create-contractor: licence insert failed", licErr);
+      }
+    }
+
+    // ---- 5. Email the set-password link. Never return it. ------------------
+    const { error: mailErr } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: RESET_REDIRECT,
+    });
+    if (mailErr) {
+      // The account is real; only delivery failed. Report partial success so
+      // the UI can direct them to "Forgot password" rather than implying
+      // nothing happened.
+      console.error("create-contractor: set-password email failed", mailErr);
+      return res.status(200).json({
+        success: true,
+        contractor_id: contractor.id,
+        email_sent: false,
+        message: 'Account created, but we could not send the setup email. Use "Forgot password" on the sign-in page.',
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      contractor_id: contractor.id,
+      email_sent: true,
+      message: "Account created. Check your email to set your password.",
+    });
+  } catch (e) {
+    console.error("create-contractor: unhandled", e && e.message);
+    // Roll back the auth user only if the contractor row never committed.
+    // Once the contractor row exists, deleting auth here would create the
+    // opposite orphan: a contractor row whose auth_id points to no user.
+    if (createdAuthId && !createdContractorId) {
+      try { await supabase.auth.admin.deleteUser(createdAuthId); }
+      catch (_) { console.error("create-contractor: ORPHAN AUTH USER", createdAuthId); }
+    }
+    return res.status(500).json({
+      success: false,
+      error: createdContractorId ? "post_create_failed" : "unexpected_error",
+    });
   }
 };

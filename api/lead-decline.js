@@ -36,6 +36,11 @@ const MESSAGE_BY_REASON = {
   offer_cap_reached: "This lead has already been claimed by the maximum number of pros.",
 };
 
+// Reject anything that is not a UUID before it reaches an RPC. Without this a
+// malformed id surfaces as a Postgres 22P02 cast error mapped to a 500, which
+// reads as a server fault rather than a bad request.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 module.exports = async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
 
@@ -56,6 +61,9 @@ module.exports = async function handler(req, res) {
   const leadId = (body.lead_id || body.leadId || "").trim();
   if (!leadId) {
     return res.status(400).json({ ok: false, error: "missing_lead_id" });
+  }
+  if (!UUID_RE.test(leadId)) {
+    return res.status(400).json({ ok: false, error: "invalid_lead_id" });
   }
 
   // ---- 1. Verify the caller's access token -------------------------------

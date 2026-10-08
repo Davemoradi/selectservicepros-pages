@@ -1,118 +1,223 @@
+// api/create-lead.js
+// Public homeowner intake endpoint for SSP's wallet / parallel-offer model.
+//
+// IMPORTANT:
+// - Partial submissions are stored as Partial and never matched.
+// - Final submissions snapshot immutable pricing from band_map v1.
+// - Matching is delegated to fill_offer_slots(); this endpoint never selects a
+//   contractor, never writes assigned_contractor_id, and never sends GHL.
+// - A signed partial token prevents an arbitrary caller from overwriting an
+//   existing lead merely by knowing its UUID.
+
+const crypto = require("crypto");
 const { createClient } = require("@supabase/supabase-js");
 
-const SUPABASE_URL = "https://kasqtxwbsmjlisbnebku.supabase.co";
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://kasqtxwbsmjlisbnebku.supabase.co";
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imthc3F0eHdic21qbGlzYm5lYmt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MzkxODgsImV4cCI6MjA5MTQxNTE4OH0.QEiRMQYZlOEgk1FzOV-L3TMRjgC046ymziSE7RNO8Yg";
+const PARTIAL_SECRET = process.env.LEAD_PARTIAL_SECRET;
+const RATE_LIMIT_SECRET = process.env.RATE_LIMIT_SECRET;
+const PRICING_VERSION = "v1";
+const MATCHING_WINDOW_MS = 60 * 60 * 1000;
+const PARTIAL_TOKEN_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-const GHL_WEBHOOK =
-  "https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/a65106d8-9948-4122-9364-bddcc07aca5c";
-const CONTRACTOR_NOTIFY_WEBHOOK =
-  "https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/jhKITwxqbN20tY3x5BqS";
-const HOMEOWNER_NOTIFY_WEBHOOK =
-  "https://services.leadconnectorhq.com/hooks/QfDToN545k1TOpFZa5AQ/webhook-trigger/c8b7ef11-035b-4266-9334-6043c1424208";
-
-
-
-// Tier priority for matching (highest priority first)
-const TIER_PRIORITY = { Elite: 1, Pro: 2, Basic: 3 };
-
-// Minutes each tier has to claim a lead before it's offered to the next tier.
-// Used in Email 4 ("expires in N minutes") and in the dashboard lead timer.
-// Must match what the Tiered Lead Expiry GHL workflow uses.
-var TIER_RESPONSE_WINDOW = { Elite: 60, Pro: 45, Basic: 30 };
-
-// Pull the first word from a full name field so branded emails can greet
-// the homeowner by first name without needing a separate intake field.
-function firstNameOf(full) {
-  if (!full) return "";
-  var s = String(full).trim();
-  if (!s) return "";
-  return s.split(/\s+/)[0];
+// Shared Postgres-backed rate limiting. Raw identifiers are HMACed before
+// storage so the limiter does not become a second PII store.
+function clientIp(req) {
+  const xff = req.headers["x-forwarded-for"];
+  if (typeof xff === "string" && xff.trim()) return xff.split(",")[0].trim();
+  return req.socket && req.socket.remoteAddress ? String(req.socket.remoteAddress) : "unknown";
 }
 
-// Map urgency input to label
+function rateKey(kind, raw) {
+  return crypto.createHmac("sha256", RATE_LIMIT_SECRET)
+    .update(`${kind}|${String(raw || "").trim().toLowerCase()}`)
+    .digest("hex");
+}
+
+async function consumeLimit(supabase, scope, kind, raw, limit, windowSeconds) {
+  const { data, error } = await supabase.rpc("consume_api_rate_limit", {
+    p_scope: scope,
+    p_key_hash: rateKey(kind, raw),
+    p_limit: limit,
+    p_window_seconds: windowSeconds,
+  });
+  if (error || !Array.isArray(data) || !data[0]) {
+    console.error("create-lead: durable rate limiter failed", error || data);
+    throw new Error("rate_limit_unavailable");
+  }
+  return data[0].allowed === true;
+}
+
+function clean(value, max) {
+  if (value === null || value === undefined) return "";
+  return String(value).trim().slice(0, max);
+}
+
+function digits(value) {
+  return clean(value, 40).replace(/\D/g, "");
+}
+
+function validEmail(value) {
+  if (!value) return true;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && value.length <= 254;
+}
+
+function validLatLng(lat, lng) {
+  if (lat === null && lng === null) return true;
+  if (lat === null || lng === null) return false;
+  return Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+}
+
 function mapUrgency(input) {
-  if (!input) return "Planning";
-  var lower = input.toLowerCase();
-  if (lower.indexOf("emergency") !== -1 || lower.indexOf("urgent") !== -1 || lower === "asap")
-    return "Emergency";
-  if (lower.indexOf("soon") !== -1 || lower.indexOf("week") !== -1 || lower.indexOf("few days") !== -1)
-    return "Soon";
+  const lower = clean(input, 80).toLowerCase();
+  if (!lower) return "Planning";
+  if (lower.includes("emergency") || lower.includes("urgent") || lower === "asap") return "Emergency";
+  if (lower.includes("soon") || lower.includes("week") || lower.includes("few days")) return "Soon";
   return "Planning";
 }
 
-// --- Helper: build address field object from request body ---
-// Safely extracts structured address fields (all optional) from the form payload.
-// Returns only keys with defined values so we don't accidentally overwrite
-// existing columns with null on an UPDATE.
-function extractAddressFields(body) {
-  var out = {};
-  if (body.address !== undefined) out.homeowner_address = (body.address || "").trim() || null;
-  if (body.street !== undefined) out.homeowner_street = (body.street || "").trim() || null;
-  if (body.city !== undefined) out.homeowner_city = (body.city || "").trim() || null;
-  if (body.state_region !== undefined) out.homeowner_state = (body.state_region || "").trim() || null;
-  if (body.lat !== undefined && body.lat !== null && body.lat !== "")
-    out.homeowner_lat = Number(body.lat);
-  if (body.lng !== undefined && body.lng !== null && body.lng !== "")
-    out.homeowner_lng = Number(body.lng);
-  if (body.place_id !== undefined) out.place_id = (body.place_id || "").trim() || null;
+function addressFields(body) {
+  const out = {};
+  if (body.address !== undefined) out.homeowner_address = clean(body.address, 300) || null;
+  if (body.street !== undefined) out.homeowner_street = clean(body.street, 200) || null;
+  if (body.city !== undefined) out.homeowner_city = clean(body.city, 100) || null;
+  if (body.state_region !== undefined) out.homeowner_state = clean(body.state_region, 50) || null;
+  if (body.place_id !== undefined) out.place_id = clean(body.place_id, 250) || null;
+
+  const lat = body.lat === "" || body.lat === undefined || body.lat === null ? null : Number(body.lat);
+  const lng = body.lng === "" || body.lng === undefined || body.lng === null ? null : Number(body.lng);
+  if (!validLatLng(lat, lng)) throw new Error("invalid_coordinates");
+  if (lat !== null) out.homeowner_lat = lat;
+  if (lng !== null) out.homeowner_lng = lng;
   return out;
 }
 
-module.exports = async function handler(req, res) {
-  // CORS headers
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+function partialToken(leadId) {
+  const ts = String(Date.now());
+  const mac = crypto.createHmac("sha256", PARTIAL_SECRET).update(`${leadId}|${ts}`).digest("hex");
+  return `${ts}.${mac}`;
+}
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
+function validPartialToken(leadId, token) {
+  if (!UUID_RE.test(leadId || "") || typeof token !== "string") return false;
+  const parts = token.split(".");
+  if (parts.length !== 2) return false;
+  const ts = Number(parts[0]);
+  const supplied = parts[1];
+  if (!Number.isFinite(ts) || Math.abs(Date.now() - ts) > PARTIAL_TOKEN_MAX_AGE_MS) return false;
+  if (!/^[0-9a-f]{64}$/i.test(supplied)) return false;
+  const expected = crypto.createHmac("sha256", PARTIAL_SECRET).update(`${leadId}|${parts[0]}`).digest("hex");
+  return crypto.timingSafeEqual(Buffer.from(supplied, "hex"), Buffer.from(expected, "hex"));
+}
+
+async function resolvePricing(supabase, category, service, requestedIssueCode) {
+  if (!category || !service) {
+    return { resolved: false, reason: "missing_taxonomy", issue_code: requestedIssueCode || null };
   }
 
+  let query = supabase
+    .from("band_map")
+    .select("version, category, issue_code, label, band, price_cents, requires_clarification")
+    .eq("version", PRICING_VERSION)
+    .eq("category", category);
+
+  if (requestedIssueCode) query = query.eq("issue_code", requestedIssueCode);
+  else query = query.eq("label", service);
+
+  const { data, error } = await query.limit(2);
+  if (error) throw new Error(`pricing_lookup_failed:${error.message}`);
+  if (!data || data.length !== 1) {
+    return { resolved: false, reason: data && data.length > 1 ? "ambiguous_taxonomy" : "pricing_not_found", issue_code: requestedIssueCode || null };
+  }
+
+  const row = data[0];
+  const price = Number(row.price_cents);
+  if (row.requires_clarification || !row.band || !Number.isInteger(price) || price <= 0) {
+    return { resolved: false, reason: "requires_clarification", issue_code: row.issue_code || requestedIssueCode || null };
+  }
+
+  return {
+    resolved: true,
+    issue_code: row.issue_code,
+    label: row.label,
+    pricing_band: row.band,
+    price_cents: price,
+  };
+}
+
+module.exports = async function handler(req, res) {
+  res.setHeader("Content-Type", "application/json");
+  res.setHeader("Cache-Control", "no-store");
+
+  if (req.method === "OPTIONS") {
+    res.setHeader("Allow", "POST, OPTIONS");
+    return res.status(204).end();
+  }
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    res.setHeader("Allow", "POST, OPTIONS");
+    return res.status(405).json({ success: false, error: "method_not_allowed" });
+  }
+  if (!SUPABASE_SERVICE_KEY || !PARTIAL_SECRET || !RATE_LIMIT_SECRET) {
+    console.error("create-lead: required server environment missing");
+    return res.status(500).json({ success: false, error: "server_misconfigured" });
+  }
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  const body = req.body || {};
+  const isPartial = body.partial === true;
+  const rateEmail = clean(body.email, 254).toLowerCase();
+  const ratePhone = digits(body.phone);
+  const contactKey = rateEmail || ratePhone || "no-contact";
+  try {
+    const [ipAllowed, contactAllowed] = await Promise.all([
+      consumeLimit(
+        supabase,
+        isPartial ? "lead_partial_ip" : "lead_final_ip",
+        "ip",
+        clientIp(req),
+        isPartial ? 20 : 12,
+        600
+      ),
+      consumeLimit(supabase, "lead_contact", rateEmail ? "email" : "phone", contactKey, 12, 3600),
+    ]);
+    if (!ipAllowed || !contactAllowed) {
+      return res.status(429).json({ success: false, error: "too_many_requests" });
+    }
+  } catch (e) {
+    return res.status(503).json({ success: false, error: "rate_limit_unavailable" });
   }
 
   try {
-    var body = req.body || {};
-    var name = (body.name || "").trim();
-    var phone = (body.phone || "").trim();
-    var email = (body.email || "").trim();
-    var zip = (body.zip || "").trim();
-    var service = (body.service || "").trim();
-    var category = (body.category || "").trim();
-    var urgency = body.urgency || "";
-    var details = (body.details || "").trim();
+    const name = clean(body.name, 160);
+    const phone = clean(body.phone, 40);
+    const phoneDigits = digits(phone);
+    const email = clean(body.email, 254).toLowerCase();
+    const zip = clean(body.zip, 10);
+    const service = clean(body.service, 180);
+    const category = clean(body.category, 120);
+    const issueCode = clean(body.issue_code, 160) || null;
+    const details = clean(body.details, 5000);
+    const urgency = mapUrgency(body.urgency);
+    const addr = addressFields(body);
 
-    // NEW: partial / leadId routing
-    var isPartial = body.partial === true;
-    var leadIdFromBody = (body.leadId || "").trim();
+    if (!name || name.length < 2 || phoneDigits.length < 10 || !/^\d{5}$/.test(zip) || !validEmail(email)) {
+      return res.status(400).json({ success: false, error: "invalid_contact_fields" });
+    }
 
-    // Supabase client (used by all branches)
-    var supabaseKey = SUPABASE_SERVICE_KEY || SUPABASE_ANON_KEY;
-    var supabase = createClient(SUPABASE_URL, supabaseKey);
-
-    // ============================================================
-    // CASE A: Partial capture (Step 2 submission)
-    // ============================================================
-    // Minimum data check: need at least name + phone + zip to store anything useful.
-    // Email is not strictly required for a partial - some users may skip it.
+    // ---------------------------------------------------------------------
+    // PARTIAL — capture contact + location only. Never price or match here.
+    // ---------------------------------------------------------------------
     if (isPartial) {
-      if (!name || !phone || !zip) {
-        return res.status(400).json({
-          success: false,
-          error: "Missing required fields for partial capture: name, phone, zip",
-        });
-      }
-
-      var partialData = Object.assign({
+      const partialData = Object.assign({
         homeowner_name: name,
         homeowner_phone: phone,
         homeowner_email: email || null,
         homeowner_zip: zip,
         service_category: category || null,
-        // Issue/urgency/details come at Step 4 - leave null/placeholder
         service_type: service || null,
         urgency: null,
         description: null,
@@ -120,342 +225,139 @@ module.exports = async function handler(req, res) {
         partial: true,
         source: "website",
         paid: false,
-      }, extractAddressFields(body));
+      }, addr);
 
-      var partialResult = await supabase
+      const { data, error } = await supabase
         .from("leads")
         .insert([partialData])
         .select("id")
         .single();
 
-      if (partialResult.error) {
-        console.error("Partial lead insert error:", partialResult.error);
-        return res.status(500).json({
-          success: false,
-          error: "Failed to save partial lead: " + partialResult.error.message,
-        });
+      if (error || !data) {
+        console.error("create-lead: partial insert failed", error && error.message);
+        return res.status(500).json({ success: false, error: "partial_save_failed" });
       }
 
       return res.status(200).json({
         success: true,
-        leadId: partialResult.data.id,
         partial: true,
-        message: "Partial lead saved. Continue to finish the request.",
+        leadId: data.id,
+        leadToken: partialToken(data.id),
       });
     }
 
-    // ============================================================
-    // From here on: FINAL submission (partial=false or absent).
-    // Either Case B (has leadId, UPDATE existing partial) or
-    // Case C (no leadId, INSERT new row - legacy/direct submission).
-    // ============================================================
+    if (!service) return res.status(400).json({ success: false, error: "service_required" });
 
-    // Validate required fields for final submission
-    if (!name || !phone || !zip || !service) {
-      return res.status(400).json({
-        success: false,
-        error: "Missing required fields: name, phone, zip, service",
-      });
-    }
-
-    var urgencyLabel = mapUrgency(urgency);
-
-    // --- Load pricing from platform_config ---
-    var defaultPricing = {
-      Basic: { monthly: 49, perLead: 39, responseWindow: 30 },
-      Pro: { monthly: 99, perLead: 29, responseWindow: 45 },
-      Elite: { monthly: 199, perLead: 19, responseWindow: 60 },
-    };
-
-    var pricing = defaultPricing;
-    try {
-      var configResult = await supabase
-        .from("platform_config")
-        .select("value")
-        .eq("key", "pricing")
-        .single();
-      if (configResult.data && configResult.data.value) {
-        pricing = configResult.data.value;
-      }
-    } catch (e) {
-      console.log("Using default pricing, config fetch failed:", e.message);
-    }
-
-    // --- Find matching contractors ---
-    // SELECT includes the fields needed for lead-notification (Email 4) and
-    // homeowner-matched (Email 6) email templates. Adding fields here once
-    // means every downstream webhook payload can include them without extra
-    // DB round-trips.
-    var contractorsResult = await supabase
-      .from("contractors")
-      .select(
-        "id, first_name, last_name, email, phone, company_name, membership_tier, service_categories, service_zips, status, business_description, years_in_business"
-      )
-      .in("status", ["Active"]);
-
-    var allContractors = contractorsResult.data || [];
-
-    var matches = allContractors.filter(function (c) {
-      var cats = c.service_categories || "";
-      var zips = c.service_zips || "";
-
-      var catMatch = false;
-      if (category) {
-        if (typeof cats === "string") {
-          catMatch = cats.toLowerCase().indexOf(category.toLowerCase()) !== -1;
-        } else if (Array.isArray(cats)) {
-          catMatch = cats.some(function (cat) {
-            return cat.toLowerCase() === category.toLowerCase();
-          });
-        }
-      } else {
-        catMatch = true;
-      }
-
-      var zipMatch = false;
-      if (zip) {
-        if (typeof zips === "string") {
-          zipMatch = zips.indexOf(zip) !== -1;
-        } else if (Array.isArray(zips)) {
-          zipMatch = zips.indexOf(zip) !== -1;
-        }
-      }
-
-      return catMatch && zipMatch;
-    });
-
-    matches.sort(function (a, b) {
-      var aPriority = TIER_PRIORITY[a.membership_tier] || 99;
-      var bPriority = TIER_PRIORITY[b.membership_tier] || 99;
-      return aPriority - bPriority;
-    });
-
-    var assignedContractor = matches.length > 0 ? matches[0] : null;
-    var leadStatus = assignedContractor ? "New" : "Unmatched";
-
-    var leadFee = 0;
-    if (assignedContractor) {
-      var tier = assignedContractor.membership_tier || "Basic";
-      var tierPricing = pricing[tier] || pricing.Basic || defaultPricing.Basic;
-      leadFee = tierPricing.perLead || 0;
-    }
-
-    // Fields shared by both insert & update paths
-    var finalFields = Object.assign({
+    const pricing = await resolvePricing(supabase, category, service, issueCode);
+    const now = Date.now();
+    const finalFields = Object.assign({
       homeowner_name: name,
       homeowner_phone: phone,
       homeowner_email: email || null,
       homeowner_zip: zip,
-      service_type: service,
+      // Once taxonomy resolves, persist the canonical label from band_map rather
+      // than trusting a client-supplied display string alongside an issue_code.
+      service_type: pricing.resolved ? pricing.label : service,
       service_category: category || null,
+      issue_code: pricing.issue_code || issueCode,
+      pricing_version: PRICING_VERSION,
+      pricing_band: pricing.resolved ? pricing.pricing_band : null,
+      price_cents: pricing.resolved ? pricing.price_cents : null,
+      matching_expires_at: pricing.resolved ? new Date(now + MATCHING_WINDOW_MS).toISOString() : null,
       description: details || null,
-      urgency: urgencyLabel,
-      status: leadStatus,
-      assigned_contractor_id: assignedContractor ? assignedContractor.id : null,
-      lead_fee: leadFee,
+      urgency,
+      status: pricing.resolved ? "Priced" : "HeldForReview",
       paid: false,
       source: "website",
-      delivered_at: assignedContractor ? new Date().toISOString() : null,
-      partial: false, // Always flip to false on final submission
-    }, extractAddressFields(body));
+      partial: false,
+    }, addr);
 
-    var leadId = null;
-    var leadRowUsedUpdate = false;
+    const leadIdFromBody = clean(body.leadId, 80);
+    const leadToken = clean(body.leadToken, 200);
+    let leadId = null;
+    let updatedFromPartial = false;
 
-    // ============================================================
-    // CASE B: UPDATE existing partial row (dedup path)
-    // ============================================================
     if (leadIdFromBody) {
-      // Verify the referenced lead exists
-      var existingResult = await supabase
-        .from("leads")
-        .select("id, partial")
-        .eq("id", leadIdFromBody)
-        .single();
+      if (!validPartialToken(leadIdFromBody, leadToken)) {
+        return res.status(403).json({ success: false, error: "invalid_partial_token" });
+      }
 
-      if (existingResult.data && existingResult.data.id) {
-        // Row exists - update it in place
-        var updateResult = await supabase
+      const { data: existing, error: existingError } = await supabase
+        .from("leads")
+        .select("id, partial, status")
+        .eq("id", leadIdFromBody)
+        .maybeSingle();
+
+      if (existingError) throw new Error(`partial_lookup_failed:${existingError.message}`);
+      if (existing && (existing.partial === true || existing.status === "Partial")) {
+        const { data: updated, error: updateError } = await supabase
           .from("leads")
           .update(finalFields)
           .eq("id", leadIdFromBody)
+          .eq("partial", true)
           .select("id")
-          .single();
-
-        if (updateResult.error) {
-          console.error("Lead update error (will fall back to insert):", updateResult.error);
-          // Fall through to INSERT path below - never lose a lead
-        } else {
-          leadId = updateResult.data.id;
-          leadRowUsedUpdate = true;
+          .maybeSingle();
+        if (updateError) throw new Error(`partial_finalize_failed:${updateError.message}`);
+        if (updated) {
+          leadId = updated.id;
+          updatedFromPartial = true;
         }
-      } else {
-        // leadId provided but row not found - likely deleted or mangled.
-        // Fall back to Case C: insert a new row so we never lose the lead.
-        console.log("leadId " + leadIdFromBody + " not found - falling back to new insert");
       }
+      // A valid token for a missing/non-partial row is safe to recover by
+      // inserting a new final row rather than mutating an unrelated record.
     }
 
-    // ============================================================
-    // CASE C: INSERT new row (no leadId, or Case B fallback)
-    // ============================================================
     if (!leadId) {
-      var insertResult = await supabase
+      const { data: inserted, error: insertError } = await supabase
         .from("leads")
         .insert([finalFields])
         .select("id")
         .single();
-
-      if (insertResult.error) {
-        console.error("Supabase lead insert error:", insertResult.error);
-        return res.status(500).json({
-          success: false,
-          error: "Failed to create lead: " + insertResult.error.message,
-        });
-      }
-      leadId = insertResult.data.id;
+      if (insertError || !inserted) throw new Error(`lead_insert_failed:${insertError ? insertError.message : "no row"}`);
+      leadId = inserted.id;
     }
 
-    // --- Send to GHL webhook for CRM tracking ---
-    try {
-      await fetch(GHL_WEBHOOK, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "new_lead",
-          lead_id: leadId,
-          name: name,
-          phone: phone,
-          email: email,
-          zip: zip,
-          address: body.address || "",
-          city: body.city || "",
-          state: body.state_region || "",
-          service: service,
-          category: category,
-          urgency: urgencyLabel,
-          details: details,
-          matched: !!assignedContractor,
-          contractor_name: assignedContractor
-            ? (assignedContractor.first_name || "") +
-              " " +
-              (assignedContractor.last_name || "")
-            : null,
-          contractor_email: assignedContractor
-            ? assignedContractor.email
-            : null,
-          lead_fee: leadFee,
-          updated_from_partial: leadRowUsedUpdate,
-        }),
+    // Pricing may intentionally hold a lead for review. No offer is generated
+    // until an issue has a stable code and frozen price.
+    if (!pricing.resolved) {
+      return res.status(200).json({
+        success: true,
+        leadId,
+        status: "HeldForReview",
+        matching_started: false,
+        updated_from_partial: updatedFromPartial,
       });
-    } catch (ghlError) {
-      console.error("GHL webhook error (non-fatal):", ghlError.message);
     }
 
-    // --- Notify contractor of new lead ---
-    // Payload feeds GHL's "New Lead Notification" workflow → Email 4.
-    // Every placeholder in that template must be covered here.
-    if (assignedContractor && assignedContractor.email) {
-      try {
-        var contractorTier = assignedContractor.membership_tier || "Basic";
-        await fetch(CONTRACTOR_NOTIFY_WEBHOOK, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            type: "contractor_notification",
-            contractor_name:
-              (assignedContractor.first_name || "") +
-              " " +
-              (assignedContractor.last_name || ""),
-            contractor_first_name: assignedContractor.first_name || "",
-            contractor_email: assignedContractor.email,
-            contractor_phone: assignedContractor.phone || "",
-            contractor_company: assignedContractor.company_name || "",
-            contractor_id: assignedContractor.id,
-            contractor_tier: contractorTier,
-            lead_id: leadId,
-            homeowner_name: name,
-            homeowner_first_name: firstNameOf(name),
-            homeowner_zip: zip,
-            homeowner_address: body.address || "",
-            service_type: service,
-            service_category: category,
-            urgency: urgencyLabel,
-            details: details,
-            lead_fee: leadFee,
-            response_window_minutes: TIER_RESPONSE_WINDOW[contractorTier] || 30,
-            accept_url: "https://www.selectservicepros.com/contractor-dashboard.html?tab=leads&lead=" + leadId + "&action=accept",
-            dashboard_url: "https://www.selectservicepros.com/contractor-dashboard.html",
-          }),
-        });
-      } catch (notifyError) {
-        console.error("Contractor notification error (non-fatal):", notifyError.message);
-      }
+    // Matching is database-owned. Failure here must not cause the browser to
+    // retry lead creation and duplicate the homeowner lead. Leave the row
+    // Priced so the recovery sweep / future cron can safely retry it.
+    const { data: offersMade, error: matchError } = await supabase.rpc("fill_offer_slots", { p_lead_id: leadId });
+    if (matchError) {
+      console.error("create-lead: fill_offer_slots failed", matchError.message, "lead", leadId);
+      return res.status(202).json({
+        success: true,
+        leadId,
+        status: "Priced",
+        matching_started: false,
+        matching_pending: true,
+        updated_from_partial: updatedFromPartial,
+      });
     }
 
-    // --- Notify homeowner of lead received ---
-    // Payload drives TWO GHL workflows:
-    //   - "homeowner_confirmation" (Email 5): always fires
-    //   - "homeowner_matched"      (Email 6): GHL filters when matched=true
-    //     AND contractor_company is populated
-    // Both templates get everything they need from this single payload.
-    if (email) {
-      try {
-        await fetch(HOMEOWNER_NOTIFY_WEBHOOK, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            type: "homeowner_confirmation",
-            homeowner_name: name,
-            homeowner_first_name: firstNameOf(name),
-            homeowner_email: email,
-            homeowner_phone: phone,
-            homeowner_zip: zip,
-            homeowner_address: body.address || "",
-            service_type: service,
-            service_category: category,
-            urgency: urgencyLabel,
-            details: details,
-            matched: !!assignedContractor,
-            // Contractor fields — present only when matched. Email 6
-            // template uses these; Email 5 ignores them. GHL filter on
-            // contractor_company presence keeps Email 6 from firing on
-            // unmatched leads.
-            contractor_name: assignedContractor
-              ? (assignedContractor.first_name || "") + " " + (assignedContractor.last_name || "")
-              : "",
-            contractor_first_name: assignedContractor ? (assignedContractor.first_name || "") : "",
-            contractor_company: assignedContractor ? (assignedContractor.company_name || "") : "",
-            contractor_phone: assignedContractor ? (assignedContractor.phone || "") : "",
-            contractor_email: assignedContractor ? (assignedContractor.email || "") : "",
-            years_in_business: assignedContractor ? (assignedContractor.years_in_business || "") : "",
-            business_description: assignedContractor ? (assignedContractor.business_description || "") : "",
-          }),
-        });
-      } catch (homeownerError) {
-        console.error("Homeowner notification error (non-fatal):", homeownerError.message);
-      }
-    }
-
-    // --- Return success ---
     return res.status(200).json({
       success: true,
-      leadId: leadId,
-      matched: !!assignedContractor,
-      contractorCount: matches.length,
-      updatedFromPartial: leadRowUsedUpdate,
-      message: assignedContractor
-        ? "Lead created and matched to " +
-          (assignedContractor.first_name || "") +
-          " " +
-          (assignedContractor.last_name || "")
-        : "Lead created but no matching contractors found in your area. We'll follow up manually.",
+      leadId,
+      status: Number(offersMade || 0) > 0 ? "Offering" : "Priced",
+      matching_started: true,
+      offers_created: Number(offersMade || 0),
+      updated_from_partial: updatedFromPartial,
     });
-  } catch (err) {
-    console.error("create-lead error:", err);
-    return res.status(500).json({
-      success: false,
-      error: "Internal server error",
-    });
+  } catch (error) {
+    if (error && error.message === "invalid_coordinates") {
+      return res.status(400).json({ success: false, error: "invalid_coordinates" });
+    }
+    console.error("create-lead error", error && error.message ? error.message : error);
+    return res.status(500).json({ success: false, error: "lead_processing_failed" });
   }
 };
