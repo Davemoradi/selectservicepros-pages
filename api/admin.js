@@ -22,7 +22,7 @@ async function getData(ctx, res) {
         supabase.from("operations_staff").select("id,name,email,active,role,employment_status").eq("active",true),
         supabase.from("contractors").select("id,contractor_number,company_name").limit(1000),
         supabase.from("operations_alert_reads").select("alert_key,read_at").eq("user_id",user.id).limit(3000),
-        supabase.from("operations_ai_reviews").select("id,task_id,status,requested_at,completed_at,model_name,summary,proposed_action,reviewed_at").order("requested_at",{ascending:false}).limit(1000)
+        supabase.from("operations_ai_reviews").select("id,task_id,status,phase,requested_at,completed_at,model_name,summary,proposed_action,reviewed_at").order("requested_at",{ascending:false}).limit(1000)
       ]);
       if([tasks,notes,files,events,staff,contractors,alertReads,aiReviews].some(x=>x.error))return fail(res,500,"work_queue_unavailable");
       return res.status(200).json({ok:true,admin:{email:user.email,staff_only:true},tasks:tasks.data||[],task_notes:notes.data||[],task_files:files.data||[],task_events:events.data||[],staff:staff.data||[],contractors:contractors.data||[],alert_reads:alertReads.data||[],ai_reviews:aiReviews.data||[]});
@@ -441,7 +441,7 @@ async function requestAiReview(ctx,res,b){
  if(!task)return fail(res,404,"task_not_found");
  if(["Done","Cancelled"].includes(task.status))return fail(res,409,"task_not_open");
  const {data:existing}=await ctx.supabase.from("operations_ai_reviews").select("id").eq("task_id",id).in("status",["Queued","Running"]).maybeSingle();
- if(existing)return res.status(200).json({ok:true,review_id:existing.id,existing:true,agent_connected:false});
+ if(existing)return res.status(200).json({ok:true,review_id:existing.id,existing:true,agent_connected:true});
  const {data,error}=await ctx.supabase.from("operations_ai_reviews").insert({task_id:id,requested_by:ctx.user.id,source_event_key:task.automation_key||null}).select("id").single();
  if(error&&error.code!=="23505")return fail(res,500,"ai_review_queue_failed");
  const reviewId=data?.id||(await ctx.supabase.from("operations_ai_reviews").select("id").eq("task_id",id).eq("status","Queued").maybeSingle()).data?.id;
