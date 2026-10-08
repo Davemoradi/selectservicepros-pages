@@ -12,6 +12,20 @@ function fail(res, status, error, extra) {
 
 async function getData(ctx, res) {
   const { supabase, user } = ctx;
+  if(ctx.isStaffOnly){
+    try{
+      const [tasks,notes,files,events,staff,contractors]=await Promise.all([
+        supabase.from("operations_tasks").select("*").order("created_at",{ascending:false}).limit(1000),
+        supabase.from("operations_task_notes").select("id,task_id,body,author_email,created_at").order("created_at",{ascending:false}).limit(2000),
+        supabase.from("operations_task_attachments").select("id,task_id,file_name,size_bytes,uploader_email,created_at").order("created_at",{ascending:false}).limit(2000),
+        supabase.from("operations_task_events").select("id,task_id,actor_email,event_type,created_at").order("created_at",{ascending:false}).limit(1000),
+        supabase.from("operations_staff").select("id,name,email,active,role,employment_status").eq("active",true),
+        supabase.from("contractors").select("id,contractor_number,company_name").limit(1000)
+      ]);
+      if([tasks,notes,files,events,staff,contractors].some(x=>x.error))return fail(res,500,"work_queue_unavailable");
+      return res.status(200).json({ok:true,admin:{email:user.email,staff_only:true},tasks:tasks.data||[],task_notes:notes.data||[],task_files:files.data||[],task_events:events.data||[],staff:staff.data||[],contractors:contractors.data||[]});
+    }catch(e){return fail(res,500,"work_queue_unavailable")}
+  }
   try {
     const [contractorsR, licensesR, leadsR, offersR, walletR, pricingR, disputesR] = await Promise.all([
       supabase.from("contractors")
@@ -390,11 +404,13 @@ async function manageStaff(ctx,res,b){
  if(String(ctx.user.email||"").toLowerCase()!=="david@selectservicepros.com")return fail(res,403,"owner_required");
  const action=String(b.action||"");
  if(action==="create_staff"){
-  const first_name=String(b.first_name||"").trim(),last_name=String(b.last_name||"").trim(),name=(first_name+" "+last_name).trim(),email=String(b.email||"").trim().toLowerCase(),role=String(b.role||"Operations");
-  if(!first_name||!last_name||first_name.length>80||last_name.length>80||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)||!["Operations","Support","Verification","Finance","Manager"].includes(role))return fail(res,400,"invalid_staff");
-  const {data,error}=await ctx.supabase.from("operations_staff").insert({name,first_name,last_name,email,role,active:true,employment_status:"Active"}).select("*").single();
-  if(error)return fail(res,error.code==="23505"?409:500,"staff_create_failed");
-  await ctx.supabase.from("operations_staff_audit").insert({staff_id:data.id,actor_id:ctx.user.id,actor_email:ctx.user.email,action:"created",changes:{first_name,last_name,email,role}});
+  const first_name=String(b.first_name||"").trim(),last_name=String(b.last_name||"").trim(),name=(first_name+" "+last_name).trim(),email=String(b.email||"").trim().toLowerCase(),role=String(b.role||"Operations"),password=String(b.password||"");
+  if(password.length<12||password.length>128||!first_name||!last_name||first_name.length>80||last_name.length>80||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)||!["Operations","Support","Verification","Finance","Manager"].includes(role))return fail(res,400,"invalid_staff");
+  const {data:account,error:authErr}=await ctx.supabase.auth.admin.createUser({email,password,email_confirm:true,app_metadata:{role:"ssp_staff"}});
+  if(authErr)return fail(res,authErr.message&&authErr.message.includes("already")?409:500,"employee_login_create_failed");
+  const {data,error}=await ctx.supabase.from("operations_staff").insert({name,first_name,last_name,email,role,active:true,employment_status:"Active",auth_user_id:account.user.id}).select("id,email,name,first_name,last_name,role,active,employment_status").single();
+  if(error){await ctx.supabase.auth.admin.deleteUser(account.user.id);return fail(res,error.code==="23505"?409:500,"staff_create_failed");}
+  await ctx.supabase.from("operations_staff_audit").insert({staff_id:data.id,actor_id:ctx.user.id,actor_email:ctx.user.email,action:"created",changes:{first_name,last_name,email,role,login_created:true}});
   return res.status(200).json({ok:true,staff:data});
  }
  if(action==="set_staff_status"){
@@ -442,6 +458,7 @@ module.exports = async function handler(req, res) {
 
   const b = req.body || {};
   const action = String(b.action || "");
+  if(ctx.isStaffOnly && !["create_task","update_task","add_task_note","init_task_upload","complete_task_upload","view_task_attachment"].includes(action))return fail(res,403,"staff_action_not_permitted");
 
   if (["set_status","activate","set_insurance_verified","set_license_verified","approve_founding25","grant_founding25"].includes(action)) {
     return contractorAction(ctx, res, b);
