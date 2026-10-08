@@ -435,6 +435,19 @@ async function manageStaff(ctx,res,b){
  return fail(res,400,"invalid_action");
 }
 
+async function humanCredentialDecision(ctx,res,b){
+ if(ctx.isStaffOnly)return fail(res,403,"human_reviewer_required");
+ const review_id=String(b.review_id||"");
+ const decision=String(b.decision||"");
+ const reason=String(b.reason||"").trim();
+ const confirmed=b.independent_verified===true;
+ if(!UUID_RE.test(review_id)||!["Approved","Rejected"].includes(decision)||reason.length<12||reason.length>2000)return fail(res,400,"invalid_human_decision");
+ const {data,error}=await ctx.supabase.rpc("ssp_human_credential_decision",{p_review_id:review_id,p_actor_id:ctx.user.id,p_actor_email:ctx.user.email||"",p_decision:decision,p_reason:reason,p_independent_verified:confirmed});
+ if(error){const msg=String(error.message||"");
+ if(/document_changed|independent_verification|required|review_not_ready|credential_review|document_missing/.test(msg))return fail(res,409,msg.slice(0,130));
+ return fail(res,500,"credential_decision_failed");}
+ return res.status(200).json(data);
+}
 async function requestAiReview(ctx,res,b){
  const id=String(b.task_id||"");if(!UUID_RE.test(id))return fail(res,400,"invalid_task");
  const {data:task}=await ctx.supabase.from("operations_tasks").select("id,status,automation_key").eq("id",id).maybeSingle();
@@ -540,6 +553,7 @@ module.exports = async function handler(req, res) {
   if (["set_status","activate","set_insurance_verified","set_license_verified","approve_founding25","grant_founding25"].includes(action)) {
     return contractorAction(ctx, res, b);
   }
+  if(action==="human_credential_decision")return humanCredentialDecision(ctx,res,b);
   if(action==="request_ai_review")return requestAiReview(ctx,res,b);
   if(action==="create_alert_task")return createAlertTask(ctx,res,b);
   if(action==="mark_ops_alert")return markOpsAlert(ctx,res,b);
