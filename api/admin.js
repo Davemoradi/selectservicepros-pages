@@ -466,7 +466,14 @@ async function createAlertTask(ctx,res,b){
  }
  const automation_key="alert:"+key;
  const {data:existing}=await supabase.from("operations_tasks").select("id,status").eq("automation_key",automation_key).maybeSingle();
- if(existing)return res.status(200).json({ok:true,task_id:existing.id,existing:true,status:existing.status});
+ if(existing){
+  if(active&&["Done","Cancelled"].includes(existing.status)){
+   const {error:reopenErr}=await supabase.from("operations_tasks").update({status:"Open",assigned_to,updated_at:new Date().toISOString(),updated_by:user.id}).eq("id",existing.id);
+   if(reopenErr)return fail(res,500,"task_reopen_failed");
+   await supabase.from("operations_task_events").insert({task_id:existing.id,actor_id:user.id,actor_email:user.email||"",event_type:"alert_reopened",after_state:{alert_key:key,assigned_to}});
+  }
+  return res.status(200).json({ok:true,task_id:existing.id,existing:true,status:active?"Open":existing.status});
+ }
  if(!active)return fail(res,409,"alert_already_resolved");
  const {data,error}=await supabase.from("operations_tasks").insert({contractor_id,title:title.slice(0,180),details,status:"Open",priority:"High",assigned_to,created_by:user.id,updated_by:user.id,automation_key}).select("id").maybeSingle();
  if(error&&error.code!=="23505")return fail(res,500,"alert_task_create_failed");
