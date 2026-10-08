@@ -15,7 +15,7 @@ async function getData(ctx, res) {
   try {
     const [contractorsR, licensesR, leadsR, offersR, walletR, pricingR, disputesR] = await Promise.all([
       supabase.from("contractors")
-        .select("id,email,first_name,last_name,company_name,phone,status,service_categories,service_zips,promo_credits_cents,lead_balance_cents,insurance_verified,insurance_expiration,insurance_doc_url,insurance_carrier,insurance_policy_number,website_url,num_technicians,num_vehicles,scheduling_system,agreement_accepted_at,created_at")
+        .select("id,contractor_number,email,first_name,last_name,company_name,phone,status,service_categories,service_zips,promo_credits_cents,lead_balance_cents,insurance_verified,insurance_expiration,insurance_doc_url,insurance_carrier,insurance_policy_number,website_url,num_technicians,num_vehicles,scheduling_system,agreement_accepted_at,created_at")
         .order("created_at", { ascending:false }),
       supabase.from("contractor_licenses")
         .select("id,contractor_id,trade_category,license_type,license_state,license_number,expiration_date,document_url,verified,verified_at")
@@ -42,7 +42,7 @@ async function getData(ctx, res) {
     }
 
     const disputes = disputesR.error ? [] : (disputesR.data || []);
-    const [notesR, notificationsR, profilesR, auditR, tasksR, taskEventsR, taskNotesR, taskFilesR] = await Promise.all([
+    const [notesR, notificationsR, profilesR, auditR, tasksR, taskEventsR, taskNotesR, taskFilesR, staffR] = await Promise.all([
       supabase.from("contractor_admin_notes").select("id,contractor_id,body,created_at,created_by,author_email").order("created_at",{ascending:false}).limit(500),
       supabase.from("notification_outbox").select("id,contractor_id,lead_id,event_type,status,attempt_count,sent_at,last_error,created_at").order("created_at",{ascending:false}).limit(500),
       supabase.from("contractor_admin_profiles").select("*").limit(1000),
@@ -50,9 +50,10 @@ async function getData(ctx, res) {
       supabase.from("operations_tasks").select("*").order("created_at",{ascending:false}).limit(1000),
       supabase.from("operations_task_events").select("id,task_id,actor_email,event_type,created_at").order("created_at",{ascending:false}).limit(1000),
       supabase.from("operations_task_notes").select("id,task_id,body,author_email,created_at").order("created_at",{ascending:false}).limit(2000),
-      supabase.from("operations_task_attachments").select("id,task_id,file_name,size_bytes,uploader_email,created_at").order("created_at",{ascending:false}).limit(2000)
+      supabase.from("operations_task_attachments").select("id,task_id,file_name,size_bytes,uploader_email,created_at").order("created_at",{ascending:false}).limit(2000),
+      supabase.from("operations_staff").select("id,email,name,active").eq("active",true).order("name")
     ]);
-    if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error || taskNotesR.error || taskFilesR.error) throw new Error("operations_history_unavailable");
+    if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error || taskNotesR.error || taskFilesR.error || staffR.error) throw new Error("operations_history_unavailable");
     const contractors = contractorsR.data || [];
     const licenses = licensesR.data || [];
     const leads = leadsR.data || [];
@@ -93,6 +94,7 @@ async function getData(ctx, res) {
       task_events: taskEventsR.data || [],
       task_notes: taskNotesR.data || [],
       task_files: taskFilesR.data || [],
+      staff: staffR.data || [],
       notifications: notificationsR.data || [],
       stats: {
         contractors_total: contractors.length,
@@ -301,7 +303,8 @@ async function taskAction(ctx,res,b){
  const action=String(b.action||"");
  if(action==="create_task"){
   const title=String(b.title||"").trim(),details=String(b.details||"").trim(),priority=String(b.priority||"Normal");
-  const assigned_to=String(b.assigned_to||"").trim().slice(0,160)||null;
+  const assigned_to=String(b.assigned_to||"").trim().toLowerCase()||null;
+  if(assigned_to){const {data:staff}=await supabase.from("operations_staff").select("id").eq("email",assigned_to).eq("active",true).maybeSingle();if(!staff)return fail(res,400,"assignee_not_employee")}
   const contractor_id=b.contractor_id||null;
   if(title.length<3||title.length>180||details.length>3000||!["Low","Normal","High","Urgent"].includes(priority)||contractor_id&&!UUID_RE.test(contractor_id))return fail(res,400,"invalid_task");
   let due_at=null;
@@ -323,6 +326,7 @@ async function taskAction(ctx,res,b){
    if(k==="status"&&!["Open","In Progress","Done","Cancelled"].includes(v))return fail(res,400,"invalid_status");
    if(k==="priority"&&!["Low","Normal","High","Urgent"].includes(v))return fail(res,400,"invalid_priority");
    if(k==="assigned_to"&&v!==null&&(typeof v!=="string"||v.length>160))return fail(res,400,"invalid_assignee");
+   if(k==="assigned_to"&&v){const {data:staff}=await supabase.from("operations_staff").select("id").eq("email",String(v).toLowerCase()).eq("active",true).maybeSingle();if(!staff)return fail(res,400,"assignee_not_employee");patch[k]=String(v).toLowerCase();continue;}
    if(k==="contractor_id"&&v!==null&&!UUID_RE.test(v))return fail(res,400,"invalid_contractor");
    if(k==="due_at"&&v!==null&&Number.isNaN(new Date(v).getTime()))return fail(res,400,"invalid_due");
    patch[k]=v;
