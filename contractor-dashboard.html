@@ -3685,28 +3685,8 @@ async function init(){
 
   const { data: { session } } = await sb.auth.getSession();
   if(!session){
-    // Preview-sandbox bypass: when there's no session but we're clearly not
-    // on a production host, render an empty shell instead of bouncing to
-    // login. Matches localhost, Claude artifact hosts, and any iframe.
-    const h = location.hostname;
-    const isPreview =
-      h==='localhost' || h==='127.0.0.1' ||
-      h.endsWith('.sandbox.dev') ||
-      h.endsWith('.claude.site') ||
-      h.endsWith('.claudeusercontent.com') ||
-      h.endsWith('.preview.app') ||
-      window.self !== window.top;
-    if(isPreview){
-      // 'pending' is the initial onboarding state used by updateNav()'s
-      // status map — not a made-up key.
-      state.state = 'pending';
-      state.authUser = { email: 'preview@example.com' };
-      state.profile.email = 'preview@example.com';
-      document.body.removeAttribute('data-loading');
-      render();
-      return;
-    }
-    window.location.href = '/contractor-login.html';
+    // Never show contractor dashboard data or a simulated dashboard without authentication.
+    window.location.replace('/contractor-login.html');
     return;
   }
   state.authUser = session.user;
