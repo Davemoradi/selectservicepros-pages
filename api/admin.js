@@ -42,11 +42,13 @@ async function getData(ctx, res) {
     }
 
     const disputes = disputesR.error ? [] : (disputesR.data || []);
-    const [notesR, notificationsR] = await Promise.all([
+    const [notesR, notificationsR, profilesR, auditR] = await Promise.all([
       supabase.from("contractor_admin_notes").select("id,contractor_id,body,created_at,created_by").order("created_at",{ascending:false}).limit(500),
-      supabase.from("notification_outbox").select("id,contractor_id,lead_id,event_type,status,attempt_count,sent_at,last_error,created_at").order("created_at",{ascending:false}).limit(500)
+      supabase.from("notification_outbox").select("id,contractor_id,lead_id,event_type,status,attempt_count,sent_at,last_error,created_at").order("created_at",{ascending:false}).limit(500),
+      supabase.from("contractor_admin_profiles").select("*").limit(1000),
+      supabase.from("contractor_admin_audit").select("id,contractor_id,actor_email,action,changes,created_at").order("created_at",{ascending:false}).limit(1000)
     ]);
-    if(notesR.error || notificationsR.error) throw new Error("operations_history_unavailable");
+    if(notesR.error || notificationsR.error || profilesR.error || auditR.error) throw new Error("operations_history_unavailable");
     const contractors = contractorsR.data || [];
     const licenses = licensesR.data || [];
     const leads = leadsR.data || [];
@@ -81,6 +83,8 @@ async function getData(ctx, res) {
       pricing,
       disputes,
       notes: notesR.data || [],
+      admin_profiles: profilesR.data || [],
+      audit: auditR.data || [],
       notifications: notificationsR.data || [],
       stats: {
         contractors_total: contractors.length,
@@ -256,6 +260,33 @@ async function addContractorNote(ctx,res,b){
  return res.status(200).json({ok:true,note:data});
 }
 
+async function saveProfile(ctx,res,b){
+ const id=String(b.contractor_id||""); if(!UUID_RE.test(id))return fail(res,400,"invalid_contractor");
+ const editable=["company_name","first_name","last_name","phone","website_url","business_description","service_categories","service_zips","scheduling_system","phone_answered_by"];
+ const external=["google_business_url","google_reviews_url","google_rating","google_review_count","yelp_url","yelp_rating","yelp_review_count","trustpilot_url","trustpilot_rating","trustpilot_review_count"];
+ const incoming=b.fields||{};const fields={};const ext={};
+ for(const [key,val] of Object.entries(incoming)){
+  if(!editable.includes(key)&&!external.includes(key))return fail(res,400,"invalid_field");
+  if(val!==null&&typeof val!=="string"&&typeof val!=="number")return fail(res,400,"invalid_value");
+  if(typeof val==="string"&&val.length>2000)return fail(res,400,"value_too_long");
+  if(key.endsWith("_url")&&val){try{const u=new URL(val);if(!["https:","http:"].includes(u.protocol))return fail(res,400,"invalid_url")}catch{return fail(res,400,"invalid_url")}}
+  if(key.endsWith("_rating")&&val!==null&&val!==""){if(!Number.isFinite(Number(val))||Number(val)<0||Number(val)>5)return fail(res,400,"invalid_rating")}
+  if(key.endsWith("_review_count")&&val!==null&&val!==""){if(!Number.isInteger(Number(val))||Number(val)<0)return fail(res,400,"invalid_review_count")}
+  const value=key.endsWith("_rating")||key.endsWith("_review_count")?(val===""?null:val):val;
+  if(editable.includes(key))fields[key]=value;else ext[key]=value;
+ }
+ const custom=b.custom_fields;
+ if(custom!==undefined){if(!custom||Array.isArray(custom)||typeof custom!=="object"||Object.keys(custom).length>30||Object.entries(custom).some(([k,v])=>k.length>80||typeof v!=="string"||v.length>1000))return fail(res,400,"invalid_custom_fields");ext.custom_fields=custom}
+ if(!Object.keys(fields).length&&!Object.keys(ext).length)return fail(res,400,"empty_update");
+ const {data:prior,error:priorErr}=await ctx.supabase.from("contractors").select("id,"+editable.join(",")).eq("id",id).maybeSingle();if(priorErr||!prior)return fail(res,404,"contractor_not_found");
+ const {data:oldExt}=await ctx.supabase.from("contractor_admin_profiles").select("*").eq("contractor_id",id).maybeSingle();
+ const changes={};for(const [k,v] of Object.entries({...fields,...ext})){const old=(k in fields?prior:oldExt||{})[k]??null;if(JSON.stringify(old)!==JSON.stringify(v))changes[k]={before:old,after:v}}
+ if(!Object.keys(changes).length)return res.status(200).json({ok:true,unchanged:true});
+ if(Object.keys(fields).length){const {error}=await ctx.supabase.from("contractors").update(fields).eq("id",id);if(error)return fail(res,500,"profile_update_failed")}
+ if(Object.keys(ext).length){const {error}=await ctx.supabase.from("contractor_admin_profiles").upsert({contractor_id:id,...ext,updated_by:ctx.user.id,updated_at:new Date().toISOString()});if(error)return fail(res,500,"external_profile_update_failed")}
+ const {error:auditErr}=await ctx.supabase.from("contractor_admin_audit").insert({contractor_id:id,actor_id:ctx.user.id,actor_email:ctx.user.email||"",action:"profile_updated",changes});if(auditErr){console.error("audit failed",auditErr.message);return fail(res,500,"audit_save_failed")}
+ return res.status(200).json({ok:true});
+}
 module.exports = async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Cache-Control", "no-store");
@@ -289,6 +320,7 @@ module.exports = async function handler(req, res) {
   if (["set_status","activate","set_insurance_verified","set_license_verified","approve_founding25","grant_founding25"].includes(action)) {
     return contractorAction(ctx, res, b);
   }
+  if (action === "save_profile") return saveProfile(ctx,res,b);
   if (action === "add_contractor_note") return addContractorNote(ctx, res, b);
   if (action === "document_url") return documentUrl(ctx, res, b);
   if (action === "decide_dispute") return decideDispute(ctx, res, b);
