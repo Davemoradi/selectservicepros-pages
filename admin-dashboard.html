@@ -39,7 +39,8 @@ button,input,select{font:inherit}.hidden{display:none!important}.shell{min-heigh
 const SUPABASE_URL='https://kasqtxwbsmjlisbnebku.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_vNTt8FXb9XdBQ_Asd1QPTg_luc7D8Fz';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-const state={tab:'overview',data:null,search:'',busy:false,selectedContractor:null};
+const state={tab:'overview',data:null,search:'',busy:false,selectedContractor:null,selectedTask:null};
+const initialTab=new URLSearchParams(location.search).get('tab');if(['overview','contractors','queue','communications','leads','pricing','disputes'].includes(initialTab))state.tab=initialTab;
 const tabs=[['overview','Overview'],['contractors','Contractors'],['queue','Work Queue'],['communications','Communications'],['leads','Leads'],['pricing','Pricing'],['disputes','Disputes']];
 function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function money(c){return '$'+((Number(c)||0)/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
@@ -48,9 +49,9 @@ function pill(status){const s=String(status||'');const c=s==='Active'||s==='Matc
 function token(){return sb.auth.getSession().then(x=>x.data.session?.access_token||null)}
 async function api(url,opts={}){const t=await token();if(!t)throw new Error('signed_out');const r=await fetch(url,{...opts,headers:{'Content-Type':'application/json','Authorization':'Bearer '+t,...(opts.headers||{})}});const b=await r.json().catch(()=>({}));if(r.status===401||r.status===403){if(b.error==='admin_required')throw new Error('admin_required')}if(!r.ok)throw new Error(b.error||'request_failed');return b}
 async function load(){state.busy=true;render();try{state.data=await api('/api/admin?action=data');document.getElementById('admin-email').textContent=state.data.admin?.email||''}catch(e){if(e.message==='admin_required'){const signed=await sb.auth.getUser();const used=signed.data?.user?.email||'this Google account';await sb.auth.signOut();showLogin('Signed in as '+used+', but this account is not authorized for SSP Operations. Sign in with david@selectservicepros.com.');return}console.error(e);toast('Could not load operations data.')}finally{state.busy=false;render()}}
-function setTab(t){state.tab=t;render()}
+function setTab(t){state.tab=t;if(t!=='task-detail')state.selectedTask=null;const u=new URL(location.href);u.searchParams.set('tab',t==='task-detail'?'queue':t);history.replaceState(null,'',u);render()}
 function renderNav(){document.getElementById('nav').innerHTML=tabs.map(([k,l])=>`<button class="navbtn ${state.tab===k?'active':''}" onclick="setTab('${k}')">${l}</button>`).join('')}
-function render(){if(document.getElementById('app').classList.contains('hidden'))return;renderNav();const c=document.getElementById('content');if(state.busy&&!state.data){c.innerHTML='<div class="notice">Loading SSP operations…</div>';return}const d=state.data;if(!d){c.innerHTML='<div class="notice">No data loaded.</div>';return}if(state.tab==='overview')c.innerHTML=overview(d);if(state.tab==='contractors')c.innerHTML=contractors(d);if(state.tab==='leads')c.innerHTML=leads(d);if(state.tab==='pricing')c.innerHTML=pricing(d);if(state.tab==='disputes')c.innerHTML=disputes(d);if(state.tab==='communications')c.innerHTML=communications(d);if(state.tab==='queue')c.innerHTML=workQueue(d);if(state.tab==='detail')c.innerHTML=contractorDetail(d)}
+function render(){if(document.getElementById('app').classList.contains('hidden'))return;renderNav();const c=document.getElementById('content');if(state.busy&&!state.data){c.innerHTML='<div class="notice">Loading SSP operations…</div>';return}const d=state.data;if(!d){c.innerHTML='<div class="notice">No data loaded.</div>';return}if(state.tab==='overview')c.innerHTML=overview(d);if(state.tab==='contractors')c.innerHTML=contractors(d);if(state.tab==='leads')c.innerHTML=leads(d);if(state.tab==='pricing')c.innerHTML=pricing(d);if(state.tab==='disputes')c.innerHTML=disputes(d);if(state.tab==='communications')c.innerHTML=communications(d);if(state.tab==='queue')c.innerHTML=workQueue(d);if(state.tab==='task-detail')c.innerHTML=taskDetail(d);if(state.tab==='detail')c.innerHTML=contractorDetail(d)}
 function overview(d){const s=d.stats||{};return `<div class="pagehead"><div><h1>Overview</h1><p class="sub">Live operational state from Supabase. No tier/MRR model.</p></div><button class="btn secondary" onclick="load()">Refresh</button></div><div class="grid">${metric('Active contractors',s.contractors_active)}${metric('Pending review',s.contractors_pending_review)}${metric('Accepted offers',s.accepted_offers)}${metric('Open disputes',s.disputes_open)}${metric('Purchased wallet',money(s.paid_wallet_cents))}${metric('Promo wallet',money(s.promo_wallet_cents))}${metric('Founding 25',`${s.founding25_grants||0}/25`)}${metric('Lead charges',money(s.lead_charge_cents))}${metric('Stripe top-ups',money(s.stripe_topup_cents))}</div><div class="section"><div class="section-head"><h2>Matching snapshot</h2></div><div class="grid" style="padding:16px">${metric('Offering',s.leads_offering)}${metric('Matched',s.leads_matched)}${metric('Unmatched',s.leads_unmatched)}${metric('Pricing held',s.pricing_held)}</div></div>`}
 function metric(l,v){return `<div class="card"><div class="metric-label">${esc(l)}</div><div class="metric">${esc(v??0)}</div></div>`}
 function contractorFiltered(d){const q=state.search.trim().toLowerCase();return (d.contractors||[]).filter(c=>!q||[c.company_name,c.first_name,c.last_name,c.email,c.phone,c.status].some(v=>String(v||'').toLowerCase().includes(q)))}
@@ -66,7 +67,7 @@ function workQueue(d){
  const review=contractors.filter(x=>x.status==='Pending Review'||x.status==='Pending Verification').length;
  const due=contractors.filter(x=>x.insurance_expiration&&new Date(x.insurance_expiration)<new Date(Date.now()+30*86400000)).length;
  const opts=contractors.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.company_name||c.email)+'</option>').join('');
- const rows=tasks.map(t=>'<tr><td>'+esc(t.priority)+'</td><td><b>'+esc(t.title)+'</b><div class="detail">'+esc(t.details||'')+'</div></td><td>'+esc(contractors.find(c=>c.id===t.contractor_id)?.company_name||'General')+'</td><td>'+esc(t.assigned_to||'Unassigned')+'</td><td>'+date(t.due_at)+'</td><td>'+pill(t.status)+'</td><td><select aria-label="Change task status" onchange="updateOpsTask(\''+t.id+'\',this.value)"><option value="">Change…</option>'+['Open','In Progress','Done','Cancelled'].map(v=>'<option value="'+v+'">'+v+'</option>').join('')+'</select></td></tr>').join('');
+ const rows=tasks.map(t=>'<tr><td>'+esc(t.priority)+'</td><td><button class="btn small secondary" onclick="openOpsTask(\''+t.id+'\')">'+esc(t.title)+' →</button><div class="detail">'+esc(t.details||'')+'</div></td><td>'+esc(contractors.find(c=>c.id===t.contractor_id)?.company_name||'General')+'</td><td>'+esc(t.assigned_to||'Unassigned')+'</td><td>'+date(t.due_at)+'</td><td>'+pill(t.status)+'</td><td><select id="status-'+t.id+'" aria-label="Choose task status">'+['Open','In Progress','Done','Cancelled'].map(v=>'<option value="'+v+'" '+(v===t.status?'selected':'')+'>'+v+'</option>').join('')+'</select> <button class="btn small primary" onclick="updateOpsTask(\''+t.id+'\')">Update</button></td></tr>').join('');
  return '<div class="pagehead"><div><h1>Work Queue</h1><p class="sub">Assigned follow-ups and operational exceptions. Insurance counts are based on saved expiration dates.</p></div><button class="btn secondary" onclick="load()">Refresh</button></div>'
  +'<div class="grid">'+metric('Open tasks',active.length)+metric('Overdue',overdue)+metric('High priority',high)+metric('Pending review / verification',review)+'</div>'
  +'<div class="section" style="padding:18px"><h3>Create follow-up</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px"><input id="task-title" placeholder="Task title" maxlength="180"><select id="task-contractor"><option value="">General task</option>'+opts+'</select><select id="task-priority"><option>Normal</option><option>High</option><option>Urgent</option><option>Low</option></select><input id="task-owner" placeholder="Assigned to (email or name)"><input id="task-due" type="datetime-local"></div><textarea id="task-details" placeholder="Details / next steps" rows="3" maxlength="3000" style="width:100%;margin-top:10px;padding:10px;border:1px solid #d9e1e9;border-radius:8px"></textarea><p><button class="btn primary" onclick="createOpsTask()">Create task</button></p><div class="error" id="task-feedback"></div></div>'
@@ -80,10 +81,52 @@ async function createOpsTask(){
  try{await api('/api/admin',{method:'POST',body:JSON.stringify({action:'create_task',title,details,contractor_id,priority,assigned_to,due_at})});await load()}
  catch(e){document.getElementById('task-feedback').textContent='Unable to create task: '+e.message}
 }
-async function updateOpsTask(task_id,status){
- if(!status)return;
- try{await api('/api/admin',{method:'POST',body:JSON.stringify({action:'update_task',task_id,status})});await load()}
+async function updateOpsTask(task_id){
+ const task=(state.data.tasks||[]).find(t=>t.id===task_id);if(!task)return;
+ const status=document.getElementById('status-'+task_id)?.value;if(!status)return;
+ try{await api('/api/admin',{method:'POST',body:JSON.stringify({action:'update_task',task_id,fields:{status},expected_updated_at:task.updated_at})});await load()}
  catch(e){toast('Task update failed: '+e.message);await load()}
+}
+
+
+function openOpsTask(id){state.selectedTask=id;state.tab='task-detail';const u=new URL(location.href);u.searchParams.set('tab','queue');u.searchParams.set('task',id);history.replaceState(null,'',u);render()}
+function taskDetail(d){
+ const t=(d.tasks||[]).find(x=>x.id===state.selectedTask);if(!t)return '<div class="notice">Task not found.</div>';
+ const contractors=d.contractors||[];
+ const opts=contractors.map(c=>'<option value="'+esc(c.id)+'" '+(c.id===t.contractor_id?'selected':'')+'>'+esc(c.company_name||c.email)+'</option>').join('');
+ const notes=(d.task_notes||[]).filter(x=>x.task_id===t.id),files=(d.task_files||[]).filter(x=>x.task_id===t.id),history=(d.task_events||[]).filter(x=>x.task_id===t.id);
+ return '<button class="btn secondary" onclick="closeOpsTask()">← Work Queue</button><div class="pagehead"><h1>'+esc(t.title)+'</h1></div>'
+ +'<div class="section" style="padding:18px"><h3>Edit task</h3><div class="grid"><label>Title<input id="edit-title" value="'+esc(t.title)+'"></label><label>Priority<select id="edit-priority">'+['Low','Normal','High','Urgent'].map(v=>'<option '+(v===t.priority?'selected':'')+'>'+v+'</option>').join('')+'</select></label><label>Status<select id="edit-status">'+['Open','In Progress','Done','Cancelled'].map(v=>'<option '+(v===t.status?'selected':'')+'>'+v+'</option>').join('')+'</select></label><label>Assigned to<input id="edit-owner" value="'+esc(t.assigned_to||'')+'"></label><label>Contractor<select id="edit-contractor"><option value="">General</option>'+opts+'</select></label><label>Due date<input id="edit-due" type="datetime-local" value="'+(t.due_at?new Date(t.due_at).toISOString().slice(0,16):'')+'"></label></div><label>Details<textarea id="edit-details" maxlength="3000" rows="4" style="width:100%">'+esc(t.details||'')+'</textarea></label><p><button class="btn primary" onclick="saveOpsTask()">Save updates</button></p><p class="error" id="task-detail-error"></p></div>'
+ +'<div class="section" style="padding:18px"><h3>Notes</h3><textarea id="new-task-note" maxlength="5000" rows="3" style="width:100%" placeholder="Add internal note"></textarea><p><button class="btn primary" onclick="addOpsTaskNote()">Add note</button></p>'+opsTable(['When','By','Note'],notes.map(n=>[date(n.created_at),n.author_email,n.body]))+'</div>'
+ +'<div class="section" style="padding:18px"><h3>Attachments</h3><p class="sub">Private. PDF, PNG, JPEG, WebP or text, maximum 10MB.</p><input id="task-file" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.txt"><button class="btn secondary" onclick="uploadOpsTaskFile()">Upload file</button>'+opsTable(['When','File','Added by','Action'],files.map(a=>[date(a.created_at),a.file_name,a.uploader_email,'View using button below']))+files.map(a=>'<button class="btn small secondary" onclick="viewOpsTaskFile(\''+a.id+'\')">View '+esc(a.file_name)+'</button> ').join('')+'</div>'
+ +'<div class="section" style="padding:18px"><h3>Activity</h3>'+opsTable(['When','Who','Event'],history.map(h=>[date(h.created_at),h.actor_email,h.event_type]))+'</div>';
+}
+function closeOpsTask(){state.selectedTask=null;setTab('queue');const u=new URL(location.href);u.searchParams.delete('task');history.replaceState(null,'',u)}
+async function saveOpsTask(){
+ const t=state.data.tasks.find(x=>x.id===state.selectedTask);if(!t)return;
+ const v=id=>document.getElementById(id).value;
+ const fields={title:v('edit-title').trim(),priority:v('edit-priority'),status:v('edit-status'),assigned_to:v('edit-owner').trim(),contractor_id:v('edit-contractor')||null,details:v('edit-details'),due_at:v('edit-due')?new Date(v('edit-due')).toISOString():null};
+ try{await api('/api/admin',{method:'POST',body:JSON.stringify({action:'update_task',task_id:t.id,fields,expected_updated_at:t.updated_at})});await load()}
+ catch(e){document.getElementById('task-detail-error').textContent='Save failed: '+e.message}
+}
+async function addOpsTaskNote(){
+ const body=document.getElementById('new-task-note').value.trim();if(!body)return;
+ try{await api('/api/admin',{method:'POST',body:JSON.stringify({action:'add_task_note',task_id:state.selectedTask,body})});await load()}
+ catch(e){document.getElementById('task-detail-error').textContent='Note failed: '+e.message}
+}
+async function uploadOpsTaskFile(){
+ const file=document.getElementById('task-file').files[0];if(!file)return;
+ try{
+ const task_id=state.selectedTask;const meta={task_id,file_name:file.name,content_type:file.type,size_bytes:file.size};
+ const init=await api('/api/admin',{method:'POST',body:JSON.stringify({action:'init_task_upload',...meta})});
+ const {error}=await sb.storage.from('ssp-operations-files').uploadToSignedUrl(init.path,init.token,file,{contentType:file.type,upsert:false});
+ if(error)throw error;
+ await api('/api/admin',{method:'POST',body:JSON.stringify({action:'complete_task_upload',path:init.path,...meta})});await load();
+ }catch(e){document.getElementById('task-detail-error').textContent='Upload failed: '+e.message}
+}
+async function viewOpsTaskFile(attachment_id){
+ try{const r=await api('/api/admin',{method:'POST',body:JSON.stringify({action:'view_task_attachment',task_id:state.selectedTask,attachment_id})});window.open(r.url,'_blank','noopener,noreferrer')}
+ catch(e){toast('Unable to open attachment: '+e.message)}
 }
 
 function communications(d){
@@ -168,7 +211,7 @@ async function requestAdminRecovery(){
  }catch(e){feedback.textContent='Unable to request a reset right now. Please try again.';}
  finally{btn.disabled=false;}
 }
-async function boot(){const {data:{session},error}=await sb.auth.getSession();if(!session){const p=new URLSearchParams(location.search);const e=p.get('error_description')||p.get('error');showLogin(e?('Google sign-in failed: '+e):'');return}document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');await load()}
+async function boot(){const {data:{session},error}=await sb.auth.getSession();if(!session){const p=new URLSearchParams(location.search);const e=p.get('error_description')||p.get('error');showLogin(e?('Google sign-in failed: '+e):'');return}document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');await load();const p=new URLSearchParams(location.search);if(p.get('tab')==='queue'&&p.get('task')&&(state.data.tasks||[]).some(t=>t.id===p.get('task'))){state.selectedTask=p.get('task');state.tab='task-detail';render()}}
 document.getElementById('login-btn').addEventListener('click',login);document.getElementById('forgot-btn').addEventListener('click',requestAdminRecovery);document.getElementById('admin-google-btn').addEventListener('click',adminGoogleSignIn);document.getElementById('login-password').addEventListener('keydown',e=>{if(e.key==='Enter')login()});boot();
 </script>
 </body>
