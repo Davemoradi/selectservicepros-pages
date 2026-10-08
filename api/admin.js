@@ -42,13 +42,15 @@ async function getData(ctx, res) {
     }
 
     const disputes = disputesR.error ? [] : (disputesR.data || []);
-    const [notesR, notificationsR, profilesR, auditR] = await Promise.all([
+    const [notesR, notificationsR, profilesR, auditR, tasksR, taskEventsR] = await Promise.all([
       supabase.from("contractor_admin_notes").select("id,contractor_id,body,created_at,created_by,author_email").order("created_at",{ascending:false}).limit(500),
       supabase.from("notification_outbox").select("id,contractor_id,lead_id,event_type,status,attempt_count,sent_at,last_error,created_at").order("created_at",{ascending:false}).limit(500),
       supabase.from("contractor_admin_profiles").select("*").limit(1000),
-      supabase.from("contractor_admin_audit").select("id,contractor_id,actor_email,action,changes,created_at").order("created_at",{ascending:false}).limit(1000)
+      supabase.from("contractor_admin_audit").select("id,contractor_id,actor_email,action,changes,created_at").order("created_at",{ascending:false}).limit(1000),
+      supabase.from("operations_tasks").select("*").order("created_at",{ascending:false}).limit(1000),
+      supabase.from("operations_task_events").select("id,task_id,actor_email,event_type,created_at").order("created_at",{ascending:false}).limit(1000)
     ]);
-    if(notesR.error || notificationsR.error || profilesR.error || auditR.error) throw new Error("operations_history_unavailable");
+    if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error) throw new Error("operations_history_unavailable");
     const contractors = contractorsR.data || [];
     const licenses = licensesR.data || [];
     const leads = leadsR.data || [];
@@ -85,6 +87,8 @@ async function getData(ctx, res) {
       notes: notesR.data || [],
       admin_profiles: profilesR.data || [],
       audit: auditR.data || [],
+      tasks: tasksR.data || [],
+      task_events: taskEventsR.data || [],
       notifications: notificationsR.data || [],
       stats: {
         contractors_total: contractors.length,
@@ -287,6 +291,40 @@ async function saveProfile(ctx,res,b){
  const {error:auditErr}=await ctx.supabase.from("contractor_admin_audit").insert({contractor_id:id,actor_id:ctx.user.id,actor_email:ctx.user.email||"",action:"profile_updated",changes});if(auditErr){console.error("audit failed",auditErr.message);return fail(res,500,"audit_save_failed")}
  return res.status(200).json({ok:true});
 }
+
+async function taskAction(ctx,res,b){
+ const {supabase,user}=ctx;
+ const action=String(b.action||"");
+ if(action==="create_task"){
+  const title=String(b.title||"").trim(),details=String(b.details||"").trim(),priority=String(b.priority||"Normal");
+  const assigned_to=String(b.assigned_to||"").trim().slice(0,160)||null;
+  const contractor_id=b.contractor_id||null;
+  if(title.length<3||title.length>180||details.length>3000||!["Low","Normal","High","Urgent"].includes(priority)||contractor_id&&!UUID_RE.test(contractor_id))return fail(res,400,"invalid_task");
+  let due_at=null;
+  if(b.due_at){const parsed=new Date(b.due_at);if(Number.isNaN(parsed.getTime()))return fail(res,400,"invalid_due_date");due_at=parsed.toISOString()}
+  if(contractor_id){const {data}=await supabase.from("contractors").select("id").eq("id",contractor_id).maybeSingle();if(!data)return fail(res,404,"contractor_not_found")}
+  const {data,error}=await supabase.from("operations_tasks").insert({title,details,priority,assigned_to,contractor_id,due_at,created_by:user.id,updated_by:user.id}).select("*").single();
+  if(error)return fail(res,500,"task_create_failed");
+  const {error:auditErr}=await supabase.from("operations_task_events").insert({task_id:data.id,actor_id:user.id,actor_email:user.email||"",event_type:"created",after_state:data});
+  if(auditErr){console.error("task audit failure",auditErr.message);return fail(res,500,"task_audit_failed")}
+  return res.status(200).json({ok:true,task:data});
+ }
+ if(action==="update_task"){
+  const id=String(b.task_id||""),status=String(b.status||"");
+  if(!UUID_RE.test(id)||!["Open","In Progress","Done","Cancelled"].includes(status))return fail(res,400,"invalid_task_change");
+  const {data:before,error:readErr}=await supabase.from("operations_tasks").select("*").eq("id",id).maybeSingle();
+  if(readErr||!before)return fail(res,404,"task_not_found");
+  if(before.status===status)return res.status(200).json({ok:true,unchanged:true});
+  const {data,error}=await supabase.from("operations_tasks").update({status,updated_by:user.id,updated_at:new Date().toISOString()}).eq("id",id).eq("status",before.status).select("*").maybeSingle();
+  if(error)return fail(res,500,"task_update_failed");
+  if(!data)return fail(res,409,"task_changed_refresh");
+  const {error:auditErr}=await supabase.from("operations_task_events").insert({task_id:id,actor_id:user.id,actor_email:user.email||"",event_type:"status_changed",before_state:{status:before.status},after_state:{status}});
+  if(auditErr){console.error("task audit failure",auditErr.message);return fail(res,500,"task_audit_failed")}
+  return res.status(200).json({ok:true,task:data});
+ }
+ return fail(res,400,"invalid_task_action");
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Cache-Control", "no-store");
@@ -320,6 +358,7 @@ module.exports = async function handler(req, res) {
   if (["set_status","activate","set_insurance_verified","set_license_verified","approve_founding25","grant_founding25"].includes(action)) {
     return contractorAction(ctx, res, b);
   }
+  if (action === "create_task" || action === "update_task") return taskAction(ctx,res,b);
   if (action === "save_profile") return saveProfile(ctx,res,b);
   if (action === "add_contractor_note") return addContractorNote(ctx, res, b);
   if (action === "document_url") return documentUrl(ctx, res, b);
