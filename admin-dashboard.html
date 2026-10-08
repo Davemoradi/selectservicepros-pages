@@ -21,6 +21,8 @@ button,input,select{font:inherit}.hidden{display:none!important}.shell{min-heigh
   <div class="field"><label>Email</label><input id="login-email" type="email" autocomplete="username"/></div>
   <div class="field"><label>Password</label><input id="login-password" type="password" autocomplete="current-password"/></div>
   <button id="login-btn" class="btn primary" style="width:100%">Sign in</button>
+  <div style="margin-top:14px;text-align:center"><button type="button" id="forgot-btn" class="btn secondary">Forgot password / Set up admin access</button></div>
+  <p id="reset-message" class="sub" role="status"></p>
   <div id="login-error" class="error"></div>
 </div>
 
@@ -69,8 +71,19 @@ function toast(msg){alert(msg)}
 async function logout(){await sb.auth.signOut();location.reload()}
 function showLogin(msg=''){document.getElementById('app').classList.add('hidden');document.getElementById('login').classList.remove('hidden');document.getElementById('login-error').textContent=msg}
 async function login(){const btn=document.getElementById('login-btn');btn.disabled=true;document.getElementById('login-error').textContent='';const email=document.getElementById('login-email').value.trim();const password=document.getElementById('login-password').value;const {error}=await sb.auth.signInWithPassword({email,password});btn.disabled=false;if(error){showLogin('Sign-in failed.');return}await boot()}
+async function requestAdminRecovery(){
+ const email=document.getElementById('login-email').value.trim();
+ const feedback=document.getElementById('reset-message');
+ if(!email){feedback.textContent='Enter your admin email above first.';return;}
+ const btn=document.getElementById('forgot-btn');btn.disabled=true;
+ try{
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/reset-password.html?admin=1'});
+  feedback.textContent=error?'We could not send the email right now. Try again shortly.':'If this email has an SSP login, check your inbox for a password setup or reset link.';
+ }catch(e){feedback.textContent='Unable to request a reset right now. Please try again.';}
+ finally{btn.disabled=false;}
+}
 async function boot(){const {data:{session}}=await sb.auth.getSession();if(!session){showLogin();return}document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');await load()}
-document.getElementById('login-btn').addEventListener('click',login);document.getElementById('login-password').addEventListener('keydown',e=>{if(e.key==='Enter')login()});boot();
+document.getElementById('login-btn').addEventListener('click',login);document.getElementById('forgot-btn').addEventListener('click',requestAdminRecovery);document.getElementById('login-password').addEventListener('keydown',e=>{if(e.key==='Enter')login()});boot();
 </script>
 </body>
 </html>
