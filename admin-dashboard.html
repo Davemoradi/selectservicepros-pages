@@ -47,7 +47,7 @@ function date(v){if(!v)return '—';try{return new Date(v).toLocaleString()}catc
 function pill(status){const s=String(status||'');const c=s==='Active'||s==='Matched'||s==='accepted'?'good':/Pending|Offering|offered/i.test(s)?'warn':/Rejected|Suspended|Unmatched|declined|expired/i.test(s)?'bad':'';return `<span class="pill ${c}">${esc(s||'—')}</span>`}
 function token(){return sb.auth.getSession().then(x=>x.data.session?.access_token||null)}
 async function api(url,opts={}){const t=await token();if(!t)throw new Error('signed_out');const r=await fetch(url,{...opts,headers:{'Content-Type':'application/json','Authorization':'Bearer '+t,...(opts.headers||{})}});const b=await r.json().catch(()=>({}));if(r.status===401||r.status===403){if(b.error==='admin_required')throw new Error('admin_required')}if(!r.ok)throw new Error(b.error||'request_failed');return b}
-async function load(){state.busy=true;render();try{state.data=await api('/api/admin?action=data');document.getElementById('admin-email').textContent=state.data.admin?.email||''}catch(e){if(e.message==='admin_required'){await sb.auth.signOut();showLogin('This account is not authorized for SSP admin access.');return}console.error(e);toast('Could not load operations data.')}finally{state.busy=false;render()}}
+async function load(){state.busy=true;render();try{state.data=await api('/api/admin?action=data');document.getElementById('admin-email').textContent=state.data.admin?.email||''}catch(e){if(e.message==='admin_required'){const signed=await sb.auth.getUser();const used=signed.data?.user?.email||'this Google account';await sb.auth.signOut();showLogin('Signed in as '+used+', but this account is not authorized for SSP Operations. Sign in with david@selectservicepros.com.');return}console.error(e);toast('Could not load operations data.')}finally{state.busy=false;render()}}
 function setTab(t){state.tab=t;render()}
 function renderNav(){document.getElementById('nav').innerHTML=tabs.map(([k,l])=>`<button class="navbtn ${state.tab===k?'active':''}" onclick="setTab('${k}')">${l}</button>`).join('')}
 function render(){if(document.getElementById('app').classList.contains('hidden'))return;renderNav();const c=document.getElementById('content');if(state.busy&&!state.data){c.innerHTML='<div class="notice">Loading SSP operations…</div>';return}const d=state.data;if(!d){c.innerHTML='<div class="notice">No data loaded.</div>';return}if(state.tab==='overview')c.innerHTML=overview(d);if(state.tab==='contractors')c.innerHTML=contractors(d);if(state.tab==='leads')c.innerHTML=leads(d);if(state.tab==='pricing')c.innerHTML=pricing(d);if(state.tab==='disputes')c.innerHTML=disputes(d)}
@@ -71,7 +71,7 @@ async function decideDispute(id,decision){if(!confirm(`${decision==='approved'?'
 function toast(msg){alert(msg)}
 async function logout(){await sb.auth.signOut();location.reload()}
 function showLogin(msg=''){document.getElementById('app').classList.add('hidden');document.getElementById('login').classList.remove('hidden');document.getElementById('login-error').textContent=msg}
-async function login(){const btn=document.getElementById('login-btn');btn.disabled=true;document.getElementById('login-error').textContent='';const email=document.getElementById('login-email').value.trim();const password=document.getElementById('login-password').value;const {error}=await sb.auth.signInWithPassword({email,password});btn.disabled=false;if(error){showLogin('Sign-in failed.');return}await boot()}
+async function login(){const btn=document.getElementById('login-btn');btn.disabled=true;document.getElementById('login-error').textContent='';const email=document.getElementById('login-email').value.trim();const password=document.getElementById('login-password').value;const {error}=await sb.auth.signInWithPassword({email,password});btn.disabled=false;if(error){showLogin('Sign-in failed: '+error.message);return}await boot()}
 async function adminGoogleSignIn(){
  const btn=document.getElementById('admin-google-btn');btn.disabled=true;
  try{
@@ -86,11 +86,11 @@ async function requestAdminRecovery(){
  const btn=document.getElementById('forgot-btn');btn.disabled=true;
  try{
   const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/reset-password.html?admin=1'});
-  feedback.textContent=error?'We could not send the email right now. Try again shortly.':'If this email has an SSP login, check your inbox for a password setup or reset link.';
+  feedback.textContent=error?('Password recovery failed: '+error.message+'. If this is your first login, create the admin user in Supabase Authentication → Users using Send invitation.'):'If this email has an SSP login, check your inbox for a password setup or reset link.';
  }catch(e){feedback.textContent='Unable to request a reset right now. Please try again.';}
  finally{btn.disabled=false;}
 }
-async function boot(){const {data:{session}}=await sb.auth.getSession();if(!session){showLogin();return}document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');await load()}
+async function boot(){const {data:{session},error}=await sb.auth.getSession();if(!session){const p=new URLSearchParams(location.search);const e=p.get('error_description')||p.get('error');showLogin(e?('Google sign-in failed: '+e):'');return}document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');await load()}
 document.getElementById('login-btn').addEventListener('click',login);document.getElementById('forgot-btn').addEventListener('click',requestAdminRecovery);document.getElementById('admin-google-btn').addEventListener('click',adminGoogleSignIn);document.getElementById('login-password').addEventListener('keydown',e=>{if(e.key==='Enter')login()});boot();
 </script>
 </body>
