@@ -521,6 +521,131 @@ body.show-tweaks .tweaks{display:block}
 .locked-panel .fact-lbl{ color:var(--text3); }
 .locked-panel .fact-val{ color:var(--text2);font-weight:500;line-height:1.5; }
 .btn[disabled]{ opacity:.45;cursor:not-allowed;pointer-events:none; }
+
+/* ===== SSP DASHBOARD REFINEMENT ===== */
+:root{
+  --bg:#f5f6f8;--border:#e6e8ec;--border-strong:#d9dde3;
+  --text1:#15191f;--text2:#424852;--text3:#6c7480;--text4:#969da7;
+  --radius:10px;--radius-lg:14px;
+  --shadow-sm:0 1px 2px rgba(10,22,40,.03);
+  --shadow:0 4px 14px rgba(10,22,40,.04);
+  --shadow-md:0 8px 24px rgba(10,22,40,.05);
+}
+body{background:var(--bg)}
+.nav{height:64px;background:#fff;border-bottom:1px solid var(--border);box-shadow:none;padding:0 24px}
+.nav-logo{color:var(--navy);font-size:16px}
+.nav-contractor{background:#f5f6f8;border:1px solid var(--border);padding:5px 9px 5px 5px}
+.nav-name{color:var(--navy)}
+.nav-logout{color:var(--text3)}
+.nav-logout:hover{background:#f5f6f8;color:var(--navy)}
+.status-pill.pending{background:#fff7ed;color:#b45309}
+.status-pill.review{background:#eff6ff;color:#1d4ed8}
+.status-pill.active{background:#ecfdf3;color:#167a45}
+.shell{min-height:calc(100vh - 64px)}
+.sidebar{width:224px;top:64px;height:calc(100vh - 64px);padding:20px 12px;background:#fff}
+.sidebar-group{padding:16px 12px 7px;font-size:10px;color:#a0a6af}
+.sidebar-group:first-child{padding-top:4px}
+.sidebar-link{padding:9px 11px;border-radius:8px;font-weight:550;color:#525964}
+.sidebar-link:hover{background:#f6f7f9;color:var(--navy)}
+.sidebar-link.active{background:#fff1eb;color:#c9471f}
+.sidebar-link.active svg{color:var(--orange);opacity:1}
+.nav-count{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#fff1eb;color:#c9471f;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.page{max-width:1100px;padding:0 30px 72px}
+.page-header{padding:28px 0 20px}
+.page-header h1{font-size:30px;font-weight:700;letter-spacing:-.025em}
+.page-header .sub{max-width:700px;font-size:14px}
+.card{box-shadow:none}
+.card.hover:hover{box-shadow:var(--shadow);transform:none}
+.btn{border-radius:8px;font-weight:650}
+.btn-primary:hover:not(:disabled){box-shadow:none}
+.section{margin-bottom:30px}
+.section-title{font-size:18px;font-weight:700}
+.section-caption{font-size:12.5px;color:var(--text3);margin-top:3px}
+.section-link{color:var(--text2)}
+.section-link:hover{color:var(--orange)}
+.stats{grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:30px}
+.stat{padding:17px;border-radius:10px}
+.stat-label{font-size:10.5px;letter-spacing:.055em;margin-bottom:9px}
+.stat-value{font-size:27px;font-weight:650}
+.stat.accent{background:var(--navy)}
+.model-strip{display:grid;grid-template-columns:1fr 1fr 1.4fr auto;align-items:center;background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden}
+.model-strip>div{padding:14px 16px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:2px}
+.model-label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text4);font-weight:700}
+.model-strip strong{font-size:13.5px;color:var(--navy)}
+.model-link{padding:14px 16px;color:var(--orange);font-size:13px;font-weight:700;white-space:nowrap}
+.review-card{padding:24px;margin-top:16px}
+.review-copy{max-width:640px}
+.review-copy h3{font-size:18px;color:var(--navy);margin-bottom:6px}
+.review-copy p{font-size:14px;color:var(--text3);line-height:1.6}
+.review-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.wizard{box-shadow:none;border-radius:12px}
+.wizard-top{background:#fff;color:var(--navy);padding:24px 28px;border-bottom:1px solid var(--border)}
+.wizard-top::before,.wizard-top::after{display:none}
+.wiz-eyebrow{color:var(--orange);margin-bottom:7px;letter-spacing:.08em}
+.wiz-eyebrow .pulse{display:none}
+.wiz-title{font-size:25px;font-weight:700}
+.wiz-subtitle{color:var(--text3);margin-top:6px}
+.wiz-progress{margin-top:18px}
+.wiz-bar{height:7px;background:#eceef2}
+.wiz-bar-fill{background:var(--orange);box-shadow:none}
+.wiz-pct{color:var(--text2);font-size:14px;font-weight:700;min-width:42px}
+.wiz-top-cta{margin-top:18px!important}
+.wizard-body{grid-template-columns:240px 1fr}
+.wiz-steps{background:#fafbfc}
+.wiz-step.active{box-shadow:none}
+.wiz-step.done .wiz-step-title{text-decoration:none}
+.wiz-content{padding:28px 30px}
+.lead-principle{display:flex;gap:8px;align-items:baseline;background:#fff;border:1px solid var(--border);border-radius:10px;padding:13px 16px;margin-bottom:14px;font-size:13px;color:var(--text3)}
+.lead-principle strong{color:var(--navy)}
+.leads-list{border-radius:10px}
+.lead-row{padding:15px 16px}
+.lead-ico{width:36px;height:36px;border-radius:8px}
+.lead-svc{font-size:13.5px}
+.lead-fee{font-size:14px}
+.billing-model{display:grid;grid-template-columns:repeat(3,1fr);background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:14px;overflow:hidden}
+.billing-model-item{padding:16px 18px;border-right:1px solid var(--border)}
+.billing-model-item:last-child{border-right:none}
+.billing-model-item span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--text4);font-weight:700}
+.billing-model-item strong{display:block;margin-top:4px;font-size:16px;color:var(--navy)}
+.billing-model-item small{display:block;margin-top:3px;font-size:12px;color:var(--text3);line-height:1.4}
+.wallet-hero{display:flex;align-items:center;justify-content:space-between;gap:24px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:12px}
+.wallet-kicker{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text4);font-weight:700}
+.wallet-total{font-size:36px;line-height:1.1;color:var(--navy);font-weight:700;letter-spacing:-.03em;margin-top:5px}
+.wallet-breakdown{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;color:var(--text3);font-size:12.5px}
+.wallet-breakdown b{color:var(--text2)}
+.wallet-note,.wallet-alert,.wallet-policy{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:18px;color:var(--text3);font-size:13px;line-height:1.55}
+.wallet-note strong,.wallet-alert strong,.wallet-policy strong{color:var(--navy)}
+.wallet-alert{display:flex;gap:7px;align-items:baseline;border-color:#f2d6c8;background:#fffaf7}
+.wallet-options{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.wallet-option{background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px}
+.wallet-option[aria-disabled="true"]{opacity:.55}
+.wallet-option-label{font-size:11px;color:var(--text4);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.wallet-option-amount{font-size:24px;font-weight:700;color:var(--navy);margin-top:5px}
+.wallet-option-copy{font-size:12px;color:var(--text3);margin:2px 0 14px}
+.purchase-flow{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.purchase-flow>div{background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px}
+.flow-num{width:24px;height:24px;border-radius:50%;background:#fff1eb;color:#c9471f;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;margin-bottom:12px}
+.purchase-flow strong{display:block;font-size:14px;color:var(--navy)}
+.purchase-flow p{font-size:12.5px;color:var(--text3);line-height:1.5;margin-top:5px}
+.wallet-policy{margin-bottom:0}
+.wallet-policy p{margin-top:4px}
+@media(max-width:900px){
+  .model-strip{grid-template-columns:1fr 1fr}
+  .model-strip>div{border-bottom:1px solid var(--border)}
+  .model-link{grid-column:1/-1}
+  .billing-model,.wallet-options,.purchase-flow{grid-template-columns:1fr}
+  .billing-model-item{border-right:none;border-bottom:1px solid var(--border)}
+  .billing-model-item:last-child{border-bottom:none}
+}
+@media(max-width:560px){
+  .page{padding:0 16px 56px}
+  .stats{grid-template-columns:1fr 1fr}
+  .wallet-hero{align-items:flex-start;flex-direction:column}
+  .wallet-hero .btn{width:100%}
+  .lead-principle{display:block}
+  .lead-principle strong{display:block;margin-bottom:3px}
+}
+
 </style>
 </head>
 <body data-banner="stepper" data-nav="sidebar" data-loading="true">
@@ -531,7 +656,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <!-- ============ TOP NAV ============ -->
 <nav class="nav">
-  <a href="#" class="nav-logo">
+  <a href="/" class="nav-logo" aria-label="Select Service Pros home">
     <svg width="22" height="26" viewBox="0 0 48 56" fill="none" aria-hidden="true">
       <path d="M24 2C13 2 4 11 4 22c0 14 20 32 20 32s20-18 20-32C44 11 35 2 24 2z" fill="#f05528"/>
       <circle cx="24" cy="20" r="12" fill="#fff"/>
@@ -980,9 +1105,9 @@ By clicking "I Accept" and typing Contractor's full legal name below, Contractor
 
 // ---------- STEPS (wizard) ----------
 const STEPS = [
-  {key:'description', title:'Business description', sub:'Tell homeowners who you are', check:()=>state.profile.description?.length>40},
-  {key:'years', title:'Years in business', sub:'Experience matters', check:()=>state.profile.years>0},
-  {key:'categories', title:'Service categories', sub:'What you handle', check:()=>{
+  {key:'description', title:'Business description', sub:'What customers should know', check:()=>state.profile.description?.length>40},
+  {key:'years', title:'Years in business', sub:'How long you have operated', check:()=>state.profile.years>0},
+  {key:'categories', title:'Services', sub:'Jobs you want leads for', check:()=>{
     if(state.categories.size===0) return false;
     for(const c of state.categories){
       if((state.servicesDetail[c]||[]).length===0) return false;
@@ -992,7 +1117,7 @@ const STEPS = [
     return true;
   }},
   {key:'zips', title:'Service areas', sub:'ZIPs you cover', check:()=>state.zips.length>0},
-  {key:'operations', title:'Operations', sub:'Hours, team, payments', check:()=>state.operations.technicians>0 && state.operations.phoneAnswered && state.operations.payments.size>0 && state.operations.hoursConfirmed && DAYS.some(d=>state.operations.hours[d].open||state.operations.hours[d].open24)},
+  {key:'operations', title:'Business operations', sub:'Hours and contact details', check:()=>state.operations.technicians>0 && state.operations.phoneAnswered && state.operations.payments.size>0 && state.operations.hoursConfirmed && DAYS.some(d=>state.operations.hours[d].open||state.operations.hours[d].open24)},
   {key:'licenses', title:'Trade licenses', sub:SSP_LICENSE_COLLECTION_TRADES.join(', ')+' only', check:()=>{
     const licensedSelected = [...state.categories].filter(c=>SSP_LICENSE_COLLECTION_TRADES.includes(c));
     if(licensedSelected.length===0) return true; // no licensed trades selected -> auto-complete
@@ -1082,11 +1207,11 @@ function leadsPool(){ return state.leads; }
 // ---------- TABS ----------
 const TABS = [
   {key:'overview', label:'Overview', icon:iconHome},
-  {key:'leads', label:'Leads', icon:iconInbox, count:()=>state.leads.filter(l=>l.status==='new').length, badge:()=>state.state==='active'},
-  {key:'profile', label:'Profile', icon:iconUser},
-  {key:'operations', label:'Operations', icon:iconClock},
-  {key:'credentials', label:'Credentials', icon:iconShield},
+  {key:'leads', label:'Lead Offers', icon:iconInbox, count:()=>state.leads.filter(l=>l.status==='new').length, badge:()=>state.state==='active'},
   {key:'billing', label:'Wallet', icon:iconCard},
+  {key:'profile', label:'Business Profile', icon:iconUser},
+  {key:'operations', label:'Operations', icon:iconClock},
+  {key:'credentials', label:'Licenses & Insurance', icon:iconShield},
   {key:'settings', label:'Settings', icon:iconGear},
 ];
 
@@ -1155,13 +1280,24 @@ function updateNav(){
 
 function renderSidebar(){
   const el = document.getElementById('sidebar');
-  let html = '<div class="sidebar-group">Dashboard</div>';
-  TABS.forEach(t=>{
-    const active = state.activeTab===t.key?'active':'';
-    const hasBadge = t.badge && t.badge() ? 'has-badge' : '';
-    const countBadge = t.count && t.count()>0 && state.state==='active' ? `<span class="dot" style="opacity:1;background:var(--orange)"></span>` : '';
-    html += `<div class="sidebar-link ${active} ${hasBadge}" onclick="setTab('${t.key}')">${t.icon()}<span>${t.label}</span>${countBadge}</div>`;
-  });
+  const groups = [
+    ['Work',['overview','leads','billing']],
+    ['Business',['profile','operations','credentials']],
+    ['Account',['settings']],
+  ];
+  let html = '';
+  for(const [group,keys] of groups){
+    html += `<div class="sidebar-group">${group}</div>`;
+    for(const key of keys){
+      const t = TABS.find(x=>x.key===key);
+      if(!t) continue;
+      const active = state.activeTab===t.key?'active':'';
+      const hasBadge = t.badge && t.badge() ? 'has-badge' : '';
+      const count = t.count && state.state==='active' ? t.count() : 0;
+      const countBadge = count>0 ? `<span class="nav-count">${count}</span>` : '';
+      html += `<div class="sidebar-link ${active} ${hasBadge}" onclick="setTab('${t.key}')">${t.icon()}<span>${t.label}</span>${countBadge}</div>`;
+    }
+  }
   el.innerHTML = html;
 }
 
@@ -1211,29 +1347,25 @@ function renderPage(){
 function overviewHTML(){
   const showWizard = state.state!=='active';
   const leads = currentLeads();
-  const total = leads.length;
+  const available = leads.filter(l=>l.status==='new').length;
   const accepted = leads.filter(l=>l.status==='accepted').length;
-  const rate = total>0 ? Math.round((accepted/total)*100) : 0;
-  const avgRespMins = leads.filter(l=>l.status==='accepted').reduce((s,l)=>s+l.mins,0) / Math.max(1, accepted);
+  const spent = walletSpentCents();
 
-  const activeGreeting = `Good afternoon, ${esc(String(state.profile.company||'').split(' ')[0])}`;
-  const firstName = (state.profile.firstName||'').trim();
-  const nameSuffix = firstName ? `, ${esc(firstName)}` : '';
-  const pendingGreeting = state.state==='review'
-    ? `Thanks${esc(nameSuffix)} — we've got it from here`
-    : `Welcome to SSP${esc(nameSuffix)}`;
+  const pendingTitle = state.state==='review'
+    ? 'Account under review'
+    : 'Complete your account';
   const pendingSub = state.state==='review'
-    ? `Your profile is with our review team. We'll email you when the review is complete.`
-    : `Finish setup so we can review your profile for lead eligibility.`;
+    ? 'We’re reviewing your business information. We’ll email you when your account is approved or if we need anything else.'
+    : 'Add the business details we need before we can turn on lead access.';
 
   let html = `
-    <div class="page-header">
+    <div class="page-header dashboard-head">
       <div class="row">
         <div>
-          <h1>${showWizard ? pendingGreeting : activeGreeting}</h1>
-          <p class="sub">${showWizard ? pendingSub : 'Here\'s what\'s new in your pipeline today.'}</p>
+          <h1>${showWizard ? pendingTitle : 'Dashboard'}</h1>
+          <p class="sub">${showWizard ? pendingSub : 'Review lead offers, manage your wallet, and keep your business information current.'}</p>
         </div>
-        ${state.state==='active' ? `<button class="btn btn-navy" onclick="setTab('leads')">Go to leads →</button>` : ''}
+        ${state.state==='active' ? `<button class="btn btn-primary" onclick="setTab('leads')">View lead offers</button>` : ''}
       </div>
     </div>
   `;
@@ -1242,35 +1374,40 @@ function overviewHTML(){
 
   if(state.state==='active'){
     html += `
+      <div class="model-strip" aria-label="How SSP billing works">
+        <div><span class="model-label">Plan</span><strong>Pay as you go</strong></div>
+        <div><span class="model-label">Monthly fee</span><strong>$0</strong></div>
+        <div><span class="model-label">Lead charge</span><strong>Only when you accept</strong></div>
+        <button class="model-link" onclick="setTab('billing')">Wallet details →</button>
+      </div>
+
       <div class="stats">
-        ${statCard('Total leads', total, `This month`, iconInbox())}
-        ${statCard('Accepted', accepted, `${rate}% acceptance`, iconCheck(16))}
-        ${statCard('Avg response', isFinite(avgRespMins)?fmtSeconds(Math.round(avgRespMins*60)):'—', 'time to respond', svgBase('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'))}
+        ${statCard('Available offers', available, available===1?'1 lead waiting':'leads waiting', iconInbox())}
+        ${statCard('Accepted leads', accepted, 'accepted through SSP', iconCheck(16))}
         ${statCard('Wallet balance', fmtMoney(walletTotalCents()), walletBalanceSub(), iconCard(), false, 'accent')}
-        ${statCard('Spent on leads', fmtMoney(walletSpentCents()), `${accepted} accepted`, svgBase('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'))}
+        ${statCard('Lead spend', fmtMoney(spent), 'accepted leads only', svgBase('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'))}
       </div>
 
       <div class="section">
         <div class="section-head">
-          <div class="section-title">Recent leads</div>
-          <a class="section-link" onclick="setTab('leads')">View all →</a>
+          <div>
+            <div class="section-title">Recent lead offers</div>
+            <div class="section-caption">The price is shown before you accept. Passing is free.</div>
+          </div>
+          <a class="section-link" onclick="setTab('leads')">View all</a>
         </div>
-        ${leadsListHTML(leads.slice(0,5), true)}
+        ${leads.length ? leadsListHTML(leads.slice(0,5), true) : leadsEmpty()}
       </div>
-
     `;
   } else if(state.state==='review'){
     html += `
-      <div class="card pad" style="margin-top:16px">
-        <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
-          <div style="flex-shrink:0">${reviewIllustration()}</div>
-          <div style="flex:1;min-width:240px">
-            <h3 style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:22px;color:var(--navy);letter-spacing:-.02em">We're reviewing your info</h3>
-            <p style="color:var(--text3);margin-top:6px;font-size:14px;line-height:1.55;max-width:520px">Your license and insurance documents are being checked against state registries. This almost always takes under one business day. You'll get an email when you're live.</p>
-            <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
-              <button class="btn btn-ghost" onclick="setTab('profile')">Review your info</button>
-              <button class="btn btn-ghost" onclick="toast('We\\'ll email support@selectservicepros.com')">Contact support</button>
-            </div>
+      <div class="card review-card">
+        <div class="review-copy">
+          <h3>We have your information.</h3>
+          <p>We’re reviewing the business details and documents you submitted. We’ll email you when your account is approved or if something needs attention.</p>
+          <div class="review-actions">
+            <button class="btn btn-ghost" onclick="setTab('profile')">Review business profile</button>
+            <a class="btn btn-ghost" href="mailto:support@selectservicepros.com">Contact support</a>
           </div>
         </div>
       </div>
@@ -1318,11 +1455,11 @@ function wizardHTML(){
     <div class="wizard">
       <div class="wizard-top">
         <div style="position:relative;z-index:1">
-          <div class="wiz-eyebrow"><span class="pulse"></span>${state.state==='review'?'In review':'Finish setup to go live'}</div>
-          <div class="wiz-title">${allDone ? "You're ready to go live." : "Let's get you receiving leads."}</div>
+          <div class="wiz-eyebrow">${state.state==='review'?'Under review':'Account setup'}</div>
+          <div class="wiz-title">${allDone ? "Your account information is complete." : "Finish your business profile."}</div>
           <div class="wiz-subtitle">${allDone
-            ? "Everything checks out on our end — submit for review and we'll verify your credentials within a business day."
-            : `${doneCount} of ${STEPS.length} items done. The rest takes about ${Math.max(1, Math.ceil((STEPS.length-doneCount)*0.8))} minute${STEPS.length-doneCount>1?'s':''}.`}
+            ? "Submit it for review. We’ll let you know when lead access is approved."
+            : `${doneCount} of ${STEPS.length} sections complete.`}
           </div>
           <div class="wiz-progress">
             <div class="wiz-bar"><div class="wiz-bar-fill" style="width:${pct}%"></div></div>
@@ -2173,7 +2310,7 @@ function leadsHTML(){
 
   if(state.state!=='active'){
     return `
-      <div class="page-header"><h1>Leads</h1><p class="sub">You'll see homeowner requests here once your profile is live.</p></div>
+      <div class="page-header"><h1>Lead Offers</h1><p class="sub">Lead offers will appear here after your account is approved.</p></div>
       ${pendingLeadsEmptyState()}
     `;
   }
@@ -2182,20 +2319,25 @@ function leadsHTML(){
     <div class="page-header">
       <div class="row">
         <div>
-          <h1>Leads</h1>
-          <p class="sub">${counts.new} new · ${counts.accepted} accepted this period</p>
+          <h1>Lead Offers</h1>
+          <p class="sub">Review the job, ZIP code, and price. Accept only the leads you want — viewing or passing is free.</p>
         </div>
+        <button class="btn btn-ghost" onclick="setTab('billing')">Wallet ${fmtMoney(walletTotalCents())}</button>
       </div>
+    </div>
+    <div class="lead-principle">
+      <strong>No charge to review.</strong>
+      <span>When you accept, the displayed price is deducted from your wallet and the customer’s contact details unlock.</span>
     </div>
     <div class="filters">
       ${chip('all','All',counts.all)}
-      ${chip('new','New',counts.new)}
+      ${chip('new','Available',counts.new)}
       ${chip('accepted','Accepted',counts.accepted)}
       ${chip('passed','Passed',counts.passed)}
       ${chip('expired','Expired',counts.expired)}
       <div class="search">
         ${svgBase('<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>')}
-        <input placeholder="Search by name, ZIP, service..." value="${attr(state.searchQuery)}" oninput="state.searchQuery=this.value;render();document.querySelector('.search input').focus()">
+        <input placeholder="Search service or ZIP" value="${attr(state.searchQuery)}" oninput="state.searchQuery=this.value;render();document.querySelector('.search input').focus()">
       </div>
     </div>
     ${filtered.length ? leadsListHTML(filtered) : leadsEmpty()}
@@ -2214,7 +2356,7 @@ function leadRowHTML(l, compact){
   const isExpanded = state.expandedLead===l.id;
   const s = l.status;
   const statusChip = {
-    new:'<span class="lead-status s-new">New</span>',
+    new:'<span class="lead-status s-new">Available</span>',
     accepted:'<span class="lead-status s-accepted">Accepted</span>',
     passed:'<span class="lead-status s-passed">Passed</span>',
     expired:'<span class="lead-status s-expired">Expired</span>',
@@ -2231,7 +2373,7 @@ function leadRowHTML(l, compact){
   const offerDead = (s==='new' && left !== null && left <= 0) || l.busy;
   const countdown = (s==='new' && left !== null)
     ? (left > 0
-        ? `<span class="lead-countdown">${left} min left</span>`
+        ? `<span class="lead-countdown">${left} min to decide</span>`
         : `<span class="lead-countdown expired">expired</span>`)
     : '';
   const highlight = state.focusLead===l.id ? ' lead-focus' : '';
@@ -2534,7 +2676,7 @@ function profileHTML(){
   const zipPills = state.zips.map(z=>`<button class="pill zip">${z}<span class="x" onclick="removeZip('${z}');event.stopPropagation()">${iconX(10)}</span></button>`).join('');
 
   return `
-    <div class="page-header"><h1>Profile</h1><p class="sub">What homeowners see. Changes save automatically.<span class="save-indicator" id="saveInd"><span class="dot-anim"></span>Saving</span></p></div>
+    <div class="page-header"><h1>Business Profile</h1><p class="sub">Your company, services, and service areas. Changes save automatically.<span class="save-indicator" id="saveInd"><span class="dot-anim"></span>Saving</span></p></div>
 
     <div class="card pad" style="margin-bottom:16px">
       <div class="section-title" style="margin-bottom:18px;font-size:16px">About your business</div>
@@ -2580,7 +2722,7 @@ function profileHTML(){
 // ==================== OPERATIONS ====================
 function operationsHTML(){
   return `
-    <div class="page-header"><h1>Operations</h1><p class="sub">How you run the business. Helps us route the right leads to you.<span class="save-indicator" id="saveInd"><span class="dot-anim"></span>Saving</span></p></div>
+    <div class="page-header"><h1>Operations</h1><p class="sub">Business hours and operating details used to keep lead routing accurate.<span class="save-indicator" id="saveInd"><span class="dot-anim"></span>Saving</span></p></div>
     ${operationsFormHTML()}
   `;
 }
@@ -2695,13 +2837,13 @@ function credentialsHTML(){
   const licensedNotSelected = SSP_LICENSE_COLLECTION_TRADES.filter(t=>!licenseForTrade(t));
 
   return `
-    <div class="page-header"><h1>Credentials</h1><p class="sub">Insurance and trade licenses. Verified once, good for the life of the policy.<span class="save-indicator" id="saveInd"><span class="dot-anim"></span>Saving</span></p></div>
+    <div class="page-header"><h1>Licenses &amp; Insurance</h1><p class="sub">Keep your insurance and required trade-license information current.<span class="save-indicator" id="saveInd"><span class="dot-anim"></span>Saving</span></p></div>
 
     <div class="card pad" style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:6px">
         <div>
           <div class="section-title" style="font-size:18px">Insurance</div>
-          <p style="font-size:13px;color:var(--text3);margin-top:2px">General liability, current. Required for every contractor.</p>
+          <p style="font-size:13px;color:var(--text3);margin-top:2px">Upload your current general liability insurance information.</p>
         </div>
         ${verifBadge(verifIns)}
       </div>
@@ -2798,64 +2940,111 @@ function verifBadge(s){
 
 // ==================== BILLING ====================
 function billingHTML(){
-  const promo = state.walletPromoCents, paid = state.walletPaidCents;
+  const promo = state.walletPromoCents;
+  const paid = state.walletPaidCents;
   const total = promo + paid;
-  const low   = total < 7500;   // below the highest band price
+  const low = total < 7500;
 
   return `
-    <div class="page-header"><h1>Wallet</h1><p class="sub">You pay per lead you accept. No monthly fee, no contract.</p></div>
-
-    <div class="plan-card" style="margin-bottom:18px">
-      <div class="plan-card-inner">
-        <div class="plan-eyebrow">Available balance</div>
-        <div class="plan-name-big">${fmtMoney(total)}</div>
-        <div class="plan-price-big">
-          ${promo>0 ? `${fmtMoney(promo)} promotional &middot; ` : ''}${fmtMoney(paid)} purchased
-        </div>
-        ${promo>0 ? `<p class="sub" style="margin-top:8px">Promotional credit is used first and is not refundable.</p>` : ''}
-        <div class="plan-actions">
-          <button class="plan-btn primary" onclick="openTopUp(25000)" ${state.state==='active'?'':'disabled title="Account must be active"'}>Add $250</button>
+    <div class="page-header">
+      <div class="row">
+        <div>
+          <h1>Wallet</h1>
+          <p class="sub">SSP is pay as you go. There is no monthly subscription. Your wallet is charged only when you accept a lead.</p>
         </div>
       </div>
     </div>
 
-    ${low ? `
-      <div class="callout" style="background:#fff7ed;border-left:4px solid var(--orange);padding:14px 18px;border-radius:8px;margin-bottom:18px">
-        <strong>Low balance.</strong> You only receive lead offers you can afford. Add funds to keep receiving leads.
-      </div>` : ''}
+    <div class="billing-model">
+      <div class="billing-model-item">
+        <span>Plan</span>
+        <strong>Pay as you go</strong>
+        <small>No contract or recurring plan fee.</small>
+      </div>
+      <div class="billing-model-item">
+        <span>Monthly fee</span>
+        <strong>$0</strong>
+        <small>Keeping your SSP account open costs nothing.</small>
+      </div>
+      <div class="billing-model-item">
+        <span>When you pay</span>
+        <strong>When you accept</strong>
+        <small>Each lead shows its price first.</small>
+      </div>
+    </div>
 
-    <div class="section" style="margin-top:18px">
-      <div class="section-title" style="font-size:18px;margin-bottom:10px">Add funds</div>
-      <div class="tiers">
+    <div class="wallet-hero">
+      <div>
+        <div class="wallet-kicker">Available wallet balance</div>
+        <div class="wallet-total">${fmtMoney(total)}</div>
+        <div class="wallet-breakdown">
+          <span><b>${fmtMoney(paid)}</b> purchased funds</span>
+          ${promo>0 ? `<span><b>${fmtMoney(promo)}</b> promotional credit</span>` : ''}
+        </div>
+      </div>
+      <button class="btn btn-primary btn-lg" onclick="openTopUp(25000)" ${state.state==='active'?'':'disabled title="Account must be active"'}>Add funds</button>
+    </div>
+
+    ${promo>0 ? `
+      <div class="wallet-note"><strong>Promotional credit is used first.</strong> Promotional credit is not refundable or withdrawable. Purchased wallet funds are tracked separately.</div>
+    ` : ''}
+
+    ${low ? `
+      <div class="wallet-alert">
+        <strong>Your balance is running low.</strong>
+        <span>Your wallet must cover a lead’s displayed price before you can accept it.</span>
+      </div>
+    ` : ''}
+
+    <div class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Add wallet funds</div>
+          <div class="section-caption">One-time payments. This does not start a subscription.</div>
+        </div>
+      </div>
+      <div class="wallet-options">
         ${topUpCard(10000)}
         ${topUpCard(25000)}
         ${topUpCard(50000)}
       </div>
-      <p class="sub" style="margin-top:10px">Secure one-time payment through Stripe. Funds are added only after Stripe confirms payment. No subscription.</p>
     </div>
 
-    <div class="section" style="margin-top:18px">
-      <div class="section-head"><div class="section-title">Transaction history</div></div>
+    <div class="section">
+      <div class="section-title" style="margin-bottom:14px">How a lead purchase works</div>
+      <div class="purchase-flow">
+        <div><span class="flow-num">1</span><strong>Review the lead</strong><p>See the service, ZIP, urgency, and exact lead price before deciding.</p></div>
+        <div><span class="flow-num">2</span><strong>Accept or pass</strong><p>Passing costs nothing. If you accept, the displayed price is deducted from your wallet.</p></div>
+        <div><span class="flow-num">3</span><strong>Contact the customer</strong><p>After a successful charge, the customer’s contact details unlock for you.</p></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Transaction history</div>
+          <div class="section-caption">Wallet funding, promotional credits, lead charges, and approved credits.</div>
+        </div>
+      </div>
       ${walletLedgerHTML()}
     </div>
 
-    <div class="section" style="margin-top:18px">
-      <div class="section-title" style="font-size:18px;margin-bottom:10px">How pricing works</div>
-      <p class="sub">Every lead shows its price before you accept. You are only charged when you accept a lead.
-      Prices are set by job type: larger installation and replacement jobs cost more than small repairs.
-      If a lead is invalid, out of your area, a duplicate, or the customer never requested service,
-      you can dispute it within 7 days and approved disputes are credited back to your wallet.</p>
+    <div class="wallet-policy">
+      <strong>Lead disputes</strong>
+      <p>If a lead is invalid, outside your selected service area, a duplicate, or the customer did not request service, you can submit a dispute within 7 days. Approved disputes are credited back to the same wallet balances used for the charge.</p>
     </div>
   `;
 }
 
 function topUpCard(cents){
   const active = state.state === 'active';
+  const labels = {10000:'Starter',25000:'Most common',50000:'Higher volume'};
   return `
-    <div class="tier-card" ${active?'':'style="opacity:.55"'}>
-      <div class="tier-name">${fmtMoney(cents)}</div>
-      <div class="tier-price">One-time wallet funding</div>
-      <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="openTopUp(${cents})" ${active?'':'disabled title="Account must be active"'}>Add ${fmtMoney(cents)}</button>
+    <div class="wallet-option" ${active?'':'aria-disabled="true"'}>
+      <div class="wallet-option-label">${labels[cents]||'Wallet funds'}</div>
+      <div class="wallet-option-amount">${fmtMoney(cents)}</div>
+      <div class="wallet-option-copy">One-time wallet funding</div>
+      <button class="btn ${cents===25000?'btn-primary':'btn-ghost'} btn-sm" onclick="openTopUp(${cents})" ${active?'':'disabled title="Account must be active"'}>Add ${fmtMoney(cents)}</button>
     </div>`;
 }
 
@@ -2965,23 +3154,18 @@ function settingsHTML(){
 
     <div class="card pad" style="margin-bottom:16px">
       <div class="section-title" style="font-size:16px">Notifications</div>
-      <p class="sub" style="margin:-4px 0 14px">
-        Lead notifications are not switched on yet. Offers appear in your Leads tab
-        as soon as they arrive. We will turn these on once delivery is live and tested —
-        we are not going to promise an alert we cannot yet send.
-      </p>
+      <p class="sub" style="margin:-4px 0 14px">Lead alerts are coming soon. For now, check the Lead Offers tab for new opportunities.</p>
       <div class="toggle-row" style="opacity:.55">
         <div class="toggle-info">
           <h4>Email alerts for new leads <span class="lead-countdown">Coming soon</span></h4>
-          <p>An email the moment a lead is offered to you.</p>
+          <p>Email notification when a new lead is offered to you.</p>
         </div>
         <div class="switch" aria-disabled="true" title="Not available yet"></div>
       </div>
       <div class="toggle-row" style="opacity:.55">
         <div class="toggle-info">
           <h4>SMS alerts for new leads <span class="lead-countdown">Coming soon</span></h4>
-          <p>The same alert to your phone. Off unless you turn it on — we will never
-             enrol you in texts without you asking.</p>
+          <p>Optional text notification for new lead offers. SMS stays off unless you opt in.</p>
         </div>
         <div class="switch" aria-disabled="true" title="Not available yet"></div>
       </div>
@@ -3028,7 +3212,7 @@ async function sendPasswordReset(){
   if(!email){ toast('No email on file','error'); return; }
   try {
     const { error } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/reset-password',
+      redirectTo: window.location.origin + '/reset-password.html',
     });
     if(error){ toast(error.message,'error'); return; }
     toast(`Password reset link sent to ${esc(email)}`,'success');
