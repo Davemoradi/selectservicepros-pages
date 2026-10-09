@@ -483,7 +483,7 @@ async function requestAiReview(ctx,res,b){
 }
 async function createAlertTask(ctx,res,b){
  const key=String(b.alert_key||"");
- const match=/^(application|dispute|notification|task):([0-9a-f-]{36})$/.exec(key);
+ const match=/^(application|dispute|notification|task|insurance):([0-9a-f-]{36})$/.exec(key);
  if(!match||!UUID_RE.test(match[2]))return fail(res,400,"invalid_alert");
  const [kind,id]=[match[1],match[2]];
  const {supabase,user}=ctx;
@@ -502,6 +502,12 @@ async function createAlertTask(ctx,res,b){
   if(!data)return fail(res,404,"alert_not_found");
   active=["Pending Review","Pending Verification"].includes(data.status);
   contractor_id=data.id;title="Review contractor application: "+String(data.company_name||"Contractor").slice(0,105);details="Review contractor application and verification requirements.";
+ }else if(kind==="insurance"){
+  const {data}=await supabase.from("contractors").select("id,company_name,insurance_expiration").eq("id",id).maybeSingle();
+  if(!data)return fail(res,404,"alert_not_found");
+  active=!!data.insurance_expiration&&data.insurance_expiration<=new Date(Date.now()+30*86400000).toISOString().slice(0,10);
+  contractor_id=data.id;title="Renew insurance certificate: "+String(data.company_name||"Contractor").slice(0,105);
+  details="Insurance expires "+String(data.insurance_expiration||"unknown")+". Obtain and review a current certificate; recording a certificate is not independent coverage verification.";
  }else if(kind==="dispute"){
   const {data}=await supabase.from("lead_disputes").select("id,contractor_id,decision").eq("id",id).maybeSingle();
   if(!data)return fail(res,404,"alert_not_found");
@@ -532,7 +538,7 @@ async function createAlertTask(ctx,res,b){
  return res.status(200).json({ok:true,task_id,existing:!data});
 }
 async function markOpsAlert(ctx,res,b){
- const key=String(b.alert_key||"");if(!/^(task|application|dispute|notification):[0-9a-f-]{36}$/.test(key))return fail(res,400,"invalid_alert");
+ const key=String(b.alert_key||"");if(!/^(task|application|dispute|notification|insurance):[0-9a-f-]{36}$/.test(key))return fail(res,400,"invalid_alert");
  const read=b.read!==false;
  const query=ctx.supabase.from("operations_alert_reads");
  const {error}=read?await query.upsert({user_id:ctx.user.id,alert_key:key,read_at:new Date().toISOString()}):await query.delete().eq("user_id",ctx.user.id).eq("alert_key",key);
