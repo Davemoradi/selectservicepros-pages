@@ -22,6 +22,21 @@
 
 ---
 
+## Implementation checkpoint — 2026-10-09
+
+**Built in Operations (initial functional release):**
+- Contractor 360 pilot insurance certificate review: carrier, insured, policy, coverage, effective/expiry dates, outcome, comments, reviewer stamp, immutable review history.
+- Explicit separation of uploaded certificate review from insurer/broker-backed active coverage verification; stale/missing private files cannot be recorded as successfully reviewed.
+- Insurance expiry alerts (30-day window, including overdue), per-employee read/unread state, alert-to-task linking and automatic closure on recorded renewal more than 30 days out.
+- Lead Operations detail: searchable historical leads, matching status, staff triage status (Needs Review / Follow Up / Ready / On Hold / Closed), active employee assignment, follow-up date, reason, and audit history. Matching status and payment fields are **not modified** by triage updates.
+- New automatic audit events for actual lead matching status transitions.
+
+**Not yet built/tested:** Paid manual contractor offers, lead retries, manual reassignments, adjustable pricing, dispute AI agent, full contractor status lifecycle, Houston service-area enforcement and genuine uploaded-document/browser end-to-end testing. Existing independent-insurance-confirmation activation safeguards remain enforced; no provisional activation override has been approved.
+
+**Priority after these checks:** first safely complete manual matching/offer assignment and Houston launch availability restrictions, then pricing and dispute automation. Confirm Houston city limits versus broader Houston metro before enforcing geography.
+
+---
+
 ## Deferred work — User-requested notes (NOT started)
 
 ### 1. Leads — operations and assignment controls
