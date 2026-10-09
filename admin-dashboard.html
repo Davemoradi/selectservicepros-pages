@@ -389,17 +389,15 @@ async function saveOpsNote(){
 
 
 
+
 function marketAreaPanel(d){
  const areas=d.market_areas||[];
  if(!areas.length)return '';
  const owner=String(d.admin?.email||'').toLowerCase()==='david@selectservicepros.com';
  return '<div class="section" style="padding:18px"><div class="section-head"><h2>Launch availability</h2><span class="pill">Controlled by Operations</span></div>'
- +'<p class="sub">Enabled markets govern homeowner intake, new contractor registration, automatic matching and manual offers. Houston-area ZIP 770xx is a launch approximation, not an exact city boundary. Turning a market off immediately stops new lead offers.</p>'
- +opsTable(['Area','Trade','Pilot ZIPs','Availability','Last change','Action'],areas.map(a=>[
-  a.city+', '+a.state_code,a.trade,a.zip_prefix+'xx',a.enabled?'Enabled':'Disabled',
-  a.updated_by_email?date(a.updated_at)+' · '+a.updated_by_email:'Initial setup',
-  owner?'<button class="btn small '+(a.enabled?'secondary':'primary')+'" onclick="toggleMarket(\''+a.id+'\','+(!a.enabled)+')">'+(a.enabled?'Disable':'Enable')+'</button>':'Owner only'
- ]))
+ +'<p class="sub">Enabled markets control homeowner intake, contractor registration and lead offers. Houston-area 770xx is an approximate ZIP-based pilot, not exact city limits. Disabling immediately blocks new offers and acceptance.</p>'
+ +areas.map(a=>'<div style="padding:12px 0;border-top:1px solid #e5e7eb;display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap"><div><b>'+esc(a.city)+', '+esc(a.state_code)+'</b> · '+esc(a.trade)+' · ZIP '+esc(a.zip_prefix)+'xx<br><span class="detail">'+esc(a.enabled?'Enabled':'Disabled')+' · '+esc(a.updated_by_email||'Initial setup')+'</span></div>'
+ +(owner?'<button class="btn small '+(a.enabled?'secondary':'primary')+'" onclick="toggleMarket(\''+esc(a.id)+'\','+(!a.enabled)+')">'+(a.enabled?'Disable market':'Enable market')+'</button>':'<span class="detail">Owner only</span>')+'</div>').join('')
  +'</div>';
 }
 async function toggleMarket(area_id,enabled){
