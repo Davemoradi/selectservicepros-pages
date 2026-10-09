@@ -365,7 +365,7 @@ function init() {
   // If we arrived with BOTH a category AND a valid ZIP (from homepage hero search),
   // Step 1 is already complete — skip directly to Step 2 (contact info).
   // This preserves progressive profiling: partial lead fires on Step 2 submit.
-  if (hasCategoryPrefill && hasZipPrefill) {
+  if (hasCategoryPrefill && hasZipPrefill && marketAvailable()) {
     goToStep(2);
   }
 }
@@ -503,8 +503,9 @@ function wireStep1() {
   });
   document.getElementById('next-1').addEventListener('click', () => {
     if (!state.category) return;
-    if (!/^\d{5}$/.test(state.zip)) {
+    if (!marketAvailable()) {
       zipField.classList.add('has-error');
+      showMarketNotice();
       return;
     }
     goToStep(2);
@@ -600,6 +601,7 @@ function formatPhone(raw) {
 }
 
 async function onStep2Submit() {
+  if(!marketAvailable()){alert('SSP is currently serving HVAC customers in Houston-area ZIP codes beginning with 770.');return;}
   const nameEl = document.getElementById('f-name');
   const phoneEl = document.getElementById('f-phone');
   const emailEl = document.getElementById('f-email');
@@ -766,7 +768,10 @@ async function onFinalSubmit() {
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify(payload)
     });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    if (!resp.ok){
+      const payload=await resp.json().catch(()=>({}));
+      throw new Error(payload.message||payload.error||('HTTP '+resp.status));
+    }
     // success — show confirmation screen
     document.getElementById('success-cat').textContent = (state.category || 'pro').toLowerCase() + ' pro';
     document.getElementById('success-zip').textContent = state.zip;
