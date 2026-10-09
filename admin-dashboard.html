@@ -388,6 +388,30 @@ async function saveOpsNote(){
 }
 
 
+
+function marketAreaPanel(d){
+ const areas=d.market_areas||[];
+ if(!areas.length)return '';
+ const owner=String(d.admin?.email||'').toLowerCase()==='david@selectservicepros.com';
+ return '<div class="section" style="padding:18px"><div class="section-head"><h2>Launch availability</h2><span class="pill">Controlled by Operations</span></div>'
+ +'<p class="sub">Enabled markets govern homeowner intake, new contractor registration, automatic matching and manual offers. Houston-area ZIP 770xx is a launch approximation, not an exact city boundary. Turning a market off immediately stops new lead offers.</p>'
+ +opsTable(['Area','Trade','Pilot ZIPs','Availability','Last change','Action'],areas.map(a=>[
+  a.city+', '+a.state_code,a.trade,a.zip_prefix+'xx',a.enabled?'Enabled':'Disabled',
+  a.updated_by_email?date(a.updated_at)+' · '+a.updated_by_email:'Initial setup',
+  owner?'<button class="btn small '+(a.enabled?'secondary':'primary')+'" onclick="toggleMarket(\''+a.id+'\','+(!a.enabled)+')">'+(a.enabled?'Disable':'Enable')+'</button>':'Owner only'
+ ]))
+ +'</div>';
+}
+async function toggleMarket(area_id,enabled){
+ const reason=prompt('Explain this market change (at least 12 characters):');
+ if(reason===null)return;
+ if(reason.trim().length<12){toast('A reason of at least 12 characters is required.');return}
+ if(!confirm(enabled?'Enable new homeowner requests, contractor registrations and lead offers for this market?':'Disable this market? New requests, offers and offer acceptance will be blocked immediately.'))return;
+ try{
+  await api('/api/admin',{method:'POST',body:JSON.stringify({action:'set_market_area',area_id,enabled,reason:reason.trim()})});
+  await load();toast('Market availability saved. Both customer and contractor flows now use this configuration.');
+ }catch(e){toast('Market update failed: '+e.message)}
+}
 function leads(d){
  const q=state.search.trim().toLowerCase();
  const offers=d.offers||[],triage=d.lead_triage||[];
@@ -396,6 +420,7 @@ function leads(d){
  const unassigned=rows.filter(l=>!l.assigned_contractor_id&&l.status!=='Partial').length;
  return '<div class="pagehead"><div><h1>Leads</h1><p class="sub">Automatic matching status and manual staff workflow are separate. Editing the workflow does not assign a contractor or charge a wallet.</p></div><input class="search" placeholder="Search leads" value="'+esc(state.search)+'" oninput="state.search=this.value;render()"></div>'
  +'<div class="grid">'+metric('Leads loaded',rows.length)+metric('Active system leads',active)+metric('Without a recorded contractor',unassigned)+'</div>'
+ +marketAreaPanel(d)
  +'<div class="section"><div class="tablewrap"><table class="table"><thead><tr><th>Created</th><th>Lead</th><th>Customer</th><th>System status</th><th>Staff workflow</th><th>Price</th><th>Offers</th></tr></thead><tbody>'
  +rows.map(l=>{const tr=triage.find(t=>t.lead_id===l.id);const offs=offers.filter(x=>x.lead_id===l.id);return '<tr><td>'+date(l.created_at)+'</td><td><button class="btn small secondary" onclick="openOpsLead(\''+l.id+'\')">'+esc(l.service_category||'Service')+' →</button><div class="detail">'+esc(l.id)+'</div><div class="detail">'+esc(l.homeowner_city||'Unknown city')+', '+esc(l.homeowner_state||'unknown state')+' · '+esc(l.homeowner_zip||'ZIP unknown')+'</div></td><td>'+esc(l.homeowner_name||'—')+'<div class="detail">'+esc(l.homeowner_phone||'')+'</div></td><td>'+pill(l.status)+'</td><td>'+pill(tr?.workflow_status||'Not reviewed')+'<div class="detail">'+esc(tr?.assigned_to||'Unassigned')+'</div></td><td>'+(l.price_cents==null?'Not priced':money(l.price_cents))+'</td><td>'+offs.filter(x=>x.status==='accepted').length+' accepted<div class="detail">'+offs.length+' offer records</div></td></tr>'}).join('')
  +'</tbody></table></div></div>';
