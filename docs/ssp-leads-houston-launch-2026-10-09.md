@@ -23,6 +23,7 @@
 - Database permission checks: privileged market tables and manual offer RPCs are inaccessible to anon/authenticated users directly; only server-held service-role + verified owner API authorizes them.
 - Rollback-only SQL tests: manual offer successful; lead enters Offering; notification event queued; wallet balance unchanged; duplicate offer rejected; candidate list detects adequate/insufficient wallet; area enable/disable and wrong city/state/trade/ZIP detected; all temporary data rolled back.
 - Five touched JavaScript files syntax parsed; public /api/create-lead?action=market_areas returned live 200 with Houston TX HVAC / 770.
+- Additional rollback-only financial safety test: a valid priced offer was created, the Houston market was switched off before contractor acceptance, the acceptance was blocked, and neither wallet balances nor wallet transaction counts changed.
 - No real contractor was assigned, offered, charged or sent synthetic notifications in committed production data.
 
 ## Remaining launch acceptance work
