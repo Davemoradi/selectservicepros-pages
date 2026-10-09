@@ -316,7 +316,10 @@ const state = {
   details: '',
   leadId: null,      // set after partial capture at step 2
   leadToken: null,   // signed server token authorizing finalization of that partial row
-  partialSent: false
+  partialSent: false,
+  marketAreas: [],
+  marketLoaded: false,
+  marketError: false
 };
 
 // Google Places config — API key lives in a meta tag so you can swap it without code changes
@@ -334,6 +337,7 @@ function init() {
   wireBackButtons();
   updateProgress();
   loadGooglePlaces();  // kicks off async load of Places API
+  loadMarketAreas();
 
   // Check URL params for pre-filled category (e.g. coming from popular searches)
   const params = new URLSearchParams(location.search);
@@ -517,15 +521,50 @@ function maybeAutoAdvanceStep1() {
   if (!/^\d{5}$/.test(state.zip)) return;
   clearTimeout(_step1AutoAdvanceTimer);
   _step1AutoAdvanceTimer = setTimeout(() => {
-    if (state.currentStep === 1 && state.category && /^\d{5}$/.test(state.zip)) {
+    if (state.currentStep === 1 && marketAvailable()) {
       goToStep(2);
     }
   }, 350);
 }
 
+async function loadMarketAreas(){
+ try{
+  const resp=await fetch('/api/create-lead?action=market_areas',{cache:'no-store'});
+  if(!resp.ok)throw new Error('market_lookup_failed');
+  const data=await resp.json();
+  state.marketAreas=Array.isArray(data.market_areas)?data.market_areas:[];
+  state.marketLoaded=true;state.marketError=false;
+ }catch(e){
+  state.marketAreas=[];state.marketLoaded=false;state.marketError=true;
+  console.error('Market areas unavailable',e);
+ }
+ validateStep1();
+ if(state.marketLoaded&&state.currentStep===1&&marketAvailable())maybeAutoAdvanceStep1();
+}
+function marketAvailable(){
+ if(!state.marketLoaded||!state.category||!/^\d{5}$/.test(state.zip))return false;
+ return state.marketAreas.some(m=>
+  String(m.trade).toLowerCase()===String(state.category).toLowerCase()&&
+  state.zip.startsWith(String(m.zip_prefix))&&
+  (!state.city||String(state.city).toLowerCase()===String(m.city).toLowerCase())&&
+  (!state.stateRegion||String(state.stateRegion).toUpperCase()===String(m.state_code).toUpperCase()));
+}
+function showMarketNotice(){
+ const field=document.getElementById('zip-field');
+ if(!field)return;
+ let el=document.getElementById('ssp-market-availability');
+ if(!el){el=document.createElement('p');el.id='ssp-market-availability';el.style.cssText='font-size:13px;margin:10px 0;color:#6b7280';field.insertAdjacentElement('afterend',el)}
+ el.textContent=state.marketError?'Availability is temporarily unavailable. Please try again shortly.':
+ !state.marketLoaded?'Checking launch service areas…':
+ !state.category?'Currently launching with HVAC in Houston-area 770xx ZIP codes.':
+ !/^\d{5}$/.test(state.zip)?'Enter a 5-digit ZIP to check availability.':
+ marketAvailable()?'Available for the Houston-area HVAC pilot.':
+ 'Not available in this category or area yet. SSP currently serves HVAC in Houston-area 770xx ZIP codes.';
+}
 function validateStep1() {
-  const ok = state.category && /^\d{5}$/.test(state.zip);
-  document.getElementById('next-1').disabled = !ok;
+  const ok=marketAvailable();
+  document.getElementById('next-1').disabled=!ok;
+  showMarketNotice();
 }
 
 // ============================================================
