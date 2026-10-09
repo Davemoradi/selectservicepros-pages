@@ -39,7 +39,7 @@ button,input,select{font:inherit}.hidden{display:none!important}.shell{min-heigh
 const SUPABASE_URL='https://kasqtxwbsmjlisbnebku.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_vNTt8FXb9XdBQ_Asd1QPTg_luc7D8Fz';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-const state={tab:'overview',data:null,search:'',busy:false,selectedContractor:null,selectedTask:null,selectedLead:null};
+const state={tab:'overview',data:null,search:'',busy:false,selectedContractor:null,selectedTask:null,selectedLead:null,manualOfferCandidates:null};
 const initialTab=new URLSearchParams(location.search).get('tab');if(['overview','contractors','queue','communications','leads','pricing','disputes','staff','alerts'].includes(initialTab))state.tab=initialTab;
 const tabs=[['overview','Overview'],['contractors','Contractors'],['queue','Work Queue'],['alerts','Alerts'],['communications','Communications'],['leads','Leads'],['pricing','Pricing'],['disputes','Disputes'],['staff','Employees']];
 function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
@@ -401,10 +401,29 @@ function leads(d){
  +'</tbody></table></div></div>';
 }
 function openOpsLead(id){
- state.selectedLead=id;state.tab='lead-detail';
+ state.selectedLead=id;state.manualOfferCandidates=null;state.tab='lead-detail';
  const u=new URL(location.href);u.searchParams.set('tab','leads');u.searchParams.set('lead',id);history.replaceState(null,'',u);render();
 }
 function closeOpsLead(){state.selectedLead=null;setTab('leads')}
+
+function manualOfferPanel(l,d){
+ const owner=String(d.admin?.email||"").toLowerCase()==="david@selectservicepros.com";
+ if(!owner)return "";
+ const active=['Priced','Offering'].includes(l.status)&&!l.partial&&!!l.price_cents&&!!l.matching_expires_at&&new Date(l.matching_expires_at)>new Date();
+ const current=state.manualOfferCandidates?.lead_id===l.id?state.manualOfferCandidates.candidates:null;
+ const available=(current||[]).filter(c=>c.eligible);
+ const opts=available.map(c=>'<option value="'+esc(c.contractor_id)+'">'+esc(c.company_name||"Unnamed")+' (SSP-'+esc(c.contractor_number)+') · Wallet '+money(c.wallet_total_cents)+'</option>').join('');
+ const reasons={"contractor_inactive":"Not Active","previously_offered":"Already received this lead","wallet_below_offer_price":"Insufficient wallet","trade_not_served":"Does not service trade","zip_not_served":"Does not service ZIP","credentials_or_market_ineligible":"Credential/market requirements not met"};
+ const other=current?current.filter(c=>!c.eligible).map(c=>esc(c.company_name||c.contractor_number)+' — '+esc(reasons[c.eligibility_reason]||c.eligibility_reason)).slice(0,8).join('; '):'';
+ return '<div class="section" style="padding:18px"><h3>Manual contractor offer</h3><p class="sub">A manual assignment sends the contractor a priced offer using SSP’s existing process. The contractor chooses whether to accept; <b>the wallet is charged only on acceptance</b>. No direct lead assignment or free customer-data disclosure occurs.</p>'
+ +(!active?'<p class="notice">Manual offers are unavailable: this lead must be priced, open for matching, and not a partial submission. Historical closed leads cannot be reopened from this control.</p>':
+ '<p><button class="btn secondary small" onclick="loadOfferCandidates(\''+l.id+'\')">Check eligible contractors</button></p>'
+ +(current?'<p>'+available.length+' eligible contractor'+(available.length===1?'':'s')+' for this priced lead.</p>'
+ +(available.length?'<label>Select contractor<select id="manual-offer-contractor"><option value="">Choose eligible contractor</option>'+opts+'</select></label><label>Reason for manual offer<textarea id="manual-offer-reason" rows="3" maxlength="2000" style="width:100%" placeholder="Explain why an Operations override is needed (12+ characters)"></textarea></label><p><button class="btn primary" onclick="sendManualOffer(\''+l.id+'\')">Send 15-minute offer</button></p>':'<p class="detail">No contractor is currently eligible. Check trade, ZIP, balance, credentials and account status.</p>')
+ +(other?'<details><summary>Why other contractors are ineligible</summary><p class="detail">'+other+'</p></details>':''):'<p class="detail">Check eligibility to load real-time candidates before sending.</p>'))
+ +'<p class="detail" id="manual-offer-error"></p></div>';
+}
+
 function leadDetail(d){
  const l=(d.leads||[]).find(x=>x.id===state.selectedLead);
  if(!l)return '<div class="notice">Lead not found. <button class="btn secondary" onclick="closeOpsLead()">Back to Leads</button></div>';
@@ -420,6 +439,7 @@ function leadDetail(d){
  +'<div class="grid">'+metric('System status',l.status)+metric('Staff workflow',tr?.workflow_status||'Not reviewed')+metric('Lead price',l.price_cents==null?'Not priced':money(l.price_cents))+metric('Offers',offers.length)+'</div>'
  +'<div class="section" style="padding:18px"><h3>Service request</h3><p><b>Customer:</b> '+esc(l.homeowner_name||'—')+' · '+esc(l.homeowner_phone||'—')+' · '+esc(l.homeowner_email||'—')+'</p><p><b>Service:</b> '+esc(l.service_category||'—')+' · '+esc(l.service_type||'—')+' · '+esc(l.issue_code||'—')+'</p><p><b>Location:</b> '+esc(l.homeowner_city||'—')+', '+esc(l.homeowner_state||'—')+' '+esc(l.homeowner_zip||'—')+'</p><p><b>Matching ends:</b> '+date(l.matching_expires_at)+' · <b>System status:</b> '+esc(l.status)+'</p><p><b>Assigned contractor in legacy record:</b> '+esc(company(l.assigned_contractor_id))+'</p></div>'
  +'<div class="section" style="padding:18px"><h3>Staff workflow</h3><p class="sub">Set the internal follow-up status and responsible employee. This does not change the matching/payment state or send offers.</p><div class="grid"><label>Work status<select id="lead-triage-status">'+statusOpts+'</select></label><label>Assigned SSP employee<select id="lead-triage-owner"><option value="">Unassigned</option>'+staffOpts+'</select></label><label>Follow-up date<input type="datetime-local" id="lead-triage-due" value="'+esc(followDate)+'"></label></div><label>Reason / next steps<textarea id="lead-triage-reason" maxlength="2000" rows="3" style="width:100%" placeholder="Reason for change, next action, and relevant context (12+ characters)">'+esc(tr?.reason||'')+'</textarea></label><p><button class="btn primary" onclick="saveLeadTriage()">Save lead workflow</button></p><p class="error" id="lead-triage-error"></p></div>'
+ +manualOfferPanel(l,d)
  +'<div class="section" style="padding:18px"><h3>Offer and assignment history</h3><p class="sub">Only accepted offers from the approved wallet workflow establish paid contractor access. No direct assignment button is enabled in this release.</p>'+opsTable(['Offered','Contractor','Status','Price','Expires'],offers.map(o=>[date(o.offered_at),company(o.contractor_id),o.status,money(o.price_cents),date(o.expires_at)]))+'</div>'
  +'<div class="section" style="padding:18px"><h3>Lead activity and user stamps</h3>'+opsTable(['When','Actor','Event','Changes'],historyItems.map(e=>[date(e.created_at),e.actor_email,e.action,Object.entries(e.after_state||{}).map(([k,v])=>k+': '+String(v??'')).join(' · ')]))+'</div>';
 }
