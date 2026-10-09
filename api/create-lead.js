@@ -154,6 +154,13 @@ module.exports = async function handler(req, res) {
     res.setHeader("Allow", "POST, OPTIONS");
     return res.status(204).end();
   }
+  if (req.method === "GET" && req.query?.action === "market_areas") {
+    if (!SUPABASE_SERVICE_KEY) return res.status(503).json({ success:false,error:"market_unavailable" });
+    const client=createClient(SUPABASE_URL,SUPABASE_SERVICE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
+    const {data,error}=await client.from("ssp_market_service_areas").select("city,state_code,trade,zip_prefix").eq("enabled",true).limit(100);
+    return error?res.status(503).json({success:false,error:"market_unavailable"}):
+      res.status(200).json({success:true,market_areas:data||[]});
+  }
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST, OPTIONS");
     return res.status(405).json({ success: false, error: "method_not_allowed" });
@@ -207,6 +214,13 @@ module.exports = async function handler(req, res) {
     if (!name || name.length < 2 || phoneDigits.length < 10 || !/^\d{5}$/.test(zip) || !validEmail(email)) {
       return res.status(400).json({ success: false, error: "invalid_contact_fields" });
     }
+    const {data:marketOpen,error:marketError}=await supabase.rpc("ssp_market_supports_request",{
+      p_city:addr.homeowner_city||null,p_state:addr.homeowner_state||null,p_zip:zip,p_trade:category
+    });
+    if(marketError)return res.status(503).json({success:false,error:"market_check_unavailable"});
+    if(marketOpen!==true)return res.status(422).json({success:false,error:"service_area_unavailable",
+      message:"SSP is currently serving HVAC requests in Houston-area TX ZIP codes starting 770."});
+
 
     // ---------------------------------------------------------------------
     // PARTIAL — capture contact + location only. Never price or match here.
