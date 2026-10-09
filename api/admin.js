@@ -22,7 +22,7 @@ async function getData(ctx, res) {
         supabase.from("operations_staff").select("id,name,email,active,role,employment_status").eq("active",true),
         supabase.from("contractors").select("id,contractor_number,company_name").limit(1000),
         supabase.from("operations_alert_reads").select("alert_key,read_at").eq("user_id",user.id).limit(3000),
-        supabase.from("operations_ai_reviews").select("id,task_id,status,phase,requested_at,completed_at,model_name,summary,proposed_action,reviewed_at").order("requested_at",{ascending:false}).limit(1000)
+        supabase.from("operations_ai_reviews").select("id,task_id,status,phase,requested_at,completed_at,model_name,summary,proposed_action,agent_findings,evidence,verification_summary,error_code,reviewed_at").order("requested_at",{ascending:false}).limit(1000)
       ]);
       if([tasks,notes,files,events,staff,contractors,alertReads,aiReviews].some(x=>x.error))return fail(res,500,"work_queue_unavailable");
       return res.status(200).json({ok:true,admin:{email:user.email,staff_only:true},tasks:tasks.data||[],task_notes:notes.data||[],task_files:files.data||[],task_events:events.data||[],staff:staff.data||[],contractors:contractors.data||[],alert_reads:alertReads.data||[],ai_reviews:aiReviews.data||[]});
@@ -69,7 +69,7 @@ async function getData(ctx, res) {
       supabase.from("operations_task_attachments").select("id,task_id,file_name,size_bytes,uploader_email,created_at").order("created_at",{ascending:false}).limit(2000),
       supabase.from("operations_staff").select("id,email,name,first_name,last_name,active,employment_status,role,created_at").order("name"),
       supabase.from("operations_alert_reads").select("alert_key,read_at").eq("user_id",user.id).limit(3000),
-      supabase.from("operations_ai_reviews").select("id,task_id,status,requested_at,completed_at,model_name,summary,proposed_action,reviewed_at").order("requested_at",{ascending:false}).limit(1000)
+      supabase.from("operations_ai_reviews").select("id,task_id,status,requested_at,completed_at,model_name,summary,proposed_action,agent_findings,evidence,verification_summary,error_code,reviewed_at").order("requested_at",{ascending:false}).limit(1000)
     ]);
     if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error || taskNotesR.error || taskFilesR.error || staffR.error || alertReadsR.error || aiReviewsR.error) throw new Error("operations_history_unavailable");
     const contractors = contractorsR.data || [];
