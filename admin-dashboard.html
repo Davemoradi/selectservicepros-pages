@@ -238,7 +238,7 @@ function contractorDetail(d){
  +'<div class="grid">'+metric('Status',c.status)+metric('Paid wallet',money(c.lead_balance_cents))+metric('Promo wallet',money(c.promo_credits_cents))+metric('Leads offered',offers.length)+'</div>'
   +profileEditor(d)+'<div class="section" style="padding:18px"><h3>Company & operations</h3><p><b>Trades:</b> '+esc(c.service_categories||'Not provided')+' · <b>ZIPs:</b> '+esc(c.service_zips||'Not provided')+'</p><p><b>Website:</b> '+esc(c.website_url||'Not provided')+' · <b>Technicians:</b> '+esc(c.num_technicians??'Not provided')+' · <b>Vehicles:</b> '+esc(c.num_vehicles??'Not provided')+'</p><p><b>Scheduling:</b> '+esc(c.scheduling_system||'Not provided')+' · <b>Agreement:</b> '+esc(c.agreement_accepted_at?date(c.agreement_accepted_at):'Not accepted')+'</p></div>'
  +'<div class="section" style="padding:18px"><h3>Insurance & licenses</h3><p>'+esc(c.insurance_carrier||'Carrier missing')+' · '+esc(c.insurance_policy_number||'Policy number missing')+' · Expiration: '+esc(c.insurance_expiration||'Unknown')+' · '+esc(c.insurance_verified?'Verified':'Not verified')+' <button class="btn small secondary" onclick="viewDocument(\''+c.id+'\',\'insurance\')" '+(!c.insurance_doc_url?'disabled':'')+'>View insurance</button></p>'
- +(c.licenses||[]).map(l=>'<p>'+esc(l.trade_category||'License')+' · '+esc(l.license_number||'')+' · Expires '+esc(l.expiration_date||'Unknown')+' · '+esc(l.verified?'Verified':'Pending')+' <button class="btn small secondary" onclick="viewDocument(\''+c.id+'\',\'license\',\''+l.id+'\')" '+(!l.document_url?'disabled':'')+'>View license</button></p>').join('')+'</div>'+credentialVerificationPanel(c)
+ +(c.licenses||[]).map(l=>'<p>'+esc(l.trade_category||'License')+' · '+esc(l.license_number||'')+' · Expires '+esc(l.expiration_date||'Unknown')+' · '+esc(l.verified?'Verified':'Pending')+' <button class="btn small secondary" onclick="viewDocument(\''+c.id+'\',\'license\',\''+l.id+'\')" '+(!l.document_url?'disabled':'')+'>View license</button></p>').join('')+'</div>'+insuranceDocumentReviewPanel(c)+credentialVerificationPanel(c)
  +'<div class="section" style="padding:18px"><h3>Internal notes</h3><p class="sub">Private to authorized Operations staff; notes are timestamped and append-only.</p><textarea id="ops-note" maxlength="5000" rows="3" style="width:100%;border:1px solid #dde2ea;border-radius:8px;padding:10px" placeholder="Call summary, document review, or follow-up"></textarea><p><button class="btn primary" onclick="saveOpsNote()">Save note</button></p><div id="ops-note-error" class="error"></div></div>'
  +opsTable(['When','Added by','Note'],notes.map(x=>[date(x.created_at),x.author_email||'Unknown (legacy)',x.body]))
  +'<h3>Wallet ledger</h3>'+opsTable(['When','Type','Amount','Description'],tx.map(x=>[date(x.created_at),x.type,money(x.amount_cents),x.description]))
@@ -261,6 +261,41 @@ function multiAgentFindings(d,t){
  }).join('');
  const registry=(a.tdlr_registry||[]).map(v=>[v.license_number,v.status,v.match?.business_name||'—',v.match?.expiration_date||'—',v.source_asof||'Unknown']);
  return '<div class="section" style="padding:18px"><h3>Five-agent evidence</h3><p class="sub">AI findings are recommendations, not automatically validated facts. Source material may be outdated or missing. Official government dataset matches do not prove a license is currently active.</p>'+panels+(registry.length?opsTable(['Submitted license','Official dataset result','Registry name','Expiry','Dataset updated'],registry):'')+'</div>';
+}
+
+
+function insuranceDocumentReviewPanel(c){
+ const expiry=c.insurance_expiration||'';
+ const path=String(c.insurance_doc_url||'');
+ const privateFile=path.startsWith(c.id+'/')&&!path.includes('..');
+ const warning=!privateFile?'<p style="color:#b45309">This certificate has no valid private uploaded file path. Request a fresh upload before recording a document review.</p>':'';
+ const now=new Date().toISOString().slice(0,10);
+ const expNotice=expiry&&expiry<now?'<span class="pill bad">Expired</span>':expiry&&expiry<=new Date(Date.now()+30*86400000).toISOString().slice(0,10)?'<span class="pill warn">Expires soon</span>':'';
+ return '<div class="section" style="padding:18px"><h3>Pilot insurance certificate review</h3><p class="sub">Manual review of the uploaded certificate and its stated expiration date. <b>This does not establish that coverage is currently active or independently verified.</b> No Certificial integration is required for this step.</p>'
+ +warning+'<p>Policy expiry on file: '+esc(expiry||'Not recorded')+' '+expNotice+'</p>'
+ +'<div class="grid"><label>Document review outcome<select id="cert-review-status"><option>Reviewed</option><option>Needs Update</option><option>Rejected</option></select></label><label>Carrier<input id="cert-carrier" value="'+esc(c.insurance_carrier||'')+'" maxlength="160"></label><label>Named insured<input id="cert-named-insured" placeholder="Exactly as shown on certificate" maxlength="220"></label><label>Policy number<input id="cert-policy-number" value="'+esc(c.insurance_policy_number||'')+'" maxlength="140"></label><label>Policy effective date<input id="cert-effective-date" type="date"></label><label>Policy expiration date<input id="cert-expiration-date" type="date" value="'+esc(expiry)+'"></label></div>'
+ +'<label>Coverage shown on certificate<textarea id="cert-coverage" maxlength="2000" rows="2" style="width:100%" placeholder="State limits and coverages shown; do not assume current policy status"></textarea></label>'
+ +'<label>Reviewer notes / issues<textarea id="cert-review-note" maxlength="2000" rows="3" style="width:100%" placeholder="Required: what was reviewed, any missing information, and next steps"></textarea></label>'
+ +'<p><button class="btn primary" '+(!privateFile?'disabled':'')+' onclick="saveCertificateReview(\''+c.id+'\')">Save document review</button> <button class="btn secondary" onclick="loadCredentialEvidence(\''+c.id+'\')">Review history</button></p><p class="error" id="cert-review-error"></p></div>';
+}
+async function saveCertificateReview(contractor_id){
+ const c=(state.data?.contractors||[]).find(x=>x.id===contractor_id);
+ const get=id=>document.getElementById(id)?.value.trim()||'';
+ if(!c)return;
+ const status=get('cert-review-status'),review_note=get('cert-review-note');
+ const expiration_date=get('cert-expiration-date')||null;
+ const now=new Date().toISOString().slice(0,10);
+ if(review_note.length<12){document.getElementById('cert-review-error').textContent='Describe what was reviewed and what should happen next (12+ characters).';return}
+ if(status==='Reviewed'&&(!expiration_date||expiration_date<now)){document.getElementById('cert-review-error').textContent='A current policy expiration date is required to mark the document Reviewed.';return}
+ const payload={action:'review_insurance_document',contractor_id,
+  expected_document_path:c.insurance_doc_url,status,
+  carrier:get('cert-carrier'),named_insured:get('cert-named-insured'),
+  policy_number:get('cert-policy-number'),effective_date:get('cert-effective-date')||null,
+  expiration_date,coverage_summary:get('cert-coverage'),review_note};
+ try{
+  await api('/api/credential-check',{method:'POST',body:JSON.stringify(payload)});
+  await load();toast('Certificate review saved with your user stamp. Active coverage remains independently unverified.');
+ }catch(e){document.getElementById('cert-review-error').textContent='Could not save: '+e.message}
 }
 
 function credentialVerificationPanel(c){
@@ -294,7 +329,7 @@ async function loadCredentialEvidence(contractor_id){
  if(!dest)return;
  try{
   const r=await api('/api/credential-check?contractor_id='+encodeURIComponent(contractor_id));
-  dest.innerHTML=opsTable(['Checked','Credential','Source','Outcome','By','Reference'],(r.checks||[]).map(x=>[date(x.checked_at),x.credential_kind,x.method,x.result,x.checked_by_label,x.source_reference||x.source_url||'—']));
+  dest.innerHTML='<h4>Document review history</h4>'+opsTable(['Reviewed','Outcome','Carrier','Named insured','Policy','Expires','By','Notes'],(r.document_reviews||[]).map(x=>[date(x.reviewed_at),x.status,x.carrier||'—',x.named_insured||'—',x.policy_number||'—',x.expiration_date||'—',x.reviewer_email,x.review_note]))+'<h4>Independent source confirmation history</h4>'+opsTable(['Checked','Credential','Source','Outcome','By','Reference'],(r.checks||[]).map(x=>[date(x.checked_at),x.credential_kind,x.method,x.result,x.checked_by_label,x.source_reference||x.source_url||'—']));
  }catch(e){dest.textContent='Verification history unavailable: '+e.message}
 }
 
