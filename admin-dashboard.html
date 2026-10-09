@@ -237,12 +237,48 @@ function contractorDetail(d){
  +'<div class="grid">'+metric('Status',c.status)+metric('Paid wallet',money(c.lead_balance_cents))+metric('Promo wallet',money(c.promo_credits_cents))+metric('Leads offered',offers.length)+'</div>'
   +profileEditor(d)+'<div class="section" style="padding:18px"><h3>Company & operations</h3><p><b>Trades:</b> '+esc(c.service_categories||'Not provided')+' · <b>ZIPs:</b> '+esc(c.service_zips||'Not provided')+'</p><p><b>Website:</b> '+esc(c.website_url||'Not provided')+' · <b>Technicians:</b> '+esc(c.num_technicians??'Not provided')+' · <b>Vehicles:</b> '+esc(c.num_vehicles??'Not provided')+'</p><p><b>Scheduling:</b> '+esc(c.scheduling_system||'Not provided')+' · <b>Agreement:</b> '+esc(c.agreement_accepted_at?date(c.agreement_accepted_at):'Not accepted')+'</p></div>'
  +'<div class="section" style="padding:18px"><h3>Insurance & licenses</h3><p>'+esc(c.insurance_carrier||'Carrier missing')+' · '+esc(c.insurance_policy_number||'Policy number missing')+' · Expiration: '+esc(c.insurance_expiration||'Unknown')+' · '+esc(c.insurance_verified?'Verified':'Not verified')+' <button class="btn small secondary" onclick="viewDocument(\''+c.id+'\',\'insurance\')" '+(!c.insurance_doc_url?'disabled':'')+'>View insurance</button></p>'
- +(c.licenses||[]).map(l=>'<p>'+esc(l.trade_category||'License')+' · '+esc(l.license_number||'')+' · Expires '+esc(l.expiration_date||'Unknown')+' · '+esc(l.verified?'Verified':'Pending')+' <button class="btn small secondary" onclick="viewDocument(\''+c.id+'\',\'license\',\''+l.id+'\')" '+(!l.document_url?'disabled':'')+'>View license</button></p>').join('')+'</div>'
+ +(c.licenses||[]).map(l=>'<p>'+esc(l.trade_category||'License')+' · '+esc(l.license_number||'')+' · Expires '+esc(l.expiration_date||'Unknown')+' · '+esc(l.verified?'Verified':'Pending')+' <button class="btn small secondary" onclick="viewDocument(\''+c.id+'\',\'license\',\''+l.id+'\')" '+(!l.document_url?'disabled':'')+'>View license</button></p>').join('')+'</div>'+credentialVerificationPanel(c)
  +'<div class="section" style="padding:18px"><h3>Internal notes</h3><p class="sub">Private to authorized Operations staff; notes are timestamped and append-only.</p><textarea id="ops-note" maxlength="5000" rows="3" style="width:100%;border:1px solid #dde2ea;border-radius:8px;padding:10px" placeholder="Call summary, document review, or follow-up"></textarea><p><button class="btn primary" onclick="saveOpsNote()">Save note</button></p><div id="ops-note-error" class="error"></div></div>'
  +opsTable(['When','Added by','Note'],notes.map(x=>[date(x.created_at),x.author_email||'Unknown (legacy)',x.body]))
  +'<h3>Wallet ledger</h3>'+opsTable(['When','Type','Amount','Description'],tx.map(x=>[date(x.created_at),x.type,money(x.amount_cents),x.description]))
  +'<h3>Lead offers</h3>'+opsTable(['When','Lead','Status','Price'],offers.map(x=>[date(x.offered_at),x.lead_id,x.status,money(x.price_cents)]))
  +'<h3>Notification delivery</h3><p class="sub">Outbox only. No sent-email contents are stored here.</p>'+opsTable(['When','Event','Status','Attempts','Error'],events.map(x=>[date(x.created_at),x.event_type,x.status,x.attempt_count,x.last_error]));
+}
+
+
+function credentialVerificationPanel(c){
+ const lics=(c.licenses||[]).filter(l=>String(l.license_state||'').toUpperCase()==='TX');
+ return '<div class="section" style="padding:18px"><h3>Independent verification sources</h3><p class="sub">Texas licenses can be cross-checked against the official TDLR published dataset. A dataset match is not proof of current active status. Insurance provider API is not connected; human-confirmed broker/insurer evidence is required before approval.</p>'
+ +lics.map(l=>'<details style="padding:12px;border-bottom:1px solid #ddd"><summary><b>TX license '+esc(l.license_number||'Unknown')+'</b> — verify source</summary><p><button class="btn secondary small" onclick="checkTdlrRecord(\''+c.id+'\',\''+l.id+'\')">Check official TDLR dataset</button> <a href="https://www.tdlr.texas.gov/LicenseSearch/" target="_blank" rel="noopener noreferrer">Open current active-license search</a></p><p class="detail">If you independently checked the live TDLR portal, record your source and finding before approving.</p><input id="tdlr-ref-'+l.id+'" style="width:100%" placeholder="Live TDLR reference / license number"><textarea id="tdlr-notes-'+l.id+'" style="width:100%;min-height:80px" placeholder="Evidence from the current active search, license type, name, expiration and findings (30+ characters)"></textarea><label><input type="checkbox" id="tdlr-confirm-'+l.id+'"> I personally verified the license on TDLR’s current active search</label><p><button class="btn primary small" onclick="recordTdlrConfirmation(\''+c.id+'\',\''+l.id+'\')">Save TDLR confirmation</button></p></details>').join('')
+ +'<details style="padding:12px;border-bottom:1px solid #ddd"><summary><b>Insurance source confirmation</b></summary><p class="sub">For manual verification until a connected insurer/broker API is installed. Do not use the uploaded certificate alone.</p><label>Contact method <select id="ins-source"><option value="broker_direct">Direct broker confirmation</option><option value="insurer_direct">Direct insurer confirmation</option></select></label><input id="ins-contact" style="width:100%" placeholder="Who verified the policy (name and organization)"><input id="ins-reference" style="width:100%" placeholder="Confirmation reference / callback / portal ID"><textarea id="ins-notes" style="width:100%;min-height:80px" placeholder="Coverage confirmed, policy, limits, in-force date, source and detailed notes (30+ characters)"></textarea><label><input type="checkbox" id="ins-confirm"> I independently confirmed this policy is currently in force directly with the insurer or broker</label><p><button class="btn primary small" onclick="recordInsuranceConfirmation(\''+c.id+'\')">Save source confirmation</button></p></details>'
+ +'<p><button class="btn secondary small" onclick="loadCredentialEvidence(\''+c.id+'\')">View verification history</button></p><div id="credential-check-history"><p class="detail">Click to retrieve source verification records.</p></div></div>';
+}
+async function checkTdlrRecord(contractor_id,license_id){
+ try{const r=await api('/api/credential-check',{method:'POST',body:JSON.stringify({action:'check_tdlr',contractor_id,license_id})});toast('TDLR official dataset result: '+r.check.status+'. Current active-status confirmation may still be required.');await loadCredentialEvidence(contractor_id);}
+ catch(e){toast('TDLR check failed: '+e.message)}
+}
+async function recordTdlrConfirmation(contractor_id,license_id){
+ const reference=document.getElementById('tdlr-ref-'+license_id)?.value.trim()||'';
+ const notes=document.getElementById('tdlr-notes-'+license_id)?.value.trim()||'';
+ const confirmed_active=!!document.getElementById('tdlr-confirm-'+license_id)?.checked;
+ if(!confirmed_active||reference.length<6||notes.length<30){toast('Record a live lookup reference, detailed evidence, and confirm the current official result.');return}
+ try{await api('/api/credential-check',{method:'POST',body:JSON.stringify({action:'attest_live_license',contractor_id,license_id,reference,notes,confirmed_active})});toast('Human-confirmed TDLR evidence recorded.');await loadCredentialEvidence(contractor_id)}
+ catch(e){toast('Evidence could not be recorded: '+e.message)}
+}
+async function recordInsuranceConfirmation(contractor_id){
+ const v=id=>document.getElementById(id)?.value.trim()||'';
+ const confirmed_active=!!document.getElementById('ins-confirm')?.checked;
+ if(!confirmed_active||v('ins-reference').length<8||v('ins-contact').length<3||v('ins-notes').length<30){toast('Complete the broker/insurer verification details and confirmation.');return}
+ try{await api('/api/credential-check',{method:'POST',body:JSON.stringify({action:'attest_insurance',contractor_id,method:v('ins-source'),contact:v('ins-contact'),reference:v('ins-reference'),notes:v('ins-notes'),confirmed_active})});toast('Human insurer/broker confirmation recorded.');await loadCredentialEvidence(contractor_id)}
+ catch(e){toast('Confirmation failed: '+e.message)}
+}
+async function loadCredentialEvidence(contractor_id){
+ const dest=document.getElementById('credential-check-history');
+ if(!dest)return;
+ try{
+  const r=await api('/api/credential-check?contractor_id='+encodeURIComponent(contractor_id));
+  dest.innerHTML=opsTable(['Checked','Credential','Source','Outcome','By','Reference'],(r.checks||[]).map(x=>[date(x.checked_at),x.credential_kind,x.method,x.result,x.checked_by_label,x.source_reference||x.source_url||'—']));
+ }catch(e){dest.textContent='Verification history unavailable: '+e.message}
 }
 
 function profileEditor(d){
