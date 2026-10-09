@@ -17,7 +17,11 @@ module.exports=async(req,res)=>{
  if(req.method==="GET"){
   const {data,error}=await ctx.supabase.from("operations_credential_checks").select("id,license_id,credential_kind,method,result,document_path,evidence,source_url,source_asof,checked_at,checked_by_label").eq("contractor_id",id).order("checked_at",{ascending:false}).limit(100);
   if(error)return fail(res,500,"checks_unavailable");
-  return res.status(200).json({ok:true,checks:data||[],insurance_partner_status:"not_connected"});
+  const {data:reviews,error:reviewError}=await ctx.supabase.from("operations_insurance_document_reviews")
+    .select("id,document_path,status,carrier,named_insured,policy_number,effective_date,expiration_date,coverage_summary,review_note,reviewer_email,reviewed_at")
+    .eq("contractor_id",id).order("reviewed_at",{ascending:false}).limit(100);
+  if(reviewError)return fail(res,500,"document_reviews_unavailable");
+  return res.status(200).json({ok:true,checks:data||[],document_reviews:reviews||[],insurance_partner_status:"not_connected"});
  }
  const action=String(b.action||"");
  if(action==="check_tdlr"){
@@ -44,6 +48,32 @@ module.exports=async(req,res)=>{
   const {error}=await ctx.supabase.from("operations_credential_checks").insert({contractor_id:id,license_id,credential_kind:"license",method:"tdlr_live_search",result:"human_attested",document_path:path,source_url:"https://www.tdlr.texas.gov/LicenseSearch/",source_reference:reference,checked_by:ctx.user.id,checked_by_label:ctx.user.email||"SSP Operations",evidence:{notes,license_number:l.license_number,checked_current_active_search:true,notice:"Human confirmation of TDLR active search, not a machine-verifiable live search API result."}});
   if(error)return fail(res,500,"license_confirmation_save_failed");
   return res.status(200).json({ok:true,status:"human_attested"});
+ }
+ if(action==="review_insurance_document"){
+  const status=String(b.status||"");
+  const note=String(b.review_note||"").trim();
+  const carrier=String(b.carrier||"").trim(),named_insured=String(b.named_insured||"").trim();
+  const policy_number=String(b.policy_number||"").trim(),coverage_summary=String(b.coverage_summary||"").trim();
+  const effective_date=b.effective_date||null,expiration_date=b.expiration_date||null;
+  const iso=/^\\d{4}-\\d{2}-\\d{2}$/;
+  if(!["Reviewed","Needs Update","Rejected"].includes(status)||note.length<12||note.length>2000||carrier.length>160||named_insured.length>220||policy_number.length>140||coverage_summary.length>2000||
+    (effective_date&&!iso.test(effective_date))||(expiration_date&&!iso.test(expiration_date)))return fail(res,400,"invalid_document_review");
+  if(status==="Reviewed"&&(!expiration_date||expiration_date<new Date().toISOString().slice(0,10)))return fail(res,400,"current_expiration_date_required");
+  const path=String(b.expected_document_path||"");
+  if(!path||path.length>700)return fail(res,400,"document_path_required");
+  const {data,error}=await ctx.supabase.rpc("ssp_record_insurance_document_review",{
+    p_contractor_id:id,p_expected_document_path:path,p_status:status,
+    p_carrier:carrier,p_named_insured:named_insured,p_policy_number:policy_number,
+    p_effective_date:effective_date,p_expiration_date:expiration_date,
+    p_coverage_summary:coverage_summary,p_review_note:note,
+    p_actor_id:ctx.user.id,p_actor_email:ctx.user.email||"SSP Operations"
+  });
+  if(error){
+    const msg=String(error.message||"");
+    if(/document_changed_refresh|private_document_required|document_not_found|current_expiration_date_required|invalid_date_range/.test(msg))return fail(res,409,msg.split(":")[0].slice(0,100));
+    return fail(res,500,"document_review_save_failed");
+  }
+  return res.status(200).json(data);
  }
  if(action==="attest_insurance"){
   const method=String(b.method||""),ref=String(b.reference||"").trim(),contact=String(b.contact||"").trim(),notes=String(b.notes||"").trim();
