@@ -4,12 +4,21 @@
 **Project:** Select Service Pros (SSP)
 **Scope:** Houston-first HVAC contractor and homeowner marketplace
 
-## Current priority: Finish credential verification and insurance source integration
+## Launch decision (2026-10-09): Certificial integration ON HOLD
 
-- Obtain Certificial Insurance Tracking API partnership, sandbox and production credentials, API documentation, webhook details, and pricing at pilot / growth volumes.
-- Confirm which coverage signals are directly verified by an insurer/agent versus extracted from uploaded documents.
-- Test genuine credential uploads, Texas TDLR verification, the full AI specialist workflow, human decisions, expirations, cancellation events, and source auditability.
-- **Do not start the deferred work below until this credential-verification priority is completed or the user explicitly reprioritizes it.**
+- The owner already contacted Certificial and is awaiting their response. Do not buy a plan or block SSP's Houston HVAC pilot on insurer API access.
+- **Launch MVP for the first few contractors:** manually review the actual uploaded certificate, capture insurer/carrier, policy number, named insured, insurance type/limits if visible, effective date, expiration date, document version, and reviewer/date. Flag missing, illegible, expired or inconsistent fields. Keep the original source file accessible for review.
+- License checks: retain official Texas TDLR public-data cross-check and attributable human review of current licensing, rather than relying on an AI guess.
+- Treat **certificate reviewed**, **live coverage independently confirmed**, and **SSP approval** as different states. A future expiration date on a certificate is not proof a policy is currently in force. Do not silently bypass the existing production approval gate, which presently requires independent source confirmation recorded against the same private document.
+- Keep expiration dates visible in Contractor 360 and a renewal/expiry queue. Set up automatic reminders and test that expiring/expired policies stop contractor eligibility according to the approved launch rules (not implemented by these notes).
+- Perform an authenticated end-to-end pilot with genuine documents before calling onboarding ready. Keep the AI agent's evidence and fraud-flag suggestions, with human final decisions.
+- **After the minimum manual credential process is tested, prioritize the lead/assignment and geographic launch controls below.** The broader insurance API can be resumed when Certificial replies and pricing/value justify the integration.
+
+### Certificial follow-up — parked, not cancelled
+
+- Obtain sandbox/production credentials, API docs, event notifications, limits, data provenance, and pricing for 25/100/1,000 monitored contractors.
+- Clarify whether verified policy coverage is direct from an insurer/broker and how cancellations/renewals are reported.
+- Do not implement or represent Certificial-based verification as live until credentials, access and the entire workflow are tested.
 
 ---
 
