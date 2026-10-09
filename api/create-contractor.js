@@ -156,6 +156,17 @@ module.exports = async function handler(req, res) {
       });
     }
 
+    const {data:activeMarkets,error:areaError}=await supabase.from("ssp_market_service_areas")
+      .select("trade,zip_prefix").eq("enabled",true).limit(100);
+    if(areaError)return res.status(503).json({success:false,error:"service_area_check_unavailable",
+      message:"We could not verify contractor coverage right now. Please try again."});
+    const trades=new Set(serviceCategories.split(",").map(x=>x.trim().toLowerCase()).filter(Boolean));
+    const zips=serviceZips.split(",").map(x=>x.trim()).filter(x=>/^\d{5}$/.test(x)).slice(0,250);
+    const accepts=(activeMarkets||[]).some(m=>trades.has(String(m.trade||"").toLowerCase())
+      &&zips.some(z=>z.startsWith(m.zip_prefix)));
+    if(!accepts)return res.status(422).json({success:false,error:"service_area_unavailable",
+      message:"SSP is currently onboarding HVAC contractors serving Houston-area ZIP codes starting 770. Other locations and trades are coming later."});
+
     // ---- 2. Auth user with a CSPRNG placeholder password -------------------
     // The contractor never learns this value; they set a real one through the
     // emailed link.
