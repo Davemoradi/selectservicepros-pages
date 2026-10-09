@@ -104,6 +104,13 @@ function collectOpsAlerts(d){
  });
  if(!d.admin?.staff_only){
   (d.contractors||[]).filter(c=>['Pending Review','Pending Verification'].includes(c.status)).forEach(c=>out.push({key:'application:'+c.id,title:'Contractor awaiting review: '+company(c.id),detail:c.status,when:c.created_at,kind:'contractor',id:c.id}));
+  (d.contractors||[]).filter(c=>c.insurance_expiration&&c.insurance_expiration<=new Date(Date.now()+30*86400000).toISOString().slice(0,10)).forEach(c=>{
+   const isExpired=c.insurance_expiration<new Date().toISOString().slice(0,10);
+   out.push({key:'insurance:'+c.id,title:(isExpired?'Expired insurance: ':'Insurance renewal needed: ')+company(c.id),
+    detail:(isExpired?'Policy expiration date has passed: ':'Policy expires within 30 days: ')+c.insurance_expiration+' — request a current certificate',
+    when:c.insurance_expiration,kind:'contractor',id:c.id});
+  });
+
   (d.disputes||[]).filter(x=>!x.decision||x.decision==='pending').forEach(x=>out.push({key:'dispute:'+x.id,title:'Lead dispute: '+company(x.contractor_id),detail:'Awaiting decision',when:x.submitted_at,kind:'disputes',id:x.id}));
   (d.notifications||[]).filter(x=>['failed','error','dead','dead_letter'].includes(String(x.status||'').toLowerCase())).forEach(x=>out.push({key:'notification:'+x.id,title:'Failed notification: '+x.event_type,detail:x.last_error||'Delivery failure',when:x.created_at,kind:'communications',id:x.id}));
  }
