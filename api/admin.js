@@ -185,6 +185,31 @@ async function hvacPilotAction(ctx,res,b){
  return res.status(200).json(data);
 }
 
+
+async function manualLeadOffer(ctx,res,b){
+ if(!ctx.isOwner)return fail(res,403,"owner_required");
+ const lead_id=String(b.lead_id||"");
+ if(!UUID_RE.test(lead_id))return fail(res,400,"invalid_lead_id");
+ if(b.action==="offer_candidates"){
+  const {data,error}=await ctx.supabase.rpc("ssp_admin_offer_candidates",{p_lead_id:lead_id});
+  if(error)return fail(res,500,"offer_candidates_failed");
+  return res.status(200).json({ok:true,lead_id,candidates:data||[]});
+ }
+ const contractor_id=String(b.contractor_id||""),reason=String(b.reason||"").trim();
+ if(!UUID_RE.test(contractor_id)||reason.length<12||reason.length>2000||b.confirm_send!==true)return fail(res,400,"invalid_manual_offer");
+ const {data,error}=await ctx.supabase.rpc("ssp_admin_send_lead_offer",{
+  p_lead_id:lead_id,p_contractor_id:contractor_id,p_actor_id:ctx.user.id,
+  p_actor_email:ctx.user.email||"SSP Owner",p_reason:reason
+ });
+ if(error){
+  const detail=String(error.message||"");
+  const safe=new Set(["lead_not_found","lead_not_offerable","lead_price_missing","matching_window_closed","matching_window_too_short","contractor_inactive","insufficient_wallet_for_offer","contractor_not_lead_eligible","offer_already_exists","offer_slot_limit_reached","reason_required"]);
+  if(safe.has(detail))return fail(res,409,detail);
+  console.error("manual lead offer",error.code||"unknown",detail.slice(0,100));
+  return fail(res,500,"manual_offer_failed");
+ }
+ return res.status(200).json(data);
+}
 async function updateLeadTriage(ctx,res,b){
  const lead_id=String(b.lead_id||"");
  const status=String(b.workflow_status||"");
@@ -619,6 +644,7 @@ module.exports = async function handler(req, res) {
     return contractorAction(ctx, res, b);
   }
   if(["check_hvac_pilot","approve_hvac_pilot","revoke_hvac_pilot"].includes(action))return hvacPilotAction(ctx,res,b);
+  if(["offer_candidates","send_manual_offer"].includes(action))return manualLeadOffer(ctx,res,b);
   if(action==="update_lead_triage")return updateLeadTriage(ctx,res,b);
   if(action==="human_credential_decision")return humanCredentialDecision(ctx,res,b);
   if(action==="request_ai_review")return requestAiReview(ctx,res,b);
