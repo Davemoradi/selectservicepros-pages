@@ -780,7 +780,7 @@ async function onFinalSubmit() {
     console.error('Final submit failed:', e);
     btn.innerHTML = 'Try again';
     btn.disabled = false;
-    alert('Something went wrong submitting your request. Please try again or call us.');
+    alert(/service_area_unavailable|Houston-area|ZIP codes starting 770|market/i.test(String(e.message)) ? 'SSP is currently accepting HVAC requests in Houston-area ZIP codes starting with 770. Please check your service ZIP and trade.' : 'We could not submit your request. Please try again or contact SSP support.');
   }
 }
 
