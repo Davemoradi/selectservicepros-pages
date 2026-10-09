@@ -22,6 +22,10 @@
 
 ---
 
+## Pilot eligibility decision
+
+Owner approved a restricted Houston HVAC pilot exception (October 9, 2026). For eligible contractors, SSP may create HVAC lead offers after an uploaded certificate has been manually reviewed and its dates are current, even without a direct insurer API. A verified current Texas HVAC license, documented owner authorization, contractor agreement, and valid Houston service ZIP are required. Limit: 10 contractors, 60 days each. The database rechecks eligibility at offering and acceptance, blocking expired or revoked exceptions. Insurance verification remains a separate status. No contractors are approved automatically.
+
 ## Implementation checkpoint — 2026-10-09
 
 **Built in Operations (initial functional release):**
