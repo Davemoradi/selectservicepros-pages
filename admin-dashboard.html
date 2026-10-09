@@ -406,6 +406,29 @@ function openOpsLead(id){
 }
 function closeOpsLead(){state.selectedLead=null;setTab('leads')}
 
+
+async function loadOfferCandidates(lead_id){
+ const box=document.getElementById('manual-offer-error');
+ if(box)box.textContent="Checking contractor eligibility…";
+ try{
+  const response=await api('/api/admin',{method:'POST',body:JSON.stringify({action:'offer_candidates',lead_id})});
+  state.manualOfferCandidates={lead_id,candidates:response.candidates||[]};
+  render();
+ }catch(e){if(box)box.textContent='Eligibility check failed: '+e.message}
+}
+async function sendManualOffer(lead_id){
+ const cid=document.getElementById('manual-offer-contractor')?.value||'';
+ const reason=document.getElementById('manual-offer-reason')?.value.trim()||'';
+ const box=document.getElementById('manual-offer-error');
+ if(!cid||reason.length<12){if(box)box.textContent="Choose an eligible contractor and provide a reason (12+ characters).";return}
+ if(!confirm("Send a priced offer to this contractor? The offer notification may be delivered immediately. Their wallet will only be charged if they accept. This cannot be withdrawn from this screen."))return;
+ try{
+  const result=await api('/api/admin',{method:'POST',body:JSON.stringify({action:'send_manual_offer',lead_id,contractor_id:cid,reason,confirm_send:true})});
+  state.manualOfferCandidates=null;
+  await load();
+  toast('Offer sent. Contractor has until '+date(result.expires_at)+' to accept. No wallet charge was made.');
+ }catch(e){if(box)box.textContent="Offer failed: "+e.message}
+}
 function manualOfferPanel(l,d){
  const owner=String(d.admin?.email||"").toLowerCase()==="david@selectservicepros.com";
  if(!owner)return "";
