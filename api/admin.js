@@ -58,7 +58,7 @@ async function getData(ctx, res) {
     }
 
     const disputes = disputesR.error ? [] : (disputesR.data || []);
-    const [notesR, notificationsR, profilesR, auditR, tasksR, taskEventsR, taskNotesR, taskFilesR, staffR, alertReadsR, aiReviewsR] = await Promise.all([
+    const [notesR, notificationsR, profilesR, auditR, tasksR, taskEventsR, taskNotesR, taskFilesR, staffR, alertReadsR, aiReviewsR, leadTriageR, leadEventsR] = await Promise.all([
       supabase.from("contractor_admin_notes").select("id,contractor_id,body,created_at,created_by,author_email").order("created_at",{ascending:false}).limit(500),
       supabase.from("notification_outbox").select("id,contractor_id,lead_id,event_type,status,attempt_count,sent_at,last_error,created_at").order("created_at",{ascending:false}).limit(500),
       supabase.from("contractor_admin_profiles").select("*").limit(1000),
@@ -69,9 +69,11 @@ async function getData(ctx, res) {
       supabase.from("operations_task_attachments").select("id,task_id,file_name,size_bytes,uploader_email,created_at").order("created_at",{ascending:false}).limit(2000),
       supabase.from("operations_staff").select("id,email,name,first_name,last_name,active,employment_status,role,created_at").order("name"),
       supabase.from("operations_alert_reads").select("alert_key,read_at").eq("user_id",user.id).limit(3000),
-      supabase.from("operations_ai_reviews").select("id,task_id,status,requested_at,completed_at,model_name,summary,proposed_action,agent_findings,evidence,verification_summary,error_code,reviewed_at").order("requested_at",{ascending:false}).limit(1000)
+      supabase.from("operations_ai_reviews").select("id,task_id,status,requested_at,completed_at,model_name,summary,proposed_action,agent_findings,evidence,verification_summary,error_code,reviewed_at").order("requested_at",{ascending:false}).limit(1000),
+      supabase.from("operations_lead_triage").select("lead_id,workflow_status,assigned_to,follow_up_at,reason,updated_by_email,updated_at").limit(2000),
+      supabase.from("operations_lead_events").select("id,lead_id,actor_email,action,before_state,after_state,created_at").order("created_at",{ascending:false}).limit(2000)
     ]);
-    if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error || taskNotesR.error || taskFilesR.error || staffR.error || alertReadsR.error || aiReviewsR.error) throw new Error("operations_history_unavailable");
+    if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error || taskNotesR.error || taskFilesR.error || staffR.error || alertReadsR.error || aiReviewsR.error || leadTriageR.error || leadEventsR.error) throw new Error("operations_history_unavailable");
     const contractors = contractorsR.data || [];
     const licenses = licensesR.data || [];
     const leads = leadsR.data || [];
@@ -115,6 +117,8 @@ async function getData(ctx, res) {
       staff: staffR.data || [],
       alert_reads: alertReadsR.data || [],
       ai_reviews: aiReviewsR.data || [],
+      lead_triage: leadTriageR.data || [],
+      lead_events: leadEventsR.data || [],
       notifications: notificationsR.data || [],
       stats: {
         contractors_total: contractors.length,
@@ -140,6 +144,22 @@ async function getData(ctx, res) {
     console.error("admin data:", err && err.message);
     return fail(res, 500, "admin_data_failed");
   }
+}
+
+async function updateLeadTriage(ctx,res,b){
+ const lead_id=String(b.lead_id||"");
+ const status=String(b.workflow_status||"");
+ const reason=String(b.reason||"").trim();
+ const assigned=String(b.assigned_to||"").trim().toLowerCase();
+ const date=b.follow_up_at?new Date(b.follow_up_at):null;
+ if(!UUID_RE.test(lead_id)||!["Needs Review","Follow Up","Ready","On Hold","Closed"].includes(status)||reason.length<12||reason.length>2000||assigned.length>160||(date&&Number.isNaN(date.getTime())))return fail(res,400,"invalid_lead_triage");
+ const {data,error}=await ctx.supabase.rpc("ssp_update_lead_triage",{
+  p_lead_id:lead_id,p_workflow_status:status,p_assigned_to:assigned||null,
+  p_follow_up_at:date?date.toISOString():null,p_reason:reason,
+  p_actor_id:ctx.user.id,p_actor_email:ctx.user.email||"SSP Operations"
+ });
+ if(error){const msg=String(error.message||"");if(/active_employee_required|reason_required|lead_not_found|invalid_workflow_status/.test(msg))return fail(res,409,msg.slice(0,120));return fail(res,500,"lead_triage_update_failed")}
+ return res.status(200).json(data);
 }
 
 async function contractorAction(ctx, res, b) {
@@ -553,6 +573,7 @@ module.exports = async function handler(req, res) {
   if (["set_status","activate","set_insurance_verified","set_license_verified","approve_founding25","grant_founding25"].includes(action)) {
     return contractorAction(ctx, res, b);
   }
+  if(action==="update_lead_triage")return updateLeadTriage(ctx,res,b);
   if(action==="human_credential_decision")return humanCredentialDecision(ctx,res,b);
   if(action==="request_ai_review")return requestAiReview(ctx,res,b);
   if(action==="create_alert_task")return createAlertTask(ctx,res,b);
