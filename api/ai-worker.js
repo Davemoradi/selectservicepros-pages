@@ -1,6 +1,6 @@
 "use strict";
 const crypto = require("node:crypto");
-const { runOne } = require("../lib/ssp-ai-worker");
+const { runOne,askModel,PHASES } = require("../lib/ssp-ai-worker");
 const { smokeTdlr } = require("../lib/ssp-license-registry");
 function authorized(header,secret) {
  if(!secret || typeof header!=="string" || !header.startsWith("Bearer "))return false;
@@ -17,6 +17,15 @@ module.exports = async function handler(req,res){
  if(action==="registry_smoke"){
   const result=await smokeTdlr();
   return res.status(result.ok?200:503).json(result);
+ }
+ if(action==="agent_smoke"){
+  const phase=String((req.body||{}).phase||"document");
+  if(!PHASES.includes(phase))return res.status(400).json({ok:false,error:"invalid_test_phase"});
+  const context={task_id:"TEST_ONLY_NO_REAL_CUSTOMER",task_title:"Synthetic model contract test, no uploaded documents",credential_kind:"insurance",document_problem:"Test fixture has no document",contractor:{company_name:"SSP TEST FIXTURE",state:"TX",service_categories:"HVAC",insurance_carrier:null,insurance_policy_number:null},licenses:[]};
+  try{
+   const r=await askModel({phase,context,prior:{},credential:{kind:"insurance",file:null,hash:null}});
+   return res.status(200).json({ok:true,phase,model:r.model,report_schema_valid:!!r.report&&Array.isArray(r.report.findings)&&Array.isArray(r.report.missing_information),external_verification:r.report.external_verification,recommendation:r.report.recommendation,requires_document:r.report.missing_information.some(x=>/document|upload/i.test(x)),risk_count:r.report.risk_flags.length});
+  }catch(e){return res.status(503).json({ok:false,phase,error:"agent_smoke_failed"});}
  }
  if(action==="smoke"){
   const model=process.env.SSP_AI_MODEL||"claude-sonnet-4-6";
