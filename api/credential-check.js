@@ -31,6 +31,20 @@ module.exports=async(req,res)=>{
   if(error)return fail(res,500,"registry_evidence_save_failed");
   return res.status(200).json({ok:true,check:checked});
  }
+ if(action==="attest_live_license"){
+  const license_id=String(b.license_id||""),reference=String(b.reference||"").trim(),notes=String(b.notes||"").trim();
+  if(!UUID.test(license_id)||reference.length<6||reference.length>160||notes.length<30||notes.length>1800||b.confirmed_active!==true)return fail(res,400,"official_license_evidence_required");
+  const {data:l}=await ctx.supabase.from("contractor_licenses").select("id,license_state,license_number,document_url").eq("id",license_id).eq("contractor_id",id).maybeSingle();
+  if(!l)return fail(res,404,"license_not_found");
+  if(String(l.license_state||"").toUpperCase()!=="TX")return fail(res,400,"texas_license_only");
+  const path=String(l.document_url||"");
+  if(!path.startsWith(id+"/")||path.includes(".."))return fail(res,409,"private_document_required");
+  const {data:items,error:listErr}=await ctx.supabase.storage.from("contractor-docs").list(id,{search:path.split("/").pop()});
+  if(listErr||!(items||[]).some(o=>o.name===path.split("/").pop()))return fail(res,409,"source_document_not_found");
+  const {error}=await ctx.supabase.from("operations_credential_checks").insert({contractor_id:id,license_id,credential_kind:"license",method:"tdlr_live_search",result:"human_attested",document_path:path,source_url:"https://www.tdlr.texas.gov/LicenseSearch/",source_reference:reference,checked_by:ctx.user.id,checked_by_label:ctx.user.email||"SSP Operations",evidence:{notes,license_number:l.license_number,checked_current_active_search:true,notice:"Human confirmation of TDLR active search, not a machine-verifiable live search API result."}});
+  if(error)return fail(res,500,"license_confirmation_save_failed");
+  return res.status(200).json({ok:true,status:"human_attested"});
+ }
  if(action==="attest_insurance"){
   const method=String(b.method||""),ref=String(b.reference||"").trim(),contact=String(b.contact||"").trim(),notes=String(b.notes||"").trim();
   if(!["insurer_direct","broker_direct"].includes(method)||ref.length<8||ref.length>180||contact.length<3||contact.length>160||notes.length<30||notes.length>1800||b.confirmed_active!==true)return fail(res,400,"confirmation_evidence_required");
