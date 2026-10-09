@@ -444,7 +444,7 @@ async function humanCredentialDecision(ctx,res,b){
  if(!UUID_RE.test(review_id)||!["Approved","Rejected"].includes(decision)||reason.length<12||reason.length>2000)return fail(res,400,"invalid_human_decision");
  const {data,error}=await ctx.supabase.rpc("ssp_human_credential_decision",{p_review_id:review_id,p_actor_id:ctx.user.id,p_actor_email:ctx.user.email||"",p_decision:decision,p_reason:reason,p_independent_verified:confirmed});
  if(error){const msg=String(error.message||"");
- if(/document_changed|independent_verification|required|review_not_ready|credential_review|document_missing/.test(msg))return fail(res,409,msg.slice(0,130));
+ if(/document_changed|independent_verification|required|review_not_ready|credential_review|document_missing|private_document_not_available|current_official_license_confirmation_required|current_insurer_or_broker_confirmation_required/.test(msg))return fail(res,409,msg.slice(0,130));
  return fail(res,500,"credential_decision_failed");}
  return res.status(200).json(data);
 }
