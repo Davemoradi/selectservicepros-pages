@@ -58,7 +58,7 @@ async function getData(ctx, res) {
     }
 
     const disputes = disputesR.error ? [] : (disputesR.data || []);
-    const [notesR, notificationsR, profilesR, auditR, tasksR, taskEventsR, taskNotesR, taskFilesR, staffR, alertReadsR, aiReviewsR, leadTriageR, leadEventsR] = await Promise.all([
+    const [notesR, notificationsR, profilesR, auditR, tasksR, taskEventsR, taskNotesR, taskFilesR, staffR, alertReadsR, aiReviewsR, leadTriageR, leadEventsR, pilotsR, pilotEventsR] = await Promise.all([
       supabase.from("contractor_admin_notes").select("id,contractor_id,body,created_at,created_by,author_email").order("created_at",{ascending:false}).limit(500),
       supabase.from("notification_outbox").select("id,contractor_id,lead_id,event_type,status,attempt_count,sent_at,last_error,created_at").order("created_at",{ascending:false}).limit(500),
       supabase.from("contractor_admin_profiles").select("*").limit(1000),
@@ -71,9 +71,11 @@ async function getData(ctx, res) {
       supabase.from("operations_alert_reads").select("alert_key,read_at").eq("user_id",user.id).limit(3000),
       supabase.from("operations_ai_reviews").select("id,task_id,status,requested_at,completed_at,model_name,summary,proposed_action,agent_findings,evidence,verification_summary,error_code,reviewed_at").order("requested_at",{ascending:false}).limit(1000),
       supabase.from("operations_lead_triage").select("lead_id,workflow_status,assigned_to,follow_up_at,reason,updated_by_email,updated_at").limit(2000),
-      supabase.from("operations_lead_events").select("id,lead_id,actor_email,action,before_state,after_state,created_at").order("created_at",{ascending:false}).limit(2000)
+      supabase.from("operations_lead_events").select("id,lead_id,actor_email,action,before_state,after_state,created_at").order("created_at",{ascending:false}).limit(2000),
+      supabase.from("operations_hvac_pilot_authorizations").select("contractor_id,insurance_review_id,approved_by_email,approved_at,approved_until,reason,revoked_at,revoked_by_email,revocation_reason").limit(1000),
+      supabase.from("operations_hvac_pilot_events").select("id,contractor_id,actor_email,action,created_at,after_state").order("created_at",{ascending:false}).limit(1000)
     ]);
-    if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error || taskNotesR.error || taskFilesR.error || staffR.error || alertReadsR.error || aiReviewsR.error || leadTriageR.error || leadEventsR.error) throw new Error("operations_history_unavailable");
+    if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error || taskNotesR.error || taskFilesR.error || staffR.error || alertReadsR.error || aiReviewsR.error || leadTriageR.error || leadEventsR.error || pilotsR.error || pilotEventsR.error) throw new Error("operations_history_unavailable");
     const contractors = contractorsR.data || [];
     const licenses = licensesR.data || [];
     const leads = leadsR.data || [];
@@ -119,6 +121,8 @@ async function getData(ctx, res) {
       ai_reviews: aiReviewsR.data || [],
       lead_triage: leadTriageR.data || [],
       lead_events: leadEventsR.data || [],
+      hvac_pilots: pilotsR.data || [],
+      hvac_pilot_events: pilotEventsR.data || [],
       notifications: notificationsR.data || [],
       stats: {
         contractors_total: contractors.length,
@@ -144,6 +148,41 @@ async function getData(ctx, res) {
     console.error("admin data:", err && err.message);
     return fail(res, 500, "admin_data_failed");
   }
+}
+
+async function hvacPilotAction(ctx,res,b){
+ if(!ctx.isOwner)return fail(res,403,"owner_required");
+ const contractor_id=String(b.contractor_id||"");
+ if(!UUID_RE.test(contractor_id))return fail(res,400,"invalid_contractor_id");
+ const action=String(b.action||"");
+ if(action==="check_hvac_pilot"){
+  const [ready,valid,activation]=await Promise.all([
+   ctx.supabase.rpc("ssp_hvac_pilot_prerequisites",{p_contractor_id:contractor_id}),
+   ctx.supabase.rpc("ssp_hvac_pilot_authorization_valid",{p_contractor_id:contractor_id}),
+   ctx.supabase.rpc("contractor_activation_readiness",{p_contractor_id:contractor_id})
+  ]);
+  if(ready.error||valid.error||activation.error)return fail(res,500,"pilot_readiness_unavailable");
+  return res.status(200).json({ok:true,prerequisites:ready.data,pilot_leads_enabled:valid.data===true,activation_readiness:activation.data});
+ }
+ if(!["approve_hvac_pilot","revoke_hvac_pilot"].includes(action))return fail(res,400,"invalid_action");
+ const approving=action==="approve_hvac_pilot";
+ const reason=String(b.reason||"").trim();
+ const days=approving?Number(b.days):30;
+ if(reason.length<25||reason.length>2000||(approving&&(!Number.isInteger(days)||days<1||days>60)))return fail(res,400,"pilot_reason_or_duration_invalid");
+ if(approving&&b.acknowledge_unverified!==true)return fail(res,400,"unverified_coverage_acknowledgement_required");
+ const {data,error}=await ctx.supabase.rpc("ssp_hvac_pilot_decision",{
+  p_contractor_id:contractor_id,p_action:approving?"Approve":"Revoke",
+  p_actor_id:ctx.user.id,p_actor_email:ctx.user.email||"SSP Operations",
+  p_reason:reason,p_days:days
+ });
+ if(error){
+  const msg=String(error.message||"");
+  if(/pilot_not_ready:|pilot_duration_invalid|pilot_limit_reached|pilot_not_active|detailed_reason_required|contractor_not_found/.test(msg))
+   return fail(res,409,"pilot_decision_blocked",{detail:msg.slice(0,180)});
+  console.error("pilot auth operation error",msg.slice(0,170));
+  return fail(res,500,"pilot_decision_failed");
+ }
+ return res.status(200).json(data);
 }
 
 async function updateLeadTriage(ctx,res,b){
@@ -579,6 +618,7 @@ module.exports = async function handler(req, res) {
   if (["set_status","activate","set_insurance_verified","set_license_verified","approve_founding25","grant_founding25"].includes(action)) {
     return contractorAction(ctx, res, b);
   }
+  if(["check_hvac_pilot","approve_hvac_pilot","revoke_hvac_pilot"].includes(action))return hvacPilotAction(ctx,res,b);
   if(action==="update_lead_triage")return updateLeadTriage(ctx,res,b);
   if(action==="human_credential_decision")return humanCredentialDecision(ctx,res,b);
   if(action==="request_ai_review")return requestAiReview(ctx,res,b);
