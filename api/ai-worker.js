@@ -1,6 +1,7 @@
 "use strict";
 const crypto = require("node:crypto");
 const { runOne } = require("../lib/ssp-ai-worker");
+const { smokeTdlr } = require("../lib/ssp-license-registry");
 function authorized(header,secret) {
  if(!secret || typeof header!=="string" || !header.startsWith("Bearer "))return false;
  const token=header.slice(7).trim(), a=Buffer.from(token), b=Buffer.from(secret);
@@ -13,6 +14,10 @@ module.exports = async function handler(req,res){
  if(!authorized(req.headers.authorization,process.env.SSP_AI_WORKER_SECRET))return res.status(401).json({ok:false,error:"unauthorized"});
  if(!process.env.ANTHROPIC_API_KEY)return res.status(503).json({ok:false,error:"ai_model_not_configured"});
  const action=String((req.body||{}).action||"process");
+ if(action==="registry_smoke"){
+  const result=await smokeTdlr();
+  return res.status(result.ok?200:503).json(result);
+ }
  if(action==="smoke"){
   const model=process.env.SSP_AI_MODEL||"claude-sonnet-4-6";
   try{
