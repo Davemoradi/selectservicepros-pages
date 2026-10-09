@@ -58,7 +58,7 @@ async function getData(ctx, res) {
     }
 
     const disputes = disputesR.error ? [] : (disputesR.data || []);
-    const [notesR, notificationsR, profilesR, auditR, tasksR, taskEventsR, taskNotesR, taskFilesR, staffR, alertReadsR, aiReviewsR, leadTriageR, leadEventsR, pilotsR, pilotEventsR] = await Promise.all([
+    const [notesR, notificationsR, profilesR, auditR, tasksR, taskEventsR, taskNotesR, taskFilesR, staffR, alertReadsR, aiReviewsR, leadTriageR, leadEventsR, pilotsR, pilotEventsR, marketR, marketEventsR] = await Promise.all([
       supabase.from("contractor_admin_notes").select("id,contractor_id,body,created_at,created_by,author_email").order("created_at",{ascending:false}).limit(500),
       supabase.from("notification_outbox").select("id,contractor_id,lead_id,event_type,status,attempt_count,sent_at,last_error,created_at").order("created_at",{ascending:false}).limit(500),
       supabase.from("contractor_admin_profiles").select("*").limit(1000),
@@ -73,9 +73,11 @@ async function getData(ctx, res) {
       supabase.from("operations_lead_triage").select("lead_id,workflow_status,assigned_to,follow_up_at,reason,updated_by_email,updated_at").limit(2000),
       supabase.from("operations_lead_events").select("id,lead_id,actor_email,action,before_state,after_state,created_at").order("created_at",{ascending:false}).limit(2000),
       supabase.from("operations_hvac_pilot_authorizations").select("contractor_id,insurance_review_id,approved_by_email,approved_at,approved_until,reason,revoked_at,revoked_by_email,revocation_reason").limit(1000),
-      supabase.from("operations_hvac_pilot_events").select("id,contractor_id,actor_email,action,created_at,after_state").order("created_at",{ascending:false}).limit(1000)
+      supabase.from("operations_hvac_pilot_events").select("id,contractor_id,actor_email,action,created_at,after_state").order("created_at",{ascending:false}).limit(1000),
+      supabase.from("ssp_market_service_areas").select("id,city,state_code,trade,zip_prefix,enabled,updated_by_email,updated_at,reason").order("city"),
+      supabase.from("ssp_market_area_events").select("id,area_id,actor_email,before_enabled,after_enabled,reason,created_at").order("created_at",{ascending:false}).limit(100)
     ]);
-    if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error || taskNotesR.error || taskFilesR.error || staffR.error || alertReadsR.error || aiReviewsR.error || leadTriageR.error || leadEventsR.error || pilotsR.error || pilotEventsR.error) throw new Error("operations_history_unavailable");
+    if(notesR.error || notificationsR.error || profilesR.error || auditR.error || tasksR.error || taskEventsR.error || taskNotesR.error || taskFilesR.error || staffR.error || alertReadsR.error || aiReviewsR.error || leadTriageR.error || leadEventsR.error || pilotsR.error || pilotEventsR.error || marketR.error || marketEventsR.error) throw new Error("operations_history_unavailable");
     const contractors = contractorsR.data || [];
     const licenses = licensesR.data || [];
     const leads = leadsR.data || [];
@@ -123,6 +125,8 @@ async function getData(ctx, res) {
       lead_events: leadEventsR.data || [],
       hvac_pilots: pilotsR.data || [],
       hvac_pilot_events: pilotEventsR.data || [],
+      market_areas: marketR.data || [],
+      market_events: marketEventsR.data || [],
       notifications: notificationsR.data || [],
       stats: {
         contractors_total: contractors.length,
@@ -186,6 +190,17 @@ async function hvacPilotAction(ctx,res,b){
 }
 
 
+async function setMarketArea(ctx,res,b){
+ if(!ctx.isOwner)return fail(res,403,"owner_required");
+ const area_id=String(b.area_id||""),enabled=b.enabled,reason=String(b.reason||"").trim();
+ if(!UUID_RE.test(area_id)||typeof enabled!=="boolean"||reason.length<12||reason.length>1000)return fail(res,400,"invalid_market_update");
+ const {data,error}=await ctx.supabase.rpc("ssp_set_market_area_enabled",{
+  p_area_id:area_id,p_enabled:enabled,p_actor_id:ctx.user.id,
+  p_actor_email:ctx.user.email||"SSP Owner",p_reason:reason
+ });
+ if(error)return fail(res,500,"market_area_update_failed");
+ return res.status(200).json(data);
+}
 async function manualLeadOffer(ctx,res,b){
  if(!ctx.isOwner)return fail(res,403,"owner_required");
  const lead_id=String(b.lead_id||"");
@@ -644,6 +659,7 @@ module.exports = async function handler(req, res) {
     return contractorAction(ctx, res, b);
   }
   if(["check_hvac_pilot","approve_hvac_pilot","revoke_hvac_pilot"].includes(action))return hvacPilotAction(ctx,res,b);
+  if(action==="set_market_area")return setMarketArea(ctx,res,b);
   if(["offer_candidates","send_manual_offer"].includes(action))return manualLeadOffer(ctx,res,b);
   if(action==="update_lead_triage")return updateLeadTriage(ctx,res,b);
   if(action==="human_credential_decision")return humanCredentialDecision(ctx,res,b);
