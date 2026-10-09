@@ -22,6 +22,14 @@
 
 ---
 
+## Leads and Houston market controls — implemented in initial release
+
+- New **owner-operated manual lead offers**: eligibility preview, contractor selection, reason, audit event, fixed lead price, reuse of the standard offer/acceptance/wallet workflow, and duplicate/slot/expiration guards.
+- **Launch markets**: database-configured Houston, TX HVAC, ZIP prefix 770, owner enable/disable and audit, public customer intake availability, new contractor registration screening, and server-side offer/acceptance gates.
+- Homepage and intake tell users SSP is initially launching Houston-area HVAC.
+- Source and test detail: [Lead and market release](ssp-leads-houston-launch-2026-10-09.md).
+- **Incomplete:** Notification outbox delivery/retry verification; manual offer browser E2E; exact city boundaries/Google Places; manual re-open or reassignment of closed leads; pricing editor; dispute AI. Do not represent any of those as complete.
+
 ## Pilot eligibility decision
 
 Owner approved a restricted Houston HVAC pilot exception (October 9, 2026). For eligible contractors, SSP may create HVAC lead offers after an uploaded certificate has been manually reviewed and its dates are current, even without a direct insurer API. A verified current Texas HVAC license, documented owner authorization, contractor agreement, and valid Houston service ZIP are required. Limit: 10 contractors, 60 days each. The database rechecks eligibility at offering and acceptance, blocking expired or revoked exceptions. Insurance verification remains a separate status. No contractors are approved automatically.
