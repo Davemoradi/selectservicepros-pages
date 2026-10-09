@@ -444,12 +444,12 @@ async function sendManualOffer(lead_id){
  const reason=document.getElementById('manual-offer-reason')?.value.trim()||'';
  const box=document.getElementById('manual-offer-error');
  if(!cid||reason.length<12){if(box)box.textContent="Choose an eligible contractor and provide a reason (12+ characters).";return}
- if(!confirm("Send a priced offer to this contractor? The offer notification may be delivered immediately. Their wallet will only be charged if they accept. This cannot be withdrawn from this screen."))return;
+ if(!confirm("Create a priced offer for this contractor? An outbound notification will be queued but delivery has not been confirmed. The wallet is charged only if they accept."))return;
  try{
   const result=await api('/api/admin',{method:'POST',body:JSON.stringify({action:'send_manual_offer',lead_id,contractor_id:cid,reason,confirm_send:true})});
   state.manualOfferCandidates=null;
   await load();
-  toast('Offer sent. Contractor has until '+date(result.expires_at)+' to accept. No wallet charge was made.');
+  toast('Offer created; notification queued (delivery unconfirmed). Acceptance deadline: '+date(result.expires_at)+'; no wallet charge was made.');
  }catch(e){if(box)box.textContent="Offer failed: "+e.message}
 }
 function manualOfferPanel(l,d){
@@ -461,11 +461,11 @@ function manualOfferPanel(l,d){
  const opts=available.map(c=>'<option value="'+esc(c.contractor_id)+'">'+esc(c.company_name||"Unnamed")+' (SSP-'+esc(c.contractor_number)+') · Wallet '+money(c.wallet_total_cents)+'</option>').join('');
  const reasons={"contractor_inactive":"Not Active","previously_offered":"Already received this lead","wallet_below_offer_price":"Insufficient wallet","trade_not_served":"Does not service trade","zip_not_served":"Does not service ZIP","credentials_or_market_ineligible":"Credential/market requirements not met"};
  const other=current?current.filter(c=>!c.eligible).map(c=>esc(c.company_name||c.contractor_number)+' — '+esc(reasons[c.eligibility_reason]||c.eligibility_reason)).slice(0,8).join('; '):'';
- return '<div class="section" style="padding:18px"><h3>Manual contractor offer</h3><p class="sub">A manual assignment sends the contractor a priced offer using SSP’s existing process. The contractor chooses whether to accept; <b>the wallet is charged only on acceptance</b>. No direct lead assignment or free customer-data disclosure occurs.</p>'
+ return '<div class="section" style="padding:18px"><h3>Manual contractor offer</h3><p class="sub">A manual assignment creates a priced offer using SSP’s existing workflow and queues a notification. Delivery must be confirmed separately. <b>The wallet is charged only if the contractor accepts.</b> Customer details stay protected until acceptance.</p>'
  +(!active?'<p class="notice">Manual offers are unavailable: this lead must be priced, open for matching, and not a partial submission. Historical closed leads cannot be reopened from this control.</p>':
  '<p><button class="btn secondary small" onclick="loadOfferCandidates(\''+l.id+'\')">Check eligible contractors</button></p>'
  +(current?'<p>'+available.length+' eligible contractor'+(available.length===1?'':'s')+' for this priced lead.</p>'
- +(available.length?'<label>Select contractor<select id="manual-offer-contractor"><option value="">Choose eligible contractor</option>'+opts+'</select></label><label>Reason for manual offer<textarea id="manual-offer-reason" rows="3" maxlength="2000" style="width:100%" placeholder="Explain why an Operations override is needed (12+ characters)"></textarea></label><p><button class="btn primary" onclick="sendManualOffer(\''+l.id+'\')">Send 15-minute offer</button></p>':'<p class="detail">No contractor is currently eligible. Check trade, ZIP, balance, credentials and account status.</p>')
+ +(available.length?'<label>Select contractor<select id="manual-offer-contractor"><option value="">Choose eligible contractor</option>'+opts+'</select></label><label>Reason for manual offer<textarea id="manual-offer-reason" rows="3" maxlength="2000" style="width:100%" placeholder="Explain why an Operations override is needed (12+ characters)"></textarea></label><p><button class="btn primary" onclick="sendManualOffer(\''+l.id+'\')">Create offer / queue notice</button></p>':'<p class="detail">No contractor is currently eligible. Check trade, ZIP, balance, credentials and account status.</p>')
  +(other?'<details><summary>Why other contractors are ineligible</summary><p class="detail">'+other+'</p></details>':''):'<p class="detail">Check eligibility to load real-time candidates before sending.</p>'))
  +'<p class="detail" id="manual-offer-error"></p></div>';
 }
