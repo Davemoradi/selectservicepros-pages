@@ -37,7 +37,7 @@ async function getData(ctx, res) {
         .select("id,contractor_id,trade_category,license_type,license_state,license_number,expiration_date,document_url,verified,verified_at")
         .order("created_at", { ascending:false }),
       supabase.from("leads")
-        .select("id,created_at,homeowner_name,homeowner_phone,homeowner_email,homeowner_zip,service_category,service_type,issue_code,urgency,status,pricing_version,pricing_band,price_cents,matching_expires_at")
+        .select("id,created_at,homeowner_name,homeowner_phone,homeowner_email,homeowner_zip,homeowner_city,homeowner_state,service_category,service_type,issue_code,urgency,status,assigned_contractor_id,partial,paid,accepted_at,pricing_version,pricing_band,price_cents,matching_expires_at")
         .order("created_at", { ascending:false }).limit(250),
       supabase.from("lead_offers")
         .select("id,lead_id,contractor_id,status,price_cents,offered_at,expires_at,responded_at,transaction_id")
