@@ -3154,20 +3154,20 @@ function settingsHTML(){
 
     <div class="card pad" style="margin-bottom:16px">
       <div class="section-title" style="font-size:16px">Notifications</div>
-      <p class="sub" style="margin:-4px 0 14px">Lead alerts are coming soon. For now, check the Lead Offers tab for new opportunities.</p>
-      <div class="toggle-row" style="opacity:.55">
+      <p class="sub" style="margin:-4px 0 14px">Choose how SSP may contact you about new lead offers. Preferences save immediately. GoHighLevel delivery is being connected; while not active, please keep checking Lead Offers directly.</p>
+      <div class="toggle-row">
         <div class="toggle-info">
-          <h4>Email alerts for new leads <span class="lead-countdown">Coming soon</span></h4>
-          <p>Email notification when a new lead is offered to you.</p>
+          <h4>Email alerts for new leads</h4>
+          <p>Allow operational email alerts about offers (no customer contact details are included).</p>
         </div>
-        <div class="switch" aria-disabled="true" title="Not available yet"></div>
+        <input type="checkbox" aria-label="Email lead offer alerts" ${n.email?'checked':''} onchange="setLeadAlertPreference('email',this.checked)" style="width:20px;height:20px">
       </div>
-      <div class="toggle-row" style="opacity:.55">
+      <div class="toggle-row">
         <div class="toggle-info">
-          <h4>SMS alerts for new leads <span class="lead-countdown">Coming soon</span></h4>
-          <p>Optional text notification for new lead offers. SMS stays off unless you opt in.</p>
+          <h4>SMS alerts for new leads</h4>
+          <p>Optional operational text alerts to your listed phone. Message/data rates may apply. You can turn them off here or reply STOP to opt out. No texts are sent without your opt-in.</p>
         </div>
-        <div class="switch" aria-disabled="true" title="Not available yet"></div>
+        <input type="checkbox" aria-label="Opt in to SSP SMS lead alerts" ${n.sms?'checked':''} onchange="setLeadAlertPreference('sms',this.checked)" style="width:20px;height:20px">
       </div>
     </div>
 
@@ -3196,15 +3196,39 @@ function settingsHTML(){
 
 // Persist notification toggles + phone to contractors row.
 async function saveNotifications(){
-  if(!state.contractorId) return;
+  if(!state.contractorId) return false;
   try {
-    await sb.from('contractors').update({
+    const {data,error}=await sb.from('contractors').update({
       notif_email: !!state.notifs.email,
       notif_sms: !!state.notifs.sms,
       notif_digest: !!state.notifs.digest,
       phone: state.profile.phone || null,
-    }).eq('id', state.contractorId);
-  } catch(e){ console.error('saveNotifications', e); }
+    }).eq('id',state.contractorId).select('id,notif_email,notif_sms').maybeSingle();
+    if(error||!data)throw error||new Error('notification_preferences_not_saved');
+    return data.notif_sms===!!state.notifs.sms&&data.notif_email===!!state.notifs.email;
+  }catch(e){console.error('saveNotifications',e);return false}
+}
+async function setLeadAlertPreference(channel,enabled){
+  if(channel!=='email'&&channel!=='sms')return;
+  if(channel==='sms'&&enabled){
+    const digits=String(state.profile.phone||'').replace(/\\D/g,'');
+    if(!((digits.length===10)||(digits.length===11&&digits[0]==='1'))){
+      toast('Enter a valid U.S. phone number in Account settings before enabling texts.','error');
+      render();return;
+    }
+    if(!confirm('I agree to receive operational SSP lead-offer SMS alerts at the phone number on my account. Msg/data rates may apply. Reply STOP to opt out.')){
+      render();return;
+    }
+  }
+  const previous=state.notifs[channel];
+  state.notifs[channel]=enabled;
+  if(await saveNotifications()){
+    toast('Notification preference saved. Delivery will begin when SSP enables GoHighLevel notifications.','success');
+  }else{
+    state.notifs[channel]=previous;
+    toast('Could not save alert preference; no changes were made.','error');
+  }
+  render();
 }
 
 async function sendPasswordReset(){
