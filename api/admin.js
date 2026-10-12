@@ -60,7 +60,7 @@ async function getData(ctx, res) {
     const disputes = disputesR.error ? [] : (disputesR.data || []);
     const [notesR, notificationsR, profilesR, auditR, tasksR, taskEventsR, taskNotesR, taskFilesR, staffR, alertReadsR, aiReviewsR, leadTriageR, leadEventsR, pilotsR, pilotEventsR, marketR, marketEventsR] = await Promise.all([
       supabase.from("contractor_admin_notes").select("id,contractor_id,body,created_at,created_by,author_email").order("created_at",{ascending:false}).limit(500),
-      supabase.from("notification_outbox").select("id,contractor_id,lead_id,event_type,status,attempt_count,sent_at,last_error,created_at").order("created_at",{ascending:false}).limit(500),
+      supabase.from("notification_outbox").select("id,contractor_id,lead_id,offer_id,event_type,status,attempt_count,sent_at,last_error,provider_message_id,provider_channel,provider_accepted_at,provider_send_started_at,created_at").order("created_at",{ascending:false}).limit(500),
       supabase.from("contractor_admin_profiles").select("*").limit(1000),
       supabase.from("contractor_admin_audit").select("id,contractor_id,actor_email,action,changes,created_at").order("created_at",{ascending:false}).limit(1000),
       supabase.from("operations_tasks").select("*").order("created_at",{ascending:false}).limit(1000),
