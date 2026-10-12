@@ -229,7 +229,17 @@ async function viewOpsTaskFile(attachment_id){
 
 function communications(d){
  const rows=d.notifications||[];
- return '<div class="pagehead"><div><h1>Communications</h1><p class="sub">Recorded SSP notification events, not a complete inbox or proof of receipt.</p></div><button class="btn secondary" onclick="load()">Refresh</button></div>'+opsTable(['When','Contractor','Event','Status','Attempts','Error'],rows.map(x=>[date(x.created_at),(d.contractors||[]).find(c=>c.id===x.contractor_id)?.company_name||'System',x.event_type,x.status,x.attempt_count,x.last_error||'—']));
+ const status=n=>n.status==='sent'?'Provider accepted — NOT delivery confirmed':
+ n.status==='dead'&&/uncertain|manual_review/i.test(n.last_error||'')?'Needs manual GHL check (possible send)':
+ n.status==='retry'?'Retry pending':n.status==='obsolete'?'Cancelled / stale':
+ n.status==='pending'?'Queued':n.status==='processing'?'Processing':
+ n.status==='dead'?'Failed — needs attention':n.status;
+ return '<div class="pagehead"><div><h1>Communications</h1><p class="sub">GHL email and opted-in SMS outbox. Provider accepted means GHL returned a message ID; it does NOT prove delivery. Sending remains disabled until the GHL sub-account is configured and tested.</p></div><button class="btn secondary" onclick="load()">Refresh</button></div>'
+ +opsTable(['When','Contractor','Channel','Event','Status','Attempts','GHL message','Error'],rows.map(x=>[
+   date(x.created_at),(d.contractors||[]).find(c=>c.id===x.contractor_id)?.company_name||'System',
+   x.provider_channel||(x.event_type==='lead_offer_created_sms'?'SMS':x.event_type==='lead_offer_created'?'Email':'—'),
+   x.event_type,status(x),x.attempt_count,x.provider_message_id||'—',x.last_error||'—'
+ ]));
 }
 function opsTable(headers,rows){
  return '<div class="section"><div class="tablewrap"><table class="table"><thead><tr>'+headers.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+(rows.map(row=>'<tr>'+row.map(v=>'<td style="white-space:normal;max-width:350px">'+esc(v??'—')+'</td>').join('')+'</tr>').join('')||'<tr><td colspan="'+headers.length+'">No records yet.</td></tr>')+'</tbody></table></div></div>';
