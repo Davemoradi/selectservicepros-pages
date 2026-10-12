@@ -14,7 +14,7 @@ module.exports = async function handler(req,res){
  if(req.method!=="POST")return res.status(405).json({ok:false,error:"method_not_allowed"});
  if(!authorized(req.headers.authorization,process.env.SSP_AI_WORKER_SECRET))return res.status(401).json({ok:false,error:"unauthorized"});
  const action=String((req.body||{}).action||"process");
- if(action==="notification_health")return res.status(200).json({ok:true,email_provider_configured:transportReady(),delivery_mode:"email_only",email_provider:"resend"});
+ if(action==="notification_health")return res.status(200).json({ok:true,provider:"gohighlevel",ghl_credentials_configured:transportReady(),channels:["email","sms"],delivery_verified:false,detail:"Checks configuration only; no external message was sent."});
  if(action==="deliver_notifications"){
   try{
    const result=await runNotifications();
