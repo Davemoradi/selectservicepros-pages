@@ -2,6 +2,7 @@
 const crypto = require("node:crypto");
 const { runOne,askModel,PHASES } = require("../lib/ssp-ai-worker");
 const { smokeTdlr } = require("../lib/ssp-license-registry");
+const {runNotifications,transportReady}=require("../lib/ssp-notification-delivery");
 function authorized(header,secret) {
  if(!secret || typeof header!=="string" || !header.startsWith("Bearer "))return false;
  const token=header.slice(7).trim(), a=Buffer.from(token), b=Buffer.from(secret);
@@ -12,8 +13,15 @@ module.exports = async function handler(req,res){
  res.setHeader("Content-Type","application/json");
  if(req.method!=="POST")return res.status(405).json({ok:false,error:"method_not_allowed"});
  if(!authorized(req.headers.authorization,process.env.SSP_AI_WORKER_SECRET))return res.status(401).json({ok:false,error:"unauthorized"});
- if(!process.env.ANTHROPIC_API_KEY)return res.status(503).json({ok:false,error:"ai_model_not_configured"});
  const action=String((req.body||{}).action||"process");
+ if(action==="notification_health")return res.status(200).json({ok:true,email_provider_configured:transportReady(),delivery_mode:"email_only",email_provider:"resend"});
+ if(action==="deliver_notifications"){
+  try{
+   const result=await runNotifications();
+   return res.status(result.ok?200:503).json(result);
+  }catch(e){console.error("SSP notification dispatcher error",String(e?.message||"unknown").slice(0,120));return res.status(500).json({ok:false,error:"notification_worker_failed"});}
+ }
+ if(!process.env.ANTHROPIC_API_KEY)return res.status(503).json({ok:false,error:"ai_model_not_configured"});
  if(action==="registry_smoke"){
   const result=await smokeTdlr();
   return res.status(result.ok?200:503).json(result);
