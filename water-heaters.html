@@ -48,7 +48,7 @@
 <script>
 const url='https://kasqtxwbsmjlisbnebku.supabase.co';const key='sb_publishable_vNTt8FXb9XdBQ_Asd1QPTg_luc7D8Fz';const sb=window.supabase.createClient(url,key);
 const kinds=['tag','heater','connections','video'];const status=document.getElementById('status'),error=document.getElementById('error'),button=document.getElementById('submit');
-async function post(action,payload){const r=await fetch('/api/wh-pilot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...payload})});const j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw new Error(j.error||'Request failed');return j}
+async function post(action,payload){const r=await fetch('/api/create-lead?pilot=water_heater',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...payload})});const j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw new Error(j.error||'Request failed');return j}
 document.getElementById('intake').addEventListener('submit',async ev=>{
 ev.preventDefault();error.textContent='';button.disabled=true;
 try{
