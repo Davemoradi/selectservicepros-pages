@@ -42,4 +42,4 @@ try{
  window.scrollTo({top:200,behavior:'smooth'});
 }catch(e){error.textContent=e.message||'Unable to submit. Please retry.';status.textContent='';button.disabled=false}
 });
-</script></body></html>
+</script><script>function nextStep(n){if(n===2&&!document.querySelector('input[name="capacity_gallons"]:checked'))return alert('Choose a water heater size');if(n===3){for(const e of document.querySelectorAll('.wizard-step[data-step="2"] input[required]'))if(!e.reportValidity())return;}document.querySelectorAll('.wizard-step').forEach(e=>e.style.display=Number(e.dataset.step)===n?'block':'none');document.getElementById('quote').scrollIntoView({behavior:'smooth'});}function pickSize(n){document.querySelector('input[name="capacity_gallons"][value="'+n+'"]').checked=true;nextStep(2);}document.addEventListener('DOMContentLoaded',()=>nextStep(1));</script></body></html>
