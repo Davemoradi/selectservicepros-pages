@@ -24,7 +24,7 @@ document.getElementById('intake').addEventListener('submit',async ev=>{
 ev.preventDefault();error.textContent='';button.disabled=true;
 try{
  const f=new FormData(ev.target);const obj=Object.fromEntries([...f].filter(([k])=>k!=='tier_preference'));
- obj.tier_preference='essential';obj.capacity_gallons=obj.capacity_gallons?Number(obj.capacity_gallons):null;
+ obj.tier_preference='essential';obj.property_type='Unsure';obj.fuel_type='unsure';obj.vent_type='unsure';obj.expansion_tank='unsure';obj.capacity_gallons=obj.capacity_gallons?Number(obj.capacity_gallons):null;
  obj.consent_accepted=document.getElementById('consent').checked;obj.client_ref=crypto.randomUUID();
  const files={};
  for(const kind of kinds){const file=document.getElementById('file-'+kind).files[0];if(kind!=='video'&&!file)throw Error('Please add all three required photos.');if(!file)continue;if(file.size>(kind==='video'?45000000:10000000))throw Error(kind+' file is too large.');files[kind]=file}
