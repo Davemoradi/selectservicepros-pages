@@ -20,7 +20,7 @@ html{scroll-behavior:smooth}body{background:#f8fafc}.nav{max-width:1200px;height
 const url='https://kasqtxwbsmjlisbnebku.supabase.co';const key='sb_publishable_vNTt8FXb9XdBQ_Asd1QPTg_luc7D8Fz';const sb=window.supabase.createClient(url,key);
 let savedDraft=null;const kinds=['tag','heater','connections','video'];const status=document.getElementById('status'),error=document.getElementById('error'),button=document.getElementById('submit');
 async function post(action,payload){const r=await fetch('/api/create-lead?pilot=water_heater',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...payload})});const j=await r.json().catch(()=>({}));if(!r.ok||!j.ok)throw new Error(j.error||'Request failed');return j}
-async function saveBeforePhotos(){if(savedDraft)return;const f=new FormData(document.getElementById('intake'));const obj=Object.fromEntries(f.entries());obj.location_detail=[obj.location_detail,obj.city,obj.state].filter(Boolean).join(' | ');obj.capacity_gallons=Number(obj.capacity_gallons);obj.property_type='Unsure';obj.fuel_type='unsure';obj.vent_type='unsure';obj.expansion_tank='unsure';obj.tier_preference='essential';obj.consent_accepted=document.getElementById('consent').checked;obj.client_ref=crypto.randomUUID();savedDraft=await post('start',obj);}
+let savingDraft=null;async function saveBeforePhotos(){if(savingDraft)return savingDraft;savingDraft=syncDraft();try{await savingDraft;}finally{savingDraft=null;}}async function syncDraft(){const f=new FormData(document.getElementById('intake'));const obj=Object.fromEntries(f.entries());obj.location_detail=[obj.location_detail,obj.city,obj.state].filter(Boolean).join(' | ');obj.capacity_gallons=Number(obj.capacity_gallons);obj.property_type='Unsure';obj.fuel_type='unsure';obj.vent_type='unsure';obj.expansion_tank='unsure';obj.tier_preference='essential';obj.consent_accepted=document.getElementById('consent').checked;obj.client_ref=crypto.randomUUID();if(savedDraft){await post('revise',{...obj,id:savedDraft.id,token:savedDraft.token});}else{savedDraft=await post('start',obj);}}
 document.getElementById('intake').addEventListener('submit',async ev=>{
 ev.preventDefault();error.textContent='';button.disabled=true;
 try{
@@ -30,7 +30,7 @@ try{
  const files={};
  for(const kind of kinds){const file=document.getElementById('file-'+kind).files[0];if(['tag','heater'].includes(kind)&&!file)throw Error('Please add both required photos.');if(!file)continue;if(file.size>(kind==='video'?45000000:10000000))throw Error(kind+' file is too large.');files[kind]=file}
  status.textContent='Creating your request…';
- const started=savedDraft||await post('start',obj);savedDraft=started;
+ await saveBeforePhotos();const started=savedDraft;
  for(const [kind,file] of Object.entries(files)){
   status.textContent='Uploading '+kind+'…';const signed=await post('sign',{id:started.id,token:started.token,kind,mime:file.type,size:file.size});
   const {error:uploadError}=await sb.storage.from('wh-pilot-private').uploadToSignedUrl(signed.path,signed.uploadToken,file,{contentType:file.type,upsert:false});
