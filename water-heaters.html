@@ -39,7 +39,7 @@ try{
  status.textContent='Submitting for review…';
  const result=await post('submit',{id:started.id,token:started.token});
  document.getElementById('formbox').hidden=false;document.getElementById('intake').style.display='none';document.querySelector('.wizard-progress').style.display='none';document.getElementById('formbox').innerHTML='<div class="success"><h2>Request received!</h2><p>Thank you. Our team will review your heater setup and contact you with the next steps.</p><b>Reference: '+result.reference+'</b><p class="fine">Please save this reference. No payment was collected.</p></div>';
- window.scrollTo({top:200,behavior:'smooth'});
+ document.getElementById('quote').scrollIntoView({behavior:'smooth'});
 }catch(e){error.textContent=e.message||'Unable to submit. Please retry.';status.textContent='';button.disabled=false}
 });
 </script><script>function nextStep(n){if(n===2&&!document.querySelector('input[name="capacity_gallons"]:checked'))return alert('Choose a water heater size');if(n===3){for(const e of document.querySelectorAll('.wizard-step[data-step="2"] input[required]'))if(!e.reportValidity())return;}document.querySelectorAll('.wizard-step').forEach(e=>e.style.display=Number(e.dataset.step)===n?'block':'none');document.getElementById('quote').scrollIntoView({behavior:'smooth'});}function pickSize(n){document.querySelector('input[name="capacity_gallons"][value="'+n+'"]').checked=true;nextStep(2);}document.addEventListener('DOMContentLoaded',()=>nextStep(1));</script></body></html>
