@@ -1,0 +1,40 @@
+name: Water Heater Checkout Smoke
+on:
+  push:
+    branches:
+      - feat/water-heater-nyc-pilot
+    paths:
+      - 'water-heaters.html'
+      - 'lib/wh-checkout.js'
+      - 'scripts/wh-checkout-smoke.cjs'
+      - '.github/workflows/wh-checkout-smoke.yml'
+  workflow_dispatch:
+jobs:
+  test-checkout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser dependencies
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Wait for latest preview
+        run: sleep 75
+      - name: Run two real-browser smoke checks
+        env:
+          WH_SMOKE_RUNS: '2'
+          WH_TEST_URL: 'https://selectservicepros-pages-git-feat-wa-0f295d-davemoradis-projects.vercel.app'
+        run: node scripts/wh-checkout-smoke.cjs
+      - name: Upload screenshots and results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: water-heater-checkout-screenshots
+          path: wh-test-results/
+          retention-days: 7
