@@ -147,6 +147,7 @@ async function resolvePricing(supabase, category, service, requestedIssueCode) {
 }
 
 module.exports = async function handler(req, res) {
+  if(req.query && req.query.pilot==="water_heater")return require("../lib/wh-pilot")(req,res);
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Cache-Control", "no-store");
 

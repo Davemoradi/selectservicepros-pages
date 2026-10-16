@@ -6,6 +6,7 @@
 // wallet payment is credited exactly once through public.credit_wallet().
 
 const Stripe = require("stripe");
+const waterHeaterWebhook=require("../lib/wh-stripe-webhook");
 const { createClient } = require("@supabase/supabase-js");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://kasqtxwbsmjlisbnebku.supabase.co";
@@ -112,6 +113,7 @@ async function creditWalletTopup(supabase, session) {
 }
 
 module.exports = async function handler(req, res) {
+  if(req.query && req.query.pilot==="water_heater")return waterHeaterWebhook(req,res);
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "method_not_allowed" });
   }
