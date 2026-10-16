@@ -15,6 +15,8 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: read
+      issues: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -38,3 +40,18 @@ jobs:
           name: water-heater-checkout-screenshots
           path: wh-test-results/
           retention-days: 7
+      - name: Publish smoke test result to PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if test -f wh-test-results/results.json; then
+            echo 'Water heater checkout automated test report:' > /tmp/wh-report.md
+            echo '~~~json' >> /tmp/wh-report.md
+            cat wh-test-results/results.json >> /tmp/wh-report.md
+            echo '~~~' >> /tmp/wh-report.md
+          else
+            echo 'Water heater checkout test could not start; inspect job logs.' > /tmp/wh-report.md
+          fi
+          echo "Screenshots and logs: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" >> /tmp/wh-report.md
+          gh issue comment 2 --body-file /tmp/wh-report.md
