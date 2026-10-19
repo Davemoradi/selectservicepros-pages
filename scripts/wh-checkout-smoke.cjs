@@ -2,17 +2,19 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const base = process.env.WH_TEST_URL || 'https://selectservicepros-pages-git-feat-wa-0f295d-davemoradis-projects.vercel.app';
 const runs = Number(process.env.WH_SMOKE_RUNS || 2);
+const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET || '';
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aS5kAAAAASUVORK5CYII=', 'base64');
 (async () => {
   fs.mkdirSync('wh-test-results', { recursive: true });
   const browser = await chromium.launch({headless:true});
   const results = [];
   for (let i=0; i<runs; i++) {
-    const page = await browser.newPage({viewport:{width:1280,height:900}});
+    const page = await browser.newPage({viewport:{width:1280,height:900},extraHTTPHeaders:bypass?{'x-vercel-protection-bypass':bypass}:undefined});
     const result = {attempt:i+1,base,stage:'starting'};
     page.on('pageerror', err => {result.browserError = String(err.message).slice(0,200)});
     try {
       await page.goto(base+'/water-heaters.html', {waitUntil:'domcontentloaded',timeout:45000});
+      if ((await page.title()).toLowerCase().includes('vercel') && (await page.locator('text=Log in to Vercel').count())) throw Error('Vercel Deployment Protection blocked automated browser. Configure GitHub Actions secret WH_VERCEL_AUTOMATION_BYPASS_SECRET.');
       result.stage='form';
       await page.locator('input[name="capacity_gallons"][value="40"]').check();
       await page.locator('.wizard-step[data-step="1"] button').click();
