@@ -14,8 +14,12 @@ const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR
     page.on('pageerror', err => {result.browserError = String(err.message).slice(0,200)});
     try {
       await page.goto(base+'/water-heaters.html', {waitUntil:'domcontentloaded',timeout:45000});
+      result.httpStatus = (await page.request.get(base+'/water-heaters.html')).status();
+      result.pageTitle = (await page.title()).slice(0,100);
+      result.bypassConfigured = Boolean(bypass);
       if ((await page.title()).toLowerCase().includes('vercel') && (await page.locator('text=Log in to Vercel').count())) throw Error('Vercel Deployment Protection blocked automated browser. Configure GitHub Actions secret WH_VERCEL_AUTOMATION_BYPASS_SECRET.');
       result.stage='form';
+      if(!(await page.locator('input[name="capacity_gallons"][value="40"]').count()))throw Error('Expected water-heater form missing; page title: '+result.pageTitle+'; HTTP '+result.httpStatus+'; bypassConfigured '+result.bypassConfigured);
       await page.locator('input[name="capacity_gallons"][value="40"]').check();
       await page.locator('.wizard-step[data-step="1"] button').click();
       await page.locator('#customer_name').fill('Automated Test Order');
