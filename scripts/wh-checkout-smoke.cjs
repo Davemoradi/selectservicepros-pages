@@ -1,3 +1,4 @@
+// Retest after Vercel automation bypass credential update (2026-10-19).
 const { chromium } = require('playwright');
 const fs = require('fs');
 const base = process.env.WH_TEST_URL || 'https://selectservicepros-pages-git-feat-wa-0f295d-davemoradis-projects.vercel.app';
