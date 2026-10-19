@@ -9,7 +9,7 @@ const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR
   const browser = await chromium.launch({headless:true});
   const results = [];
   for (let i=0; i<runs; i++) {
-    const page = await browser.newPage({viewport:{width:1280,height:900},extraHTTPHeaders:bypass?{'x-vercel-protection-bypass':bypass}:undefined});
+    const page = await browser.newPage({viewport:{width:1280,height:900},extraHTTPHeaders:bypass?{'x-vercel-protection-bypass':bypass,'x-vercel-set-bypass-cookie':'true'}:undefined});
     const result = {attempt:i+1,base,stage:'starting'};
     page.on('pageerror', err => {result.browserError = String(err.message).slice(0,200)});
     try {
@@ -17,6 +17,8 @@ const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR
       result.httpStatus = (await page.request.get(base+'/water-heaters.html')).status();
       result.pageTitle = (await page.title()).slice(0,100);
       result.bypassConfigured = Boolean(bypass);
+      result.bypassLengthValid = bypass.length === 32;
+      result.finalUrlHost = new URL(page.url()).hostname;
       if ((await page.title()).toLowerCase().includes('vercel') && (await page.locator('text=Log in to Vercel').count())) throw Error('Vercel Deployment Protection blocked automated browser. Configure GitHub Actions secret WH_VERCEL_AUTOMATION_BYPASS_SECRET.');
       result.stage='form';
       if(!(await page.locator('input[name="capacity_gallons"][value="40"]').count()))throw Error('Expected water-heater form missing; page title: '+result.pageTitle+'; HTTP '+result.httpStatus+'; bypassConfigured '+result.bypassConfigured);
