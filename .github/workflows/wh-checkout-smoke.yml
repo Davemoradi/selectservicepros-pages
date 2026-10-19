@@ -31,6 +31,7 @@ jobs:
       - name: Run two real-browser smoke checks
         env:
           WH_SMOKE_RUNS: '2'
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.WH_VERCEL_AUTOMATION_BYPASS_SECRET }}
           WH_TEST_URL: 'https://selectservicepros-pages-git-feat-wa-0f295d-davemoradis-projects.vercel.app'
         run: node scripts/wh-checkout-smoke.cjs
       - name: Upload screenshots and results
