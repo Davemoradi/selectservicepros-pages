@@ -14,6 +14,17 @@ const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR
     const page = await browser.newPage({viewport:{width:1280,height:900},extraHTTPHeaders:bypass?{'x-vercel-protection-bypass':bypass,'x-vercel-set-bypass-cookie':'true'}:undefined});
     const result = {attempt:i+1,base,stage:'starting'};
     page.on('pageerror', err => {result.browserError = String(err.message).slice(0,200)});
+    page.on('response', async response => {
+      if(response.url().includes('/api/create-lead?pilot=water_heater') && response.request().postData()?.includes('"action":"checkout"')){
+        const data=await response.json().catch(()=>null);
+        result.checkoutHttpStatus=response.status();
+        result.checkoutError=data?.error||null;
+        if(data?.error==='stripe_test_keys_required'){
+          result.stripeSecretKeyMode=data.secretKeyMode||'unknown';
+          result.stripePublishableKeyMode=data.publishableKeyMode||'unknown';
+        }
+      }
+    });
     try {
       await page.goto(base+'/water-heaters.html', {waitUntil:'domcontentloaded',timeout:45000});
       result.httpStatus = (await page.request.get(base+'/water-heaters.html')).status();
