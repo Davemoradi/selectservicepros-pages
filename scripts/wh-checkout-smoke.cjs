@@ -12,7 +12,7 @@ const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR
   const browser = await chromium.launch({headless:true});
   const results = [];
   for (let i=0; i<runs; i++) {
-    const page = await browser.newPage({viewport:{width:1280,height:900},extraHTTPHeaders:bypass?{'x-vercel-protection-bypass':bypass,'x-vercel-set-bypass-cookie':'true'}:undefined});
+    const page = await browser.newPage({viewport:i===0?{width:1280,height:900}:{width:390,height:844},extraHTTPHeaders:bypass?{'x-vercel-protection-bypass':bypass,'x-vercel-set-bypass-cookie':'true'}:undefined});
     const result = {attempt:i+1,base,stage:'starting'};
     page.on('pageerror', err => {result.browserError = String(err.message).slice(0,200)});
     page.on('response', async response => {
@@ -62,9 +62,27 @@ const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR
         if(await frame.count()>0 && await frame.first().isVisible()){stripeVisible=true;break}
         await page.waitForTimeout(1200);
       }
-      await page.screenshot({path:'wh-test-results/checkout-'+(i+1)+'.png',fullPage:true});
       if(!stripeVisible)throw Error('Stripe iframe did not appear');
-      result.stage='embedded_form_visible';result.ok=true;
+      result.stage='stripe_iframe_visible';
+      // The first iframe may still display Stripe's gray skeleton placeholders.
+      // Wait for checkout text inside a Stripe frame before calling it ready.
+      const deadline=Date.now()+45000;let actualCheckout=false;
+      while(Date.now()<deadline){
+        const frames=page.frames().filter(f=>f!==page.mainFrame() && /stripe\.com/.test(f.url()));
+        for(const frame of frames){
+          const body=await frame.locator('body').innerText({timeout:2500}).catch(()=>'');
+          if(/(card number|card information|pay now|pay \$|payment details|payment information|email address)/i.test(body)){
+            actualCheckout=true;break;
+          }
+        }
+        if(actualCheckout)break;
+        await page.waitForTimeout(1500);
+      }
+      await page.screenshot({path:'wh-test-results/checkout-'+(i+1)+'.png',fullPage:true});
+      result.stripeFieldsReady=actualCheckout;
+      result.viewport=i===0?'desktop':'mobile';
+      if(!actualCheckout)throw Error('Stripe iframe is visible but payment fields did not become ready');
+      result.stage='stripe_payment_fields_ready';result.ok=true;
     } catch(e) {
       result.ok=false;result.error=String(e.message).slice(0,700);
       await page.screenshot({path:'wh-test-results/failure-'+(i+1)+'.png',fullPage:true}).catch(()=>{});
